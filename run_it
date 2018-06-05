@@ -1,0 +1,29 @@
+#!/bin/sh
+
+#<<<<<<< HEAD
+#screen python src/run_model.py CNN+LSTM rsz \
+#--train \
+#--test \
+#--partition_csv subject_data.csv \
+#--output_dir run_history/lrcn_4_color \
+#--epochs 50 \
+#=======
+# --zoom_range 0.10 \
+# --shear_range 0 \
+#--width_shift_range 0.10 \
+#--height_shift_range 0.10 \
+#--rotation_range 25 \
+#--cyclic_learning_rate 0.00001 0.00009 \
+#--horizontal_flip \
+#--vertical_flip \
+
+pip install --upgrade src/we_panic_utils/
+python src/run_model.py 3D-CNN rsz32 \
+--test \
+--partition_csv subject_data.csv \
+--output_dir run_history/3DCNN_dif_linear \
+--input_dir run_history/3DCNN_dif_linear \
+--epochs 100 \
+--steps_per_epoch 500 \
+--batch_size 14 \
+--greyscale_on \

@@ -1,0 +1,56 @@
+#!/bin/sh
+
+function usage() {
+    echo "---------"
+    echo "$0 <output_dir>"
+}
+
+function preprocess () {
+    # preprocess data
+    
+    SELECTS=$1
+    METADATA=$2
+    MOVIEDIR=$3
+    OUTPUTDIR=$4
+    
+    if [ ! -d frames/ ]; then
+        echo "[+] extracting frames from movies ---> frames/"
+        python src/scripts/extract_frames.py $SELECTS $METADATA $MOVIEDIR frames/
+    fi
+
+    if [ ! -d $OUTPUTDIR ]; then
+        echo "[+] resizing real trials ---> $OUTPUTDIR"
+        python src/scripts/resize_trials.py frames --output_dir $OUTPUTDIR      
+    fi
+    
+    if [ ! -d augmented/ ]; then
+        echo "[+] augmenting movie selection ---> augmented/"
+        python src/scripts/augment_speed.py $MOVIEDIR NextStartingPoint.csv augmented/   
+    fi
+
+    if [ ! -d frames_aug/ ]; then
+        echo "[+] extracting frames from movies ---> frames/"
+        python src/scripts/extract_frames.py $SELECTS $METADATA augmented/ frames_aug/
+    fi
+
+    if [ ! -d rsz_augmented/ ]; then
+        echo "[+] resizing augmented trials ---> $OUTPUTDIR_augmented"
+        python src/scripts/resize_trials.py frame_aug/ --output_dir $OUTPUTDIR_augmented
+    fi
+}
+
+function control_c () {
+    
+    kill $PID
+    exit
+}
+
+OUTPUT=$1
+
+if [ -z $OUTPUT ]; then
+    usage
+    exit
+fi
+
+trap control_c SIGINT
+preprocess NextStartingPoint.csv DeepLearningClassData.csv data/ $OUTPUT

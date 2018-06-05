@@ -1,0 +1,3 @@
+#!/bin/sh
+
+git pull origin master && pip install --upgrade src/we_panic_utils/
