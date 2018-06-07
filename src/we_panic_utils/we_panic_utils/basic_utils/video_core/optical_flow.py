@@ -1,3 +1,9 @@
+"""
+optical_flow.py
+---------------
+generate optical flow frames
+"""
+
 import cv2
 import numpy as np
 import pickle
@@ -9,7 +15,9 @@ import sys
 from ..basics import check_exists_create_if_not 
 
 def optical_flow_of_first_and_rest(frames):
-    count = 0
+    """
+    perform optical flow between frame 0 and all subsequent frames
+    """
     frame1 = Image.open(frames[0])
     
     #only compare the optical flow of first image to every other image
@@ -30,10 +38,16 @@ def optical_flow_of_first_and_rest(frames):
     return all_hor, all_ver
 
 def write_optical_flow(path, width):
+    """
+    calculate optical flow across a fixed width
+
+    args:
+        path : string -path to frame directory
+        width : int - optical flow span 
+    """
     count = 0
 
     try:
-        all_horz, all_vert = [], []
         frame_paths = sorted(glob.glob(path + "/*"))
 
         frame1 = Image.open(frame_paths[0])

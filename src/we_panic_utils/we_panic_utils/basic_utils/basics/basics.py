@@ -26,6 +26,21 @@ def check_exists_create_if_not(directory, suppress=False):
             print("[check_exists_create_if_not] making a dir: %s" % directory)
         os.makedirs(directory)
 
+def fetch_path(subj, data_dir):
+
+    subject = "S" + ("0" * (4-len(subj))) + subj
+    full_path = os.path.join(data_dir, subject)
+    return full_path
+
+def progressBar(value, endvalue, bar_length=20):
+    """
+    Stolen from StackOverflow. For that dank looking progress bar.
+    """
+    percent = float(value) / endvalue
+    arrow = '-' * int(round(percent * bar_length)-1) + '>'
+    spaces = ' ' * (bar_length - len(arrow))
+    sys.stdout.write("\r[{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
+    sys.stdout.flush()
 
 #####################################################
 ###################################           ####### 

@@ -6,7 +6,7 @@ from PIL import Image
 import sys
 import os
 import cv2
-from we_panic_utils.basic_utils.basics import check_exists_create_if_not 
+from we_panic_utils.basic_utils.basics import check_exists_create_if_not, fetch_path, progressBar 
 
 import subprocess
 FPS = 30
@@ -324,11 +324,6 @@ def resize_frame_dir(frame_dir, output_dir, width=224, height=224):
     print()
 
 
-def fetch_path(subj, data_dir):
-    subject = "S" + ("0" * (4-len(subj))) + subj
-    full_path = os.path.join(data_dir, subject)
-    return full_path
-
 def change_speed(video_path, new_name, factor):
     command = BASH_COMMAND.format(video_path, factor, new_name)
     print("[{}]: CHANGING SPEED of video {} by a factor of {}".format(sys.argv[0], video_path, str(factor)))
@@ -371,7 +366,7 @@ def handle(video_path, factor):
     p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
     out, err = p.communicate()
    
-    if factor == 2: #if the video was slowed down, split it into two 30 second parts and throw out the second part
+    if factor == 2:  #if the video was slowed down, split it into two 30 second parts and throw out the second part
         split_name = video_path.split('.')[0]
         end_time_1 = int(float(out) / 2)
         end_time_2 = int(float(out))
@@ -390,7 +385,8 @@ def handle(video_path, factor):
         p.kill()
         os.remove(video_path)
         os.rename(split_name + '_first_half.mov', video_path)
-    else: #if the video was sped up, cut it in half and reverse it
+
+    else:  #if the video was sped up, cut it in half and reverse it
         halved_name = video_path.split('.')[0] + '_halved.mov'
         end_time = "00:00:" + str(int(float(out)/2))
         command = HALVE_COMMAND.format(video_path, "00:00:00", end_time, halved_name) 
@@ -405,16 +401,3 @@ def handle(video_path, factor):
         os.remove(halved_name)
         os.remove(video_path)
         os.rename(video_path.split('.')[0] + '_looped.mov', video_path)
-
-def progressBar(value, endvalue, bar_length=20):
-    """
-    Stolen from StackOverflow. For that dank looking progress bar.
-    """
-    percent = float(value) / endvalue
-    arrow = '-' * int(round(percent * bar_length)-1) + '>'
-    spaces = ' ' * (bar_length - len(arrow))
-    sys.stdout.write("\r[{0}] {1}%".format(arrow + spaces, int(round(percent * 100))))
-    sys.stdout.flush()
-
-
-
