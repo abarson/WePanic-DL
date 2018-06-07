@@ -7,6 +7,39 @@ import sys
 import os
 import csv
 
+
+##################################################
+###################################        ####### 
+################################    ACTIVE    ####
+###################################        #######
+##################################################
+
+def check_exists_create_if_not(directory, suppress=False):
+    """
+    check whether a directory exists -- create it if it doesn't
+    
+    args:
+        directory: name of directory to test
+
+    returns:
+        Nothing
+    """
+    
+    if "." in directory:
+        raise ValueError("looks like %s isn't a valid directory name" % directory)
+
+    if not os.path.isdir(directory):
+        if not suppress:
+            print("[check_exists_create_if_not] making a dir: %s" % directory)
+        os.makedirs(directory)
+
+
+#####################################################
+###################################           ####### 
+################################   DEPRECATED    ####
+###################################           #######
+#####################################################
+
 class CSV_Helper():
     """
     Use this for looking up data in DeepLearningClassData.csv,
@@ -16,8 +49,8 @@ class CSV_Helper():
         self.look_up_csv = look_up_csv
         self.write_to_csv = write_to_csv 
         self.csv_writer = csv.writer(write_to_csv, delimiter=',',
-                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        if header==None:
+                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        if header is None:
             self.create_header() 
         else:
             self.generate_header(header)
@@ -35,7 +68,7 @@ class CSV_Helper():
     def look_up(self, subj_name):    
         size = len(subj_name)
         for line in self.look_up_csv:
-            if line[0 : size] == subj_name:
+            if line[0: size] == subj_name:
                 self.look_up_csv.seek(0)
                 return line[size+1:].rstrip().split(",")
         self.look_up_csv.seek(0)
@@ -93,21 +126,3 @@ def csv2data(filename, has_header=True):
         raise FileNotFoundError("Could not locate %s" % filename)
 
 
-def check_exists_create_if_not(directory, suppress=False):
-    """
-    check whether a directory exists -- create it if it doesn't
-    
-    args:
-        directory: name of directory to test
-
-    returns:
-        Nothing
-    """
-    
-    if "." in directory:
-        raise ValueError("looks like %s isn't a valid directory name" % directory)
-
-    if not os.path.isdir(directory):
-        if not suppress:
-            print("[check_exists_create_if_not] making a dir: %s" % directory)
-        os.makedirs(directory)
