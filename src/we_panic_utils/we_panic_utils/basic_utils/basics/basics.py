@@ -7,13 +7,6 @@ import sys
 import os
 import csv
 
-
-##################################################
-###################################        ####### 
-################################    ACTIVE    ####
-###################################        #######
-##################################################
-
 def check_exists_create_if_not(directory, suppress=False):
     """
     check whether a directory exists -- create it if it doesn't
