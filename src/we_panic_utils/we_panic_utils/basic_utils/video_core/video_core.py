@@ -60,14 +60,18 @@ def video_file_exists(filename):
     return False, error, None
 
 
-def video_file_to_frames(filename, output_dir=None, suppress=False, clip=2):
+def video_file_to_frames(filename, resize=None, output_dir=None, suppress=False, clip=2):
     """
     Convert a video file to individual frames
     
     Added by Adam:
     This method will also ensure that all videos are reduced to 30fps. For a
     60fps video, for example, every other frame will be skipped.
+    
 
+    Added by dan: 6/8/18
+    video_file_to_frames now proudly supports frame resizing -- just pass in a tuple
+    of the form (xdim, ydim) 
     args:
         --> filename : video file to convert
         --> output_dir (optional): the desired output directory
@@ -89,9 +93,12 @@ def video_file_to_frames(filename, output_dir=None, suppress=False, clip=2):
     """
     # check the video's existence
     vid_valid, err, no_ext = video_file_exists(filename)
-    
     #print("vid : {}".format(vid_valid))
     
+    if resize:
+        if resize is not list or resize is not tuple:
+            raise ValueError('badly typed resize, expected tuple of len = 2')
+
     if vid_valid:
         if output_dir:
             output_dir = os.path.join(output_dir, "%s_frames" % no_ext)
@@ -117,6 +124,11 @@ def video_file_to_frames(filename, output_dir=None, suppress=False, clip=2):
 
         # while there is a next image
         while success:
+            
+            # frame resizing
+            if resize:
+                image = cv2.resize(image, resize)
+
             pth = ""
             if count >= FPS * clip and count < total - (FPS * clip):
                 if FPS == 60:

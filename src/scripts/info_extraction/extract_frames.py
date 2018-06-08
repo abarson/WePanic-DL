@@ -31,11 +31,8 @@ def help_msg():
 
 def parse_input():
     parser = argparse.ArgumentParser("Extract frames from video files in a specified movie directory")
-    parser.add_argument("selects",
-                        help="csv of selected subjects",
-                        type=str)
 
-    parser.add_argument("data_csv",
+    parser.add_argument("collated_data_csv",
                         help="the csv containing all of the subject data",
                         type=str)
 
@@ -43,10 +40,15 @@ def parse_input():
                         help="video file directory",
                         type=str)
 
-    parser.add_argument("output_directory",
+    parser.add_argument("--output_directory",
                         help="the directory to save the frame directories",
-                        type=str)
+                        type=str,
+                        default='frames/')
 
+    parser.add_argument("--resize_dims",
+                        help="resize dimensions",
+                        nargs=2,
+                        type=tuple)
     return parser
 
 
@@ -54,16 +56,16 @@ if __name__ == "__main__":
     
     args = parse_input().parse_args()
     
-    selects = args.selects
-    metadata = args.data_csv
+    metadata = args.collated_data_csv
     movie_dir = args.movie_directory
     output_directory = args.output_directory
+    resize_dims = args.resize_dims
     
+    if resize_dims == (0, 0):
+        resize_dims = None
+
     # validate input
     base.check_exists_create_if_not(output_directory)
-    
-    if not os.path.exists(selects):
-        raise FileNotFoundError("[selects] -- %s not found" % selects)
     
     if not os.path.exists(metadata):
         raise FileNotFoundError("[data_csv] -- %s not found" % metadata)
@@ -73,43 +75,29 @@ if __name__ == "__main__":
     
     #  we're going to assume the csvs specified are properly formatted and the columns are correct
     
-    selects_df = pd.read_csv(selects)
     metadf = pd.read_csv(metadata)
-
-    frame_df = pd.DataFrame(columns=["Subject", "Trial", "Path", "Heart Rate", "Respiratory Rate"])
-
+    selects_df = metadf[metadf['GOOD'] == 1]
     fmt_file = "Trial%d.MOV"
     
     imgs_captured = []
     
-    columns = metadf.columns
-    
     i = 0
     for index, row in selects_df.iterrows(): 
-        subject, trial = row['Subject'], int(row['Trial'])
-        fmt_dir = 'S' + subject.zfill(4)
+        subject, trial = row['SUBJECT'], int(row['TRIAL'])
+        fmt_dir = 'S%04d' % subject
         target_dir = os.path.join(movie_dir, fmt_dir)
         target_file = fmt_file % trial
-
+        
         target = os.path.join(target_dir, target_file)
         
-        data = metadf[metadf['SUBJECT'] == str(subject)]
-        
-        subj, t1_hrate, t1_resprate, t2_hrate, t2_resprate = [list(data[col])[0] for col in columns]
-        
-        if trial == 1:
-            r = [subject, trial, os.path.join(output_directory, str(subject), str(trial)), t1_hrate, t1_resprate]
+        if not os.path.exists(target.replace(movie_dir, output_directory).split('.')[0]+'_frames'):
+            imgs = vc.video_file_to_frames(target, output_dir=output_directory, resize=resize_dims, suppress=False)
+            print("-" * 78)
+            imgs_captured.append(len(imgs))
 
         else:
-            r = [subject, trial, os.path.join(output_directory, str(subject), str(trial)), t2_hrate, t2_resprate]
-        
-        frame_df.loc[i] = r
-        if not os.path.exists(target.replace(movie_dir, output_directory).split('.')[0]+'_frames'):
-            imgs = vc.video_file_to_frames(target, output_dir=output_directory, suppress=False)
-            print("-" * 78)
-            imgs_captured.extend(imgs)
-        else:
             print("{} already exists, skipping".format(target.replace(movie_dir, output_directory)))
+
         i += 1
-    frame_df.to_csv("subject_data.csv", index=False)
-    print("[*] Extracted %d images from %d different video files" % (len(imgs_captured), i + 1))
+
+    print("[*] Extracted %d images from %d different video files" % (sum(imgs_captured), i + 1))

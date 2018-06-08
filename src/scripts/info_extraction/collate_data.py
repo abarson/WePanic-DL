@@ -95,17 +95,42 @@ if __name__ == '__main__':
         sys.exit('An error occurred')
     
     dlcd_df = pd.read_csv(dlcd_loc)
+
+    new_cols = ['SUBJECT',
+                'Trial 1 Heart Rate (beats per minute)',
+                'Trial 1 Respiratory Rate (breaths per minute)',
+                'Trial 2 Heart Rate (beats per minute)',
+                'Trial 2 Respiratory Rate (breaths per minute)']
+
+    old_cols = list(dlcd_df.columns)
+    col_rename = dict(zip(old_cols, new_cols))
+    dlcd_df.rename(columns=col_rename, inplace=True)
+
     collated_df = pd.DataFrame(columns=COLUMNS)
     tf_dict = {True:1, False:0} 
+    subj_fmt = 'S%04d'
+    trial_fmt = 'Trial%d_frames'
+    
     i = 0
     for row in dlcd_df.iterrows():
         idx, data = row
         
-        subject = row['SUBJECT']
+        subject = data['SUBJECT']
         hrate_col = 'Trial {} Heart Rate (beats per minute)'
-        resp_rate = 'Trial {} Respiratory Rate (breaths per minue)'
+        resp_rate_col = 'Trial {} Respiratory Rate (breaths per minute)'
         for trial in [1, 2]:
+            
             good = tf_dict[(subject, trial) in GOOD_PAIRS]
-            hrate = haah 
+            hrate = data[hrate_col.format(trial)]
+            resp_rate = data[resp_rate_col.format(trial)]
+            frame_pth = os.path.join(FRAME_DIR, subj_fmt % subject, trial_fmt % trial) 
+            
+            collated_row = [subject, trial, frame_pth, hrate, resp_rate, good]
+            collated_df.loc[i] = collated_row
+
+            i += 1
+
+    collated_df.to_csv(OUTPUT_CSV)
+    print('wrote collated data to %s' % OUTPUT_CSV)
 
 
