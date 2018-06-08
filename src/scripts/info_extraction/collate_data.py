@@ -106,5 +106,6 @@ if __name__ == '__main__':
         resp_rate = 'Trial {} Respiratory Rate (breaths per minue)'
         for trial in [1, 2]:
             good = tf_dict[(subject, trial) in GOOD_PAIRS]
+            hrate = haah 
 
 
