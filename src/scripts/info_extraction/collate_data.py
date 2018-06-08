@@ -96,7 +96,7 @@ if __name__ == '__main__':
     
     dlcd_df = pd.read_csv(dlcd_loc)
     collated_df = pd.DataFrame(columns=COLUMNS)
-    
+    tf_dict = {True:1, False:0} 
     i = 0
     for row in dlcd_df.iterrows():
         idx, data = row
@@ -105,6 +105,6 @@ if __name__ == '__main__':
         hrate_col = 'Trial {} Heart Rate (beats per minute)'
         resp_rate = 'Trial {} Respiratory Rate (breaths per minue)'
         for trial in [1, 2]:
-            subj_tri = (subject, trial)
+            good = tf_dict[(subject, trial) in GOOD_PAIRS]
 
 
