@@ -1,6 +1,6 @@
 # intra-library imports
 from .data_load import ttswcvs3
-from .models import C3D, CNN_LSTM, CNN_3D, CNN_3D_small
+from .models import C3D, CNN_3D, CNN_3D_small
 
 # inter-library imports
 from keras import models
