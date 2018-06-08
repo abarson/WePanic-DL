@@ -321,51 +321,6 @@ def __clip_video(video_path, factor):
         os.remove(video_path)
         os.rename('temp.mov', video_path)
 
-###
-# DEPRECATED
-###
-def handle(video_path, factor):
-    command = GET_DURATION_COMMAND.format(video_path)
-    p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-    out, err = p.communicate()
-   
-    if factor == 2:  #if the video was slowed down, split it into two 30 second parts and throw out the second part
-        split_name = video_path.split('.')[0]
-        end_time_1 = int(float(out) / 2)
-        end_time_2 = int(float(out))
-        if len(str(end_time_1)) < 2:
-            end_time_1 = int("0" + str(end_time_1))
-        if len(str(end_time_2)) < 2:
-            end_time_2 = int("0" + str(end_time_2))
-        end_time_1 = "00:00:" + str(end_time_1)
-        if end_time_2 > 60:
-            end_time_2 = "00:01:" + '0' + str(end_time_2 - 60)
-        else:
-            end_time_2 = "00:00:" + str(end_time_2)
-        command = SPLIT_COMMAND.format(video_path, 0, end_time_1, split_name + '_first_half.mov') 
-        p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-        p.wait()
-        p.kill()
-        os.remove(video_path)
-        os.rename(split_name + '_first_half.mov', video_path)
-
-    else:  #if the video was sped up, cut it in half and reverse it
-        halved_name = video_path.split('.')[0] + '_halved.mov'
-        end_time = "00:00:" + str(int(float(out)/2))
-        command = HALVE_COMMAND.format(video_path, "00:00:00", end_time, halved_name) 
-        p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-        p.wait()
-        p.kill()
-        looped_name = video_path.split('.')[0] + '_looped.mov'
-        command = ['ffmpeg','-i',halved_name,'-filter_complex','[0:v]reverse,fifo[r];[0:v][0:a][r][0:a]concat=n=2:v=1:a=1 [v] [a]', '-map', '[v]', '-map', '[a]', looped_name] 
-        p = subprocess.Popen(command, stdout=subprocess.PIPE)
-        p.wait()
-        p.kill()
-        os.remove(halved_name)
-        os.remove(video_path)
-        os.rename(video_path.split('.')[0] + '_looped.mov', video_path)
-
-
 #####################################################
 ###################################           ####### 
 ################################   DEPRECATED    ####
@@ -441,3 +396,47 @@ def partition_frame_dir(frame_dir, output_dir, num_seconds=2, front_trim=60, end
 
     print()
     return num_partitions
+
+
+def handle(video_path, factor):
+    command = GET_DURATION_COMMAND.format(video_path)
+    p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+    out, err = p.communicate()
+   
+    if factor == 2:  #if the video was slowed down, split it into two 30 second parts and throw out the second part
+        split_name = video_path.split('.')[0]
+        end_time_1 = int(float(out) / 2)
+        end_time_2 = int(float(out))
+        if len(str(end_time_1)) < 2:
+            end_time_1 = int("0" + str(end_time_1))
+        if len(str(end_time_2)) < 2:
+            end_time_2 = int("0" + str(end_time_2))
+        end_time_1 = "00:00:" + str(end_time_1)
+        if end_time_2 > 60:
+            end_time_2 = "00:01:" + '0' + str(end_time_2 - 60)
+        else:
+            end_time_2 = "00:00:" + str(end_time_2)
+        command = SPLIT_COMMAND.format(video_path, 0, end_time_1, split_name + '_first_half.mov') 
+        p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        p.wait()
+        p.kill()
+        os.remove(video_path)
+        os.rename(split_name + '_first_half.mov', video_path)
+
+    else:  #if the video was sped up, cut it in half and reverse it
+        halved_name = video_path.split('.')[0] + '_halved.mov'
+        end_time = "00:00:" + str(int(float(out)/2))
+        command = HALVE_COMMAND.format(video_path, "00:00:00", end_time, halved_name) 
+        p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        p.wait()
+        p.kill()
+        looped_name = video_path.split('.')[0] + '_looped.mov'
+        command = ['ffmpeg','-i',halved_name,'-filter_complex','[0:v]reverse,fifo[r];[0:v][0:a][r][0:a]concat=n=2:v=1:a=1 [v] [a]', '-map', '[v]', '-map', '[a]', looped_name] 
+        p = subprocess.Popen(command, stdout=subprocess.PIPE)
+        p.wait()
+        p.kill()
+        os.remove(halved_name)
+        os.remove(video_path)
+        os.rename(video_path.split('.')[0] + '_looped.mov', video_path)
+
+
