@@ -96,8 +96,9 @@ def video_file_to_frames(filename, resize=None, output_dir=None, suppress=False,
     #print("vid : {}".format(vid_valid))
     
     if resize:
-        if resize is not list or resize is not tuple:
-            raise ValueError('badly typed resize, expected tuple of len = 2')
+        print(resize)
+        resize = tuple(resize)
+        assert len(resize) == 2, 'need xdim and ydim'
 
     if vid_valid:
         if output_dir:

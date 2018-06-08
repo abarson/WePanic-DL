@@ -3,7 +3,6 @@ A module for processing frames as a sequence
 """
 
 from .data_load import buckets
-from ..basic_utils.video_core import optical_flow_of_first_and_rest
 import threading 
 import os
 import random
