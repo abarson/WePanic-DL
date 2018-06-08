@@ -63,6 +63,10 @@ def video_file_exists(filename):
 def video_file_to_frames(filename, output_dir=None, suppress=False, clip=2):
     """
     Convert a video file to individual frames
+    
+    Added by Adam:
+    This method will also ensure that all videos are reduced to 30fps. For a
+    60fps video, for example, every other frame will be skipped.
 
     args:
         --> filename : video file to convert
