@@ -32,13 +32,14 @@ def help_msg():
 def parse_input():
     parser = argparse.ArgumentParser("Extract frames from video files in a specified movie directory")
 
-    parser.add_argument("collated_data_csv",
-                        help="the csv containing all of the subject data",
-                        type=str)
-
     parser.add_argument("movie_directory",
                         help="video file directory",
                         type=str)
+
+    parser.add_argument("--collated_data_csv",
+                        help="the csv containing all of the subject data",
+                        type=str,
+                        default='wepanic_collated_catalogue.csv')
 
     parser.add_argument("--output_directory",
                         help="the directory to save the frame directories",
@@ -48,7 +49,7 @@ def parse_input():
     parser.add_argument("--resize_dims",
                         help="resize dimensions",
                         nargs=2,
-                        type=tuple)
+                        type=int)
     return parser
 
 
