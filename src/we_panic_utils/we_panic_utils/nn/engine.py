@@ -70,7 +70,7 @@ class Engine():
             self.model = self.__choose_model().instantiate()
         print("Training the model.")
 
-        self.train_set, self.test_set, self.val_set = ttswcvs3(self.data, self.metadata, self.outputs)
+        self.train_set, self.test_set, self.val_set = ttswcsv(self.data, self.metadata, self.outputs)
         
         train_generator = self.processor.train_generator(self.train_set)
         val_generator = self.processor.test_generator(self.val_set)
