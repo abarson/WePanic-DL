@@ -44,13 +44,6 @@ def parse_input():
                         type=str,
                         nargs="+")
      
-    parser.add_argument("--ignore_augmented",
-                        help="specify which phases of running model should ignore augmented data",
-                        type=str,
-                        nargs="+",
-                        default=[],
-                        choices=["train", "validation", "test"])
-
     parser.add_argument("--csv",
                         help="csv containing labels subject -- trial -- heart rate -- resp rate",
                         type=str,
@@ -62,12 +55,6 @@ def parse_input():
                         default=False,
                         action="store_true")
 
-    parser.add_argument("--load",
-                        help="states whether an existing model should be loaded for training",
-                        # type=bool,
-                        default=False,
-                        action="store_true")
-    
     parser.add_argument("--test",
                         help="states whether the model should be tested",
                         # type=bool,
@@ -159,11 +146,9 @@ def summarize_arguments(args):
     print(formatter % ("partition_csv", args.partition_csv))
     print(formatter % ("csv", args.csv))
     
-    print(formatter % ("ignore_augmented", str(args.ignore_augmented)))
     formatter = "[%s] %r"
 
     print(formatter % ("train", args.train))
-    print(formatter % ("load", args.load))
     print(formatter % ("test", args.test))
 
     formatter = "[%s] %d"
@@ -388,13 +373,12 @@ if __name__ == "__main__":
                     batch_size=batch_size,
                     epochs=epochs,
                     train=train,
-                    load=load,
                     test=test,
                     inputs=inputs,
                     outputs=outputs,
                     frameproc=fp,
-                    ignore_augmented=args.ignore_augmented,
                     input_shape=input_shape,
+                    output_shape=1,
                     steps_per_epoch=args.steps_per_epoch)
 
     print("starting ... ")
