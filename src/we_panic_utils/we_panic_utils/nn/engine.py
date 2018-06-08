@@ -63,7 +63,7 @@ class Engine():
         self.steps_per_epoch = steps_per_epoch
 
         
-    def run2(self):
+    def run(self):
 
         """
         a general method that computes the 'procedure' to follow based on the

@@ -399,7 +399,7 @@ if __name__ == "__main__":
 
     print("starting ... ")
     start = time.time()
-    engine.run2()
+    engine.run()
     end = time.time()
     total = (end - start) / 60
 
