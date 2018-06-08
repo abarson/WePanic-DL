@@ -76,25 +76,10 @@ class Engine():
             print("Training the model.")
             train_set, test_set, val_set = ttswcvs3(self.data, self.metadata, self.outputs)
 
-            if not (self.model_type in self.optical_flow_models and self.opt_flow):
-                train_generator = self.processor.train_generator_v3(train_set)
-                val_generator = self.processor.testing_generator_v3(val_set)
-                test_generator = self.processor.testing_generator_v3(test_set)
-                gen_type = 'regular'
-
-            else:
-                if self.alt_opt_flow:
-                    train_generator = self.processor.train_generator_alt_optical_flow(train_set)
-                    val_generator = self.processor.test_generator_alt_optical_flow(val_set)
-                    test_generator = self.processor.test_generator_alt_optical_flow(test_set)
-                    gen_type = 'alt_opt_flow'
-
-                else:
-                    train_generator = self.processor.train_generator_optical_flow(train_set)
-                    val_generator = self.processor.test_generator_optical_flow(val_set)
-                    test_generator = self.processor.test_generator_optical_flow(test_set)
-                    gen_type = 'opt_flow'
-
+            train_generator = self.processor.train_generator(train_set)
+            val_generator = self.processor.test_generator(val_set)
+            test_generator = self.processor.test_generator(test_set)
+            gen_type = 'regular'
 
             csv_logger = CSVLogger(os.path.join(self.outputs, "training.log"))
             checkpointer = ModelCheckpoint(filepath=os.path.join(self.outputs, 'models', self.model_type + '.h5'), 
@@ -152,17 +137,8 @@ class Engine():
                 
                 test_set = pd.read_csv(test_dir)
 
-                if not (self.model_type in self.optical_flow_models and self.opt_flow):
+                test_generator = self.processor.test_generator(test_set)
 
-                    test_generator = self.processor.testing_generator_v3(test_set)
-
-                else:
-
-                    if self.alt_opt_flow:
-                        test_generator = self.processor.test_generator_alt_optical_flow(test_set)
-                    else:
-                        test_generator = self.processor.test_generator_optical_flow(test_set)
-                
                 pred = model.predict_generator(test_generator, len(test_set))
 
                 if self.processor.scaler:
@@ -183,12 +159,7 @@ class Engine():
                 print("Testing model after training.")
                 pred = model.predict_generator(test_generator, len(test_set))
                 
-                if self.processor.scaler:
-                    pred = self.processor.scaler.inverse_transform(pred)
-                    hr = list(test_set['Heart Rate'])
-                    loss = mean_squared_error(np.reshape([i for t in zip(hr,hr) for i in t], (-1, 1)), pred)
-                else:
-                    loss = model.evaluate_generator(test_generator, len(test_set))[0]
+                loss = model.evaluate_generator(test_generator, len(test_set))[0]
                 
                 with open(os.path.join(self.outputs, "test.log"), 'w') as log:
                     log.write(str(loss)) 
@@ -219,6 +190,8 @@ class Engine():
         
         raise ValueError("Model type does not exist: {}".format(self.model_type))
 
+
+##This needs a touch up
 class TestResultsCallback(Callback):
     """
     a callback for testing the model at certain timesteps
@@ -244,7 +217,7 @@ class TestResultsCallback(Callback):
                 elif self.gen_type == 'opt_flow':
                     gen = self.test_gen.test_generator_optical_flow(self.test_set)
                 elif self.gen_type == 'regular':
-                    gen = self.test_gen.testing_generator_v3(self.test_set)
+                    gen = self.test_gen.test_generator(self.test_set)
                 else:
                     raise ValueError("{} is not a valid generator type".format(self.gen_type))
                 
