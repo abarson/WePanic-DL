@@ -208,76 +208,7 @@ def video_dir_to_frame_dir(video_dir, output_dir, suppress=False):
     else:
         raise FileNotFoundError("%s not found" % video_dir)
 
-def partition_frame_dir(frame_dir, output_dir, num_seconds=2, front_trim=60, end_trim=60, 
-                        capacity_tolerance=1.0):
-    """
-    Given a directory of frames, this method partitions them into several subdirectories,
-    such that each directory contains num_seconds*FPS frames.
 
-    args:
-        frame_dir : directory containing frames
-        output_dir : directory to place partitions
-        num_seconds (optional) : the number of seconds that make up each partition
-        front_trim (optional) : the number of frames to ignore from beginning of directory
-        end_trim (optional) : the number of frames to ignore from end of directory
-        capacity_tolerance (optional) : how full an acceptable partition must be 
-    
-    return:
-        the number of partitions created
-    """
-    
-    if not os.path.exists(frame_dir):
-        raise FileNotFoundError("provided directory |%s| not found" % frame_dir)
-    if not os.path.isdir(frame_dir):
-        raise IOError("provided path |%s| is not a directory" % frame_dir)
-    if front_trim < 0 or end_trim < 0 or num_seconds < 0:
-        raise ValueError("num_seconds, front_trim and end_trim must be positive")
-    
-    listed_directory = os.listdir(frame_dir)
-    num_frames = len(listed_directory)
-
-    #rough estimation to determine frame rate
-    is_60_fps = num_frames > 1600
-    
-    print('[partition_frame_dir]: PARTITIONING {} -> {}'.format(frame_dir, output_dir))
-    print("[partition_frame_dir]: Found {} frames".format(num_frames), ("(60fps)" if is_60_fps else "(30fps)"))
-    iteration = 0
-    num_partitions = 0
-    current_partition = []
-    
-    #The next five lines are only used for the progress bar output. Ignore it if you want.
-    eligible_frames = (num_frames - front_trim - end_trim + 1) // (2 if is_60_fps else 1)
-    total_partitions = eligible_frames // (num_seconds * FPS)
-    left_over = eligible_frames - total_partitions * num_seconds * FPS
-    if left_over / (num_seconds * FPS) >= capacity_tolerance:
-        total_partitions += 1
-
-    while iteration < num_frames - end_trim:
-        if iteration >= front_trim:
-            if not is_60_fps:
-                current_partition.append(listed_directory[iteration])
-            elif iteration % 2 == 0:
-                current_partition.append(listed_directory[iteration])
-            
-            if len(current_partition) >= num_seconds*FPS:
-                next_output_dir = os.path.join(output_dir, str(num_partitions))
-                move_frames(frame_dir, current_partition, next_output_dir)           
-                num_partitions+=1
-                current_partition = []
-                progressBar(num_partitions, total_partitions)
-        iteration+=1
-
-    #Handle any leftover frame lists that did not reach full capacity due to trimming.
-    #If the frame list is acceptably full, then include it with the other partitioned directories
-    if current_partition:
-        if len(current_partition) / (num_seconds*FPS) >= capacity_tolerance:
-            next_output_dir = os.path.join(output_dir, str(num_partitions))
-            move_frames(frame_dir, current_partition, next_output_dir)
-            num_partitions+=1
-            progressBar(num_partitions, total_partitions)
-
-    print()
-    return num_partitions
     
 def move_frames(source_dir, partitioned_frames, output_dir):
     """
@@ -401,3 +332,80 @@ def handle(video_path, factor):
         os.remove(halved_name)
         os.remove(video_path)
         os.rename(video_path.split('.')[0] + '_looped.mov', video_path)
+
+
+#####################################################
+###################################           ####### 
+################################   DEPRECATED    ####
+###################################           #######
+#####################################################
+def partition_frame_dir(frame_dir, output_dir, num_seconds=2, front_trim=60, end_trim=60, 
+                        capacity_tolerance=1.0):
+    """
+    Given a directory of frames, this method partitions them into several subdirectories,
+    such that each directory contains num_seconds*FPS frames.
+
+    args:
+        frame_dir : directory containing frames
+        output_dir : directory to place partitions
+        num_seconds (optional) : the number of seconds that make up each partition
+        front_trim (optional) : the number of frames to ignore from beginning of directory
+        end_trim (optional) : the number of frames to ignore from end of directory
+        capacity_tolerance (optional) : how full an acceptable partition must be 
+    
+    return:
+        the number of partitions created
+    """
+    
+    if not os.path.exists(frame_dir):
+        raise FileNotFoundError("provided directory |%s| not found" % frame_dir)
+    if not os.path.isdir(frame_dir):
+        raise IOError("provided path |%s| is not a directory" % frame_dir)
+    if front_trim < 0 or end_trim < 0 or num_seconds < 0:
+        raise ValueError("num_seconds, front_trim and end_trim must be positive")
+    
+    listed_directory = os.listdir(frame_dir)
+    num_frames = len(listed_directory)
+
+    #rough estimation to determine frame rate
+    is_60_fps = num_frames > 1600
+    
+    print('[partition_frame_dir]: PARTITIONING {} -> {}'.format(frame_dir, output_dir))
+    print("[partition_frame_dir]: Found {} frames".format(num_frames), ("(60fps)" if is_60_fps else "(30fps)"))
+    iteration = 0
+    num_partitions = 0
+    current_partition = []
+    
+    #The next five lines are only used for the progress bar output. Ignore it if you want.
+    eligible_frames = (num_frames - front_trim - end_trim + 1) // (2 if is_60_fps else 1)
+    total_partitions = eligible_frames // (num_seconds * FPS)
+    left_over = eligible_frames - total_partitions * num_seconds * FPS
+    if left_over / (num_seconds * FPS) >= capacity_tolerance:
+        total_partitions += 1
+
+    while iteration < num_frames - end_trim:
+        if iteration >= front_trim:
+            if not is_60_fps:
+                current_partition.append(listed_directory[iteration])
+            elif iteration % 2 == 0:
+                current_partition.append(listed_directory[iteration])
+            
+            if len(current_partition) >= num_seconds*FPS:
+                next_output_dir = os.path.join(output_dir, str(num_partitions))
+                move_frames(frame_dir, current_partition, next_output_dir)           
+                num_partitions+=1
+                current_partition = []
+                progressBar(num_partitions, total_partitions)
+        iteration+=1
+
+    #Handle any leftover frame lists that did not reach full capacity due to trimming.
+    #If the frame list is acceptably full, then include it with the other partitioned directories
+    if current_partition:
+        if len(current_partition) / (num_seconds*FPS) >= capacity_tolerance:
+            next_output_dir = os.path.join(output_dir, str(num_partitions))
+            move_frames(frame_dir, current_partition, next_output_dir)
+            num_partitions+=1
+            progressBar(num_partitions, total_partitions)
+
+    print()
+    return num_partitions
