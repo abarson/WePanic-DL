@@ -445,7 +445,8 @@ class FrameProcessor:
  
             #print(np.array(X).shape, np.array(y).shape, " (test generator)")
             yield np.array(X), np.array(y)
-
+    
+    """
     @threadsafe_generator    
     def train_generator_alt_optical_flow(self, train_df):
         bucket_list = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9]
@@ -511,6 +512,7 @@ class FrameProcessor:
             #print(np.array(X).shape, np.array(y).shape, " (train generator)")
             yield np.array(X), np.array(y)
 
+    """
 
     @threadsafe_generator    
     def test_generator_optical_flow(self, test_df):
@@ -555,6 +557,7 @@ class FrameProcessor:
             #print(np.array(X).shape, np.array(y).shape, " (test generator)")
             yield np.array(X), np.array(y)
 
+    """
     @threadsafe_generator    
     def train_generator_optical_flow(self, train_df):
         bucket_list = [.1, .2, .3, .4, .5, .6]
@@ -630,6 +633,7 @@ class FrameProcessor:
             
             #print(np.array(X).shape, np.array(y).shape, " (train generator)")
             yield np.array(X), np.array(y)
+    """
 
     def train_generator_v3(self, train_df):
         #bucket_list = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9]

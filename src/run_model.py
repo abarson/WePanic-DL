@@ -386,6 +386,7 @@ if __name__ == "__main__":
         sd = pd.read_csv(partition_csv)
         values = np.array(list(sd['Heart Rate'])).reshape(-1,1)
         scaler.fit(values)
+
     fp = FrameProcessor(scaler,
                         rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
@@ -405,8 +406,9 @@ if __name__ == "__main__":
         input_shape = (60, y, x, 1)
     else:
         input_shape = (60, x, y, 3)
-    print(input_shape)
-    cyclic_lr = [float(i) for i in args.cyclic_learning_rate]
+
+    #print(input_shape)
+    #cyclic_lr = [float(i) for i in args.cyclic_learning_rate]
 
     engine = Engine(data=regular,
                     model_type=args.model_type,

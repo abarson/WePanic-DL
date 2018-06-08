@@ -1,6 +1,5 @@
 from .data_load import train_test_split_with_csv_support, ttswcsv2, ttswcvs3, data_set_to_csv, data_set_from_csv, create_train_test_split_dataframes
 from .models import C3D, CNN_LSTM, CNN_3D, CNN_3D_small, CNN_Stacked_GRU, ResidualLSTM_v01, ResidualLSTM_v02, OpticalFlowCNN
-from .models.cyclic import CyclicLR
 from .processing import FrameProcessor
 from keras import models
 from keras.callbacks import CSVLogger, ModelCheckpoint, Callback
@@ -43,10 +42,7 @@ class Engine():
                  steps_per_epoch=100,
                  ignore_augmented=[""], 
                  input_shape=(60, 100, 100, 3),
-                 cyclic_lr=[], 
-                 output_shape=1,
-                 alt_opt_flow=False,
-                 opt_flow=False):
+                 output_shape=1):
 
         self.data = data
         self.model_type = model_type
@@ -63,11 +59,6 @@ class Engine():
         self.output_shape = output_shape
         self.processor = frameproc
         self.steps_per_epoch = steps_per_epoch
-        self.cyclic_lr = cyclic_lr
-        self.alt_opt_flow = alt_opt_flow
-        self.opt_flow = opt_flow
-        
-        self.optical_flow_models = ["OpticalFlowCNN", "3D-CNN"]
 
         
     def run2(self):
@@ -83,17 +74,20 @@ class Engine():
             print("Training the model.")
             #train_set, test_set, val_set = create_train_test_split_dataframes(self.data, self.metadata, self.outputs)
             train_set, test_set, val_set = ttswcvs3(self.data, self.metadata, self.outputs)
+
             if not (self.model_type in self.optical_flow_models and self.opt_flow):
                 train_generator = self.processor.train_generator_v3(train_set)
                 val_generator = self.processor.testing_generator_v3(val_set)
                 test_generator = self.processor.testing_generator_v3(test_set)
                 gen_type = 'regular'
+
             else:
                 if self.alt_opt_flow:
                     train_generator = self.processor.train_generator_alt_optical_flow(train_set)
                     val_generator = self.processor.test_generator_alt_optical_flow(val_set)
                     test_generator = self.processor.test_generator_alt_optical_flow(test_set)
                     gen_type = 'alt_opt_flow'
+
                 else:
                     train_generator = self.processor.train_generator_optical_flow(train_set)
                     val_generator = self.processor.test_generator_optical_flow(val_set)
@@ -113,19 +107,19 @@ class Engine():
             if True:
                 train_results = os.path.join(self.outputs, "unnormalized_training.log")
                 train_callback = TestResultsCallback(self.processor, train_set, 
-                        train_results, self.batch_size, gen_type, epochs=1)
-            test_callback = TestResultsCallback(self.processor, test_set, test_results_file, self.batch_size, gen_type)
+                                                     train_results, self.batch_size,
+                                                     gen_type, epochs=1)
+
+            test_callback = TestResultsCallback(self.processor,
+                                                test_set,
+                                                test_results_file,
+                                                self.batch_size,
+                                                gen_type)
             
             callbacks = [csv_logger, checkpointer, test_callback]    
+
             if train_callback:
                 callbacks.append(train_callback)
-
-            if self.cyclic_lr != []:
-                base, mx = self.cyclic_lr
-
-                cyclic_lr = CyclicLR(base_lr=base, max_lr=mx, step_size=self.steps_per_epoch * 2)
-                
-                callbacks.append(cyclic_lr)
 
             model.fit_generator(generator=train_generator,
                                 steps_per_epoch=self.steps_per_epoch,
@@ -138,6 +132,7 @@ class Engine():
         if self.test:
 
             # if the test set doesn't exist yet, it means we are testing without training
+
             if test_set is None:
                 print("Testing model without training.")
                 model_dir = os.path.join(self.inputs, "models")
@@ -146,11 +141,9 @@ class Engine():
                     if self.model_type in path and path.endswith(".h5"):
                         model_path = os.path.join(model_dir, path)
                         break
+
                 if model_path == "":
                     raise FileNotFoundError("Could not locate model file in {}-- have you trained the model yet?".format(model_dir))
-                
-                #print("Loading model from file: {}".format(model_path))
-                #model.load_weights(model_path)
                 
                 model = models.load_model(model_path)
                 
@@ -237,7 +230,11 @@ class Engine():
         raise ValueError("Model type does not exist: {}".format(self.model_type))
 
 class TestResultsCallback(Callback):
-    def __init__(self, test_gen, test_set, log_file, batch_size, gen_type, epochs = 5):
+    """
+    a callback for testing the model at certain timesteps
+    and viewing its actual output
+    """
+    def __init__(self, test_gen, test_set, log_file, batch_size, gen_type, epochs=5):
         self.test_gen = test_gen
         self.test_set = test_set
         self.log_file = log_file
@@ -246,6 +243,7 @@ class TestResultsCallback(Callback):
         self.epochs=epochs
 
     def on_epoch_end(self, epoch, logs):
+
         #get the actual mse
         if (epoch+1) % self.epochs == 0:
             print('Logging tests at epoch', epoch)
