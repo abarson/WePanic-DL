@@ -37,7 +37,7 @@ def parse_input():
     parser.add_argument("model_type",
                         help="the type of model to run",
                         type=str,
-                        choices=["C3D", "CNN+LSTM", "3D-CNN", "CNN_3D_small", "CNN_Stacked_GRU", "ResidualLSTM_v01", "ResidualLSTM_v02", "OpticalFlowCNN"])
+                        choices=["C3D", "3D-CNN", "CNN_3D_small"])
     
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",
@@ -50,11 +50,6 @@ def parse_input():
                         nargs="+",
                         default=[],
                         choices=["train", "validation", "test"])
-
-    parser.add_argument("--partition_csv",
-                        help="csv containing the mapping from partition paths to heart rate/resp rates",
-                        type=str,
-                        default="reg_part_out.csv")
 
     parser.add_argument("--csv",
                         help="csv containing labels subject -- trial -- heart rate -- resp rate",
@@ -144,31 +139,12 @@ def parse_input():
                         default=100,
                         type=int)
     
-    parser.add_argument("--cyclic_learning_rate",
-                        help="enable cyclic learning rate",
-                        nargs=2,
-                        default=[])
-
-    parser.add_argument("--alt_opt_flow",
-                        help="use alternative optical flow method",
-                        default=False,
-                        action="store_true")
-    
-    parser.add_argument("--normalize",
-                        help="squash labels down to -1 to 1 range, good for LSTM",
-                        default=False,
-                        action="store_true")
-    
     parser.add_argument("--dimensions",
                         help="frame dims",
                         type=int,
                         nargs=2,
                         default=(32,32))
 
-    parser.add_argument("--opt_flow",
-                        help="compute optical flow",
-                        default=False,
-                        action="store_true")
     return parser
 
 
@@ -195,9 +171,7 @@ def summarize_arguments(args):
     print(formatter % ("batch_size", args.batch_size))
     print(formatter % ("epochs", args.epochs)) 
     print(formatter % ("greyscale_on", args.greyscale_on)) 
-    print(formatter % ("alt_opt_flow", args.alt_opt_flow)) 
-    print(formatter % ("normalize", args.normalize)) 
-    print(formatter % ("optical_flow", args.opt_flow)) 
+
 class ArgumentError(Exception):
     """
     custom exception to thrown due to bad parameter input
@@ -381,6 +355,7 @@ if __name__ == "__main__":
     
     summarize_arguments(args)
     scaler = None
+
     if args.normalize:
         scaler = MinMaxScaler(feature_range=(-1,1))
         sd = pd.read_csv(partition_csv)
@@ -400,15 +375,12 @@ if __name__ == "__main__":
 
     input_shape = None
     x, y = args.dimensions
-    if args.opt_flow:
-        input_shape = (60, x, y, 2)
-    elif greyscale_on:
+
+    if greyscale_on:
         input_shape = (60, y, x, 1)
+
     else:
         input_shape = (60, x, y, 3)
-
-    #print(input_shape)
-    #cyclic_lr = [float(i) for i in args.cyclic_learning_rate]
 
     engine = Engine(data=regular,
                     model_type=args.model_type,
@@ -423,16 +395,14 @@ if __name__ == "__main__":
                     frameproc=fp,
                     ignore_augmented=args.ignore_augmented,
                     input_shape=input_shape,
-                    steps_per_epoch=args.steps_per_epoch,
-                    cyclic_lr=cyclic_lr,
-                    alt_opt_flow=args.alt_opt_flow,
-                    opt_flow=args.opt_flow)
+                    steps_per_epoch=args.steps_per_epoch)
 
     print("starting ... ")
     start = time.time()
     engine.run2()
     end = time.time()
     total = (end - start) / 60
+
     if train:
         with open(os.path.join(outputs, "time.txt"), 'w') as t:
             t.write(str(total))
