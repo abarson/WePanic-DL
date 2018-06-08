@@ -1,6 +1,8 @@
-from .data_load import train_test_split_with_csv_support, ttswcsv2, ttswcvs3, data_set_to_csv, data_set_from_csv, create_train_test_split_dataframes
-from .models import C3D, CNN_LSTM, CNN_3D, CNN_3D_small, CNN_Stacked_GRU, ResidualLSTM_v01, ResidualLSTM_v02, OpticalFlowCNN
-from .processing import FrameProcessor
+# intra-library imports
+from .data_load import ttswcvs3
+from .models import C3D, CNN_LSTM, CNN_3D, CNN_3D_small
+
+# inter-library imports
 from keras import models
 from keras.callbacks import CSVLogger, ModelCheckpoint, Callback
 from keras import backend as K
@@ -72,7 +74,6 @@ class Engine():
 
         if self.train and not self.load:
             print("Training the model.")
-            #train_set, test_set, val_set = create_train_test_split_dataframes(self.data, self.metadata, self.outputs)
             train_set, test_set, val_set = ttswcvs3(self.data, self.metadata, self.outputs)
 
             if not (self.model_type in self.optical_flow_models and self.opt_flow):
@@ -203,6 +204,7 @@ class Engine():
         norm=False
         if self.processor.scaler:
             norm = True
+
         if self.model_type == "C3D": 
             return C3D(self.input_shape, self.output_shape)
         
@@ -215,18 +217,6 @@ class Engine():
         if self.model_type == "CNN_3D_small":
             return CNN_3D_small(self.input_shape, self.output_shape)
         
-        if self.model_type == "CNN_Stacked_GRU":
-            return CNN_Stacked_GRU(self.input_shape, self.output_shape)
-        
-        if self.model_type == "ResidualLSTM_v01":
-            return ResidualLSTM_v01(self.input_shape, self.output_shape)
-
-        if self.model_type == "ResidualLSTM_v02":
-            return ResidualLSTM_v02(self.input_shape, self.output_shape)
-        
-        if self.model_type == "OpticalFlowCNN":
-            return OpticalFlowCNN(self.input_shape, self.output_shape)
-
         raise ValueError("Model type does not exist: {}".format(self.model_type))
 
 class TestResultsCallback(Callback):
