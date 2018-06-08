@@ -256,14 +256,39 @@ def resize_frame_dir(frame_dir, output_dir, width=224, height=224):
 
 
 def change_speed(video_path, new_name, factor):
+    """
+    Change the speed of a video by some provided factor. The resulting video created
+    will be saved to a path specified by the user.
+
+    This method uses the FFMPEG video library to assist in changing the speed of a video.
+    For more information, go to https://www.ffmpeg.org/. To assist in ease of use,
+    the FFMPEG commands used by this method are declared as constants in the same module.
+
+    params:
+        video_path : the complete path of the video to be augmented
+        new_name : the desired name of the resulting video
+        factor : the factor by which to change the speed of the video
+    """
+
     command = BASH_COMMAND.format(video_path, factor, new_name)
     print("[{}]: CHANGING SPEED of video {} by a factor of {}".format(sys.argv[0], video_path, str(factor)))
     p = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE)
     p.wait()
     p.kill()
-    clip_video(new_name, factor)
+    __clip_video(new_name, factor)
 
-def clip_video(video_path, factor):
+def __clip_video(video_path, factor):
+    """
+    Utility method to clip a video, called by the public change_speed method.
+    This method will ensure that any videos that have been augmented will still
+    be under 30 seconds. For videos that have been slowed down, for example,
+    30 seconds will be cropped out of the middle of the video.
+
+    params:
+        video_path : the path of the video to be clipped
+        factor : the factor by which the speed of the video was changed
+    """
+    
     command = GET_DURATION_COMMAND.format(video_path)
     p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
     out, err = p.communicate()
@@ -291,7 +316,10 @@ def clip_video(video_path, factor):
         p.kill()
         os.remove(video_path)
         os.rename('temp.mov', video_path)
-        
+
+###
+# DEPRECATED
+###
 def handle(video_path, factor):
     command = GET_DURATION_COMMAND.format(video_path)
     p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
