@@ -1,3 +1,4 @@
+.*.sw*
 run_it
 run_history/
 data/
