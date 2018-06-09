@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 import we_panic_utils.basic_utils as basic_utils
-from we_panic_utils.nn.data_load.train_test_split_csv import train_test_split_with_csv_support
 from we_panic_utils.nn import Engine
 from we_panic_utils.nn.processing import FrameProcessor
 
@@ -143,7 +142,6 @@ def summarize_arguments(args):
 
     print(formatter % ("model_type", args.model_type))
     print(formatter % ("data", args.data))
-    print(formatter % ("partition_csv", args.partition_csv))
     print(formatter % ("csv", args.csv))
     
     formatter = "[%s] %r"
@@ -241,7 +239,6 @@ def validate_arguments(args):
         regular : str - path to the "regular" data directory
         augmented : str - path to the "augmented" data directory
         csv : str - path to filtered_csv
-        partitions_csv : str - the path to to the label data
         batch_size : int - batch size
         epochs : int - epochs to train for, if necessary
         train : bool - whether or not to train
@@ -260,24 +257,7 @@ def validate_arguments(args):
         print("[validate_arguments] : taking %s to be `regular`, %s to be `augmented`" % (args.data[0], args.data[1]))
         augmented = args.data[1]
     
-    if args.ignore_augmented is not None and len(args.ignore_augmented) > 1:
-        assert len(args.ignore_augmented) < 4, "Expected maximum three phases to ignore, got %d" % len(args.ignore_augmented)
-        
-        assert args.ignore_augmented[0] != args.ignore_augmented[1], "Why would you pass in two \
-                of the same argument? Are you dumb? %s and %s" % (args.ignore_augmented[0], args.ignore_augmented[1])
-        
-        if len(args.ignore_augmented) > 2:
-            
-            assert args.ignore_augmented[0] != args.ignore_augmented[2], "Why would you pass in two \
-                    of the same argument? Are you dumb? %s and %s" % (args.ignore_augmented[0], args.ignore_augmented[2])
-            
-            assert args.ignore_augmented[1] != args.ignore_augmented[2], "Why would you pass in two \
-                    of the same argument? Are you dumb? %s and %s" % (args.ignore_augmented[1],
-                                                                      args.ignore_augmented[2])
-    
     regular = args.data[0]
-    if args.opt_flow:
-        assert args.model_type in ["OpticalFlowCNN", "3D-CNN"]
 
     # if --test=False and --train=False, exit because there's nothing to do
     if (not args.train) and (not args.test):
@@ -321,31 +301,21 @@ def validate_arguments(args):
     # if --test=True and --train=True, then we need only an output directory
     if args.train and args.test:
         generate_output_directory(args.output_dir)
-        if not args.load:
-            print("[validate_arguments] : overwriting input directory from %s to %s" % (args.input_dir, args.output_dir))
-            args.input_dir = args.output_dir
         
     input_dir, output_dir = args.input_dir, args.output_dir
     
     assert os.path.exists(args.csv), "%s not found" % args.csv
-    assert os.path.exists(args.partition_csv), "%s not found" % args.partition_csv
  
-    return regular, augmented, args.csv, args.partition_csv, batch_size, epochs, args.train, args.load, args.test, input_dir, output_dir, args.greyscale_on 
+    return regular, augmented, args.csv, batch_size, epochs, args.train, args.test, input_dir, output_dir, args.greyscale_on 
 
 
 if __name__ == "__main__":
     
     args = parse_input().parse_args()
-    regular, augmented, filtered_csv, partition_csv, batch_size, epochs, train, load, test, inputs, outputs, greyscale_on = validate_arguments(args)
+    regular, augmented, csv, batch_size, epochs, train, test, inputs, outputs, greyscale_on = validate_arguments(args)
     
     summarize_arguments(args)
     scaler = None
-
-    if args.normalize:
-        scaler = MinMaxScaler(feature_range=(-1,1))
-        sd = pd.read_csv(partition_csv)
-        values = np.array(list(sd['Heart Rate'])).reshape(-1,1)
-        scaler.fit(values)
 
     fp = FrameProcessor(scaler,
                         rotation_range=args.rotation_range,
@@ -369,7 +339,7 @@ if __name__ == "__main__":
 
     engine = Engine(data=regular,
                     model_type=args.model_type,
-                    filtered_csv=partition_csv,
+                    csv=csv,
                     batch_size=batch_size,
                     epochs=epochs,
                     train=train,

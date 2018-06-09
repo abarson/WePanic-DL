@@ -306,15 +306,12 @@ class FrameProcessor:
 
     @threadsafe_generator    
     def test_generator(self, test_df):
-        paths, hr = list(test_df["Path"]), list(test_df["Heart Rate"])
+        paths, hr = list(test_df["FRAME_PTH"]), list(test_df["HEART_RATE_BPM"])
         i = 0
         while True:
             X, y = [], []
             current_path = paths[i]
             current_hr = hr[i]
-            
-            if self.scaler:
-                current_hr = self.scaler.transform(current_hr)[0][0]
             
             frame_dir = sorted(os.listdir(current_path))
             #hard-code to 2 for now, because there are a lot of samples
@@ -348,12 +345,9 @@ class FrameProcessor:
                 #hr = list(rand_subj_df["Heart Rate"])[0]
                 
                 random_index = random.randint(0, len(train_df)-1)
-                path = list(train_df['Path'])[random_index]
-                hr = list(train_df['Heart Rate'])[random_index]
+                path = list(train_df['FRAME_PTH'])[random_index]
+                hr = list(train_df['HEART_RATE_BPM'])[random_index]
 
-                if self.scaler:
-                    hr = self.scaler.transform(hr)[0][0]
-               
                 frame_dir = sorted(os.listdir(path))
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]

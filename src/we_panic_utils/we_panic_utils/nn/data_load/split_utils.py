@@ -7,7 +7,25 @@ import pandas as pd
 Implementation details
 """
 
+def get_random_test_set(df_in, size):
+    df_out = pd.DataFrame()
+
+    while len(df_out) < size:
+        index = random.randint(0, len(df_in)-1)
+        df_index = df_in[index:index+1]
+        df_out = df_out.append(df_index)
+        subject = list(df_index["SUBJECT"])[0]
+        trial = list(df_index["TRIAL"])[0]
+        df_in = df_in[(df_in.SUBJECT != subject) | (df_in.TRIAL != trial)] 
+    
+    return df_in, df_out
+
 def get_testing_set(df_in, size):
+    """
+    This doesn't work so well right now
+    """
+
+
     """
     Extracts a test set given a dataframe of all of the input data.
     Each subject contained by the testing set will belong to a unique bucket.
@@ -20,7 +38,7 @@ def get_testing_set(df_in, size):
     """
     df_out = pd.DataFrame()
 
-    l = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9]
+    l = [.1, .2, .3, .4, .5, .6]
 
     #just to make sure that the testing sets don't exhaust any of the buckets
     #or choose from the same bucket twice, added some additional checks
@@ -29,7 +47,7 @@ def get_testing_set(df_in, size):
         chosen_bucket = l[random.randint(0, len(l)-1)]
         
         bucket = df_in[buckets(df_in, chosen_bucket)]
-        if (len(bucket) > 1 and chosen_bucket not in selected):
+        if (len(bucket) > 1):
             selected.append(chosen_bucket)
     
     for s in selected:
@@ -37,33 +55,33 @@ def get_testing_set(df_in, size):
         index = random.randint(0, len(df)-1)
         df_index = df[index:index+1]
         df_out = df_out.append(df_index)
-        subject = list(df_index["Subject"])[0]
-        trial = list(df_index["Trial"])[0]
-        df_in = df_in[(df_in.Subject != subject) | (df_in.Trial != trial)] 
+        subject = list(df_index["SUBJECT"])[0]
+        trial = list(df_index["TRIAL"])[0]
+        df_in = df_in[(df_in.SUBJECT != subject) | (df_in.TRIAL != trial)] 
     
     return df_in, df_out
 
 def buckets(df, val):
     if val < 0.1:
-        return (df['Heart Rate'] < 45)
+        return (df['HEART_RATE_BPM'] < 45)
     if val < 0.2:
-        return (df['Heart Rate'] >= 45) & (df['Heart Rate'] < 60)
+        return (df['HEART_RATE_BPM'] >= 45) & (df['HEART_RATE_BPM'] < 60)
     if val < 0.3:
-        return (df['Heart Rate'] >= 60) & (df['Heart Rate'] < 75)
+        return (df['HEART_RATE_BPM'] >= 60) & (df['HEART_RATE_BPM'] < 75)
     if val < 0.4:
-        return (df['Heart Rate'] >= 75) & (df['Heart Rate'] < 90)
+        return (df['HEART_RATE_BPM'] >= 75) & (df['HEART_RATE_BPM'] < 90)
     if val < 0.5:
-        return (df['Heart Rate'] >= 90) & (df['Heart Rate'] < 105)
+        return (df['HEART_RATE_BPM'] >= 90) & (df['HEART_RATE_BPM'] < 105)
     if val < 0.6:
-        return (df['Heart Rate'] >= 105) & (df['Heart Rate'] < 120)
+        return (df['HEART_RATE_BPM'] >= 105) & (df['HEART_RATE_BPM'] < 120)
     if val < 0.7:
-        return (df['Heart Rate'] >= 120) & (df['Heart Rate'] < 135)
+        return (df['HEART_RATE_BPM'] >= 120) & (df['HEART_RATE_BPM'] < 135)
     if val < 0.8:
-        return (df['Heart Rate'] >= 135) & (df['Heart Rate'] < 150)
+        return (df['HEART_RATE_BPM'] >= 135) & (df['HEART_RATE_BPM'] < 150)
     if val < 0.9:
-        return (df['Heart Rate'] >= 150) & (df['Heart Rate'] < 175)
+        return (df['HEART_RATE_BPM'] >= 150) & (df['HEART_RATE_BPM'] < 175)
     if val <= 1.0:
-        return (df['Heart Rate'] >= 175)
+        return (df['HEART_RATE_BPM'] >= 175)
 
 def filter_path_with_set(filter_set, all_paths, augment_path=None, verbose=True):
     

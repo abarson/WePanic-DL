@@ -1,5 +1,5 @@
 # intra-library imports
-from .data_load import ttswcvs3
+from .data_load import ttswcsv
 from .models import C3D, CNN_3D, CNN_3D_small
 
 # inter-library imports
@@ -32,7 +32,7 @@ class Engine():
     def __init__(self, 
                  data,
                  model_type, 
-                 filtered_csv, 
+                 csv, 
                  batch_size, 
                  epochs, 
                  train, 
@@ -47,7 +47,7 @@ class Engine():
         #passed in params
         self.data = data
         self.model_type = model_type
-        self.metadata = filtered_csv
+        self.metadata = csv
         self.batch_size = batch_size
         self.epochs = epochs
         self.train = train
@@ -68,7 +68,7 @@ class Engine():
     def __train_model(self):
         if not self.model: #instantiate the model to be trained
             self.model = self.__choose_model().instantiate()
-        print("Training the model.")
+        print("Training the model")
 
         self.train_set, self.test_set, self.val_set = ttswcsv(self.data, self.metadata, self.outputs)
         
@@ -93,13 +93,14 @@ class Engine():
         
         callbacks = [csv_logger, checkpointer, test_callback, train_callback]    
 
-        self.model.fit_generator(generator=train_generator,
-                            steps_per_epoch=self.steps_per_epoch,
-                            epochs=self.epochs,
-                            verbose=1,
-                            callbacks=callbacks,
-                            validation_data=val_generator,
-                            validation_steps=len(self.val_set), workers=4)
+        print('This is where the model would be fit.')
+       # self.model.fit_generator(generator=train_generator,
+       #                     steps_per_epoch=self.steps_per_epoch,
+       #                     epochs=self.epochs,
+       #                     verbose=1,
+       #                     callbacks=callbacks,
+       #                     validation_data=val_generator,
+       #                     validation_steps=len(self.val_set), workers=4)
     def __test_model(self):
         if not self.model: #load the model if it wasn't created during the training phase
             model_dir = os.path.join(self.inputs, "models")
@@ -122,14 +123,16 @@ class Engine():
             print("Testing model after training.")
 
         test_generator = self.processor.test_generator(self.test_set)
-        pred = self.model.predict_generator(test_generator, len(self.test_set))
-        loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
         
-        with open(os.path.join(self.outputs, "test.log"), 'w') as log:
-            log.write(str(loss)) 
+        print('This is where the model would be tested.')
+        #pred = self.model.predict_generator(test_generator, len(self.test_set))
+        #loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
+        
+        #with open(os.path.join(self.outputs, "test.log"), 'w') as log:
+        #    log.write(str(loss)) 
 
-        print(loss)
-        print(pred) 
+        #print(loss)
+        #print(pred) 
 
     
     def run(self):
@@ -156,9 +159,6 @@ class Engine():
         if self.model_type == "C3D": 
             return C3D(self.input_shape, self.output_shape)
         
-        if self.model_type == "CNN+LSTM":
-            return CNN_LSTM(self.input_shape, self.output_shape)
-
         if self.model_type == "3D-CNN":
             return CNN_3D(self.input_shape, self.output_shape, norm=norm)
         

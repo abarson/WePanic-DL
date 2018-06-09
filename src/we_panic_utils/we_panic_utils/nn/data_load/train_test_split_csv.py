@@ -137,12 +137,10 @@ def create_train_test_split_dataframes(data_path, metadata, output_dir,
 
     return train_df, test_df, val_df
 
-def ttswcvs3(data_path, metadata, output_dir,
+def ttswcsv(data_path, metadata, output_dir,
              test_split=0.2, val_split=0.2, verbose=True):
 
     """
-    DEPRECATED (use create_train_test_split_dataframes)
-
     Train test split with CSV support version 3.
     Currently no support for ignoring augmented data!
 
@@ -153,17 +151,24 @@ def ttswcvs3(data_path, metadata, output_dir,
     """
     metadf = pd.read_csv(metadata)
     
-    metadf['Path'] = metadf.apply (lambda row: os.path.join(data_path, "S%04d" % row["Subject"], 
-        "Trial%d_frames" % row["Trial"]), axis=1)
-        
+    #metadf['FRAME_PTH'] = metadf.apply (lambda row: os.path.join(data_path, "S%04d" % row["SUBJECT"], 
+    #    "Trial%d_frames" % row["TRIAL"]), axis=1)
+    
+    metadf = metadf[metadf.GOOD == 1]
+
     base.check_exists_create_if_not(output_dir)    
     
     test_len = int(test_split * len(metadf))
     val_len = int(val_split * len(metadf))
-    metadf, test_df = util.get_testing_set(metadf, test_len)
-    metadf, val_df = util.get_testing_set(metadf, val_len) 
+    metadf, test_df = util.get_random_test_set(metadf, test_len)
+    metadf, val_df = util.get_random_test_set(metadf, val_len) 
 
     test_df.to_csv(os.path.join(output_dir, 'test.csv'), index=False)
     val_df.to_csv(os.path.join(output_dir, 'val.csv'), index=False)
     metadf.to_csv(os.path.join(output_dir, 'train.csv'), index=False)
+
+    print('Test DF\n', list(test_df['HEART_RATE_BPM']))
+    print('Val DF\n', list(val_df['HEART_RATE_BPM']))
+    print('Train DF\n', list(metadf['HEART_RATE_BPM']))
+
     return metadf, test_df, val_df
