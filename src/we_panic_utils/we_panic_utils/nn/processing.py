@@ -20,7 +20,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 class threadsafe_iterator:
     """
-    A class for threadsafe iteratio
+    A class for threadsafe iterator
     """
     def __init__(self, iterator):
         self.iterator = iterator
@@ -257,14 +257,15 @@ class FrameProcessor:
         rotation_range : int - degree range for random rotations
         width_shift_Range : float - fraction of total width for horizontal shifts
         height_shift_range : float - fraction of total height for vertical shifts
-        zoom_range : float - range for random zoom, lower_bd = 1 - zoom_range, upper_bd = 1 + zoom_range 
-        vertical_flip : bool - whether or not to flip vertically with prob 0.5
-        horizontal_flip : bool - whether or not to flip horizontall with prob 0.5
-        batch_size : int - the batch size
         shear_range: Float. Shear Intensity (Shear angle in counter-clockwise direction in degrees)
+        zoom_range : float - range for random zoom, lower_bd = 1 - zoom_range, upper_bd = 1 + zoom_range 
+        horizontal_flip : bool - whether or not to flip horizontall with prob 0.5
+        vertical_flip : bool - whether or not to flip vertically with prob 0.5
+        greyscale_on : bool - whether or not the frames are to be converted to greyscale
+        test_selections : int - 
+        batch_size : int - the batch size
     """
     def __init__(self,
-                 scaler=None,
                  rotation_range=0,
                  width_shift_range=0.,
                  height_shift_range=0.,
@@ -274,8 +275,8 @@ class FrameProcessor:
                  vertical_flip=False,
                  batch_size=4,
                  sequence_length=60,
-                 greyscale_on=False):
-        self.scaler = scaler
+                 greyscale_on=False
+                 test_selections=2):
         self.rotation_range = rotation_range
         self.width_shift_range = width_shift_range
         self.height_shift_range = height_shift_range
@@ -283,7 +284,8 @@ class FrameProcessor:
         self.zoom_range = zoom_range
         self.horizontal_flip = horizontal_flip
         self.vertical_flip = vertical_flip
-        self.greyscale_on = greyscale_on 
+        self.greyscale_on = greyscale_on
+        self.test_selections = test_selections
         self.sequence_length = sequence_length
         self.batch_size = batch_size
         self.test_iter = 0
@@ -315,7 +317,7 @@ class FrameProcessor:
             
             frame_dir = sorted(os.listdir(current_path))
             #hard-code to 2 for now, because there are a lot of samples
-            for _ in range(2):
+            for _ in range(test_selections):
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(current_path, frame) for frame in frames]
@@ -330,19 +332,10 @@ class FrameProcessor:
             yield np.array(X), np.array(y)
 
     def train_generator(self, train_df):
-        #bucket_list = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9]
-        bucket_list = [.1, .2, .3, .4, .5, .6]
         while True:
             X, y = [], []
 
             for _ in range(self.batch_size):
-                #rand_bucket = bucket_list[random.randint(0, len(bucket_list)-1)]
-                #df = train_df[buckets(train_df, rand_bucket)]
-                #rand_subj_index = random.randint(0, len(df)-1)
-                #rand_subj_df = df[rand_subj_index:rand_subj_index+1]
-                
-                #path = list(rand_subj_df["Path"])[0]
-                #hr = list(rand_subj_df["Heart Rate"])[0]
                 
                 random_index = random.randint(0, len(train_df)-1)
                 path = list(train_df['FRAME_PTH'])[random_index]
