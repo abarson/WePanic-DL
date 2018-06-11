@@ -87,9 +87,8 @@ class C3D(RegressionModel):
 
 class CNN_3D(RegressionModel):
    
-    def __init__(self, input_shape, output_shape, norm=False):
+    def __init__(self, input_shape, output_shape):
         RegressionModel.__init__(self, input_shape, output_shape)
-        self.norm = norm
 
     def instantiate(self):
         return super(CNN_3D, self).instantiate()
@@ -104,6 +103,7 @@ class CNN_3D(RegressionModel):
         return model
 
     def get_model(self):
+       
         model = Sequential()
         
         model.add(Conv3D(64, kernel_size=(3, 3, 3), 
@@ -131,10 +131,8 @@ class CNN_3D(RegressionModel):
         model.add(Dropout(0.5))
         model.add(Dense(512, activation='relu'))
         model.add(Dropout(0.5))
-        if self.norm:
-            model.add(Dense(self.output_shape, activation='tanh'))
-        else:
-            model.add(Dense(self.output_shape, activation='linear'))
+        model.add(Dense(self.output_shape, activation='linear'))
+        
         return model
 
 

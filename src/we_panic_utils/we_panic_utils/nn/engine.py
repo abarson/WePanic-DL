@@ -16,16 +16,16 @@ class Engine():
     The engine for training/testing a model
 
     args:
-        regular_data - data not generated
-        augmented_data - data generated using halve/doubling speed augmentation
-        filtered_csv - the csv containing all of the stats for every sample
-        partition_csv - the csv that maps individual partititions to their respective labels
+        data - directory containing subject frame data
+        model_type - the model to be trained/tested
+        csv - the csv containing all of the stats for every sample
         batch_size - the batch size
         epochs - number of epochs to train
         train - boolean stating whether or not to train
         test - boolean stating whether or not to test
+        inputs - the input directory to be used if testing without training
+        outputs - the output directory to save the new model to
         frameproc - FrameProcessor object for augmentation
-        ignore_augmented - list containing phases of running the model in which to ignore augmented data
         input_shape - shape of the sequence passed, 60 separate 100x100x3 frames
         output_shape - the number of outputs
     """
@@ -66,6 +66,12 @@ class Engine():
         self.val_set = None
 
     def __train_model(self):
+        """
+        Internal method to train the model. This method is responsible for instantiating the model
+        based on the user's inputs, as well as the train, test, and validation sets. Once instantiated,
+        these objects are maintained as instance variables by the engine object for later use.
+        """
+
         if not self.model: #instantiate the model to be trained
             self.model = self.__choose_model().instantiate()
         print("Training the model")
@@ -105,8 +111,13 @@ class Engine():
                             callbacks=callbacks,
                             validation_data=val_generator,
                             validation_steps=len(self.val_set), workers=4)
-
     def __test_model(self):
+        """
+        Internal method to test the model. If the model was not trained before this method is called,
+        then the model will be loaded from the input directory provided by the user. Otherwise, the model
+        instantiated during the training phase will be tested.
+        """
+
         if not self.model: #load the model if it wasn't created during the training phase
             model_dir = os.path.join(self.inputs, "models")
             print("Testing model without training. Loading model from {}".format(model_dir))
@@ -140,7 +151,6 @@ class Engine():
 
     
     def run(self):
-
         """
         a general method that computes the 'procedure' to follow based on the
         preferences passed in the constructor and runs that procedure
@@ -156,15 +166,12 @@ class Engine():
         """
         choose a model based on preferences
         """
-        norm=False
-        if self.processor.scaler:
-            norm = True
 
         if self.model_type == "C3D": 
             return C3D(self.input_shape, self.output_shape)
         
         if self.model_type == "3D-CNN":
-            return CNN_3D(self.input_shape, self.output_shape, norm=norm)
+            return CNN_3D(self.input_shape, self.output_shape)
         
         if self.model_type == "CNN_3D_small":
             return CNN_3D_small(self.input_shape, self.output_shape)
