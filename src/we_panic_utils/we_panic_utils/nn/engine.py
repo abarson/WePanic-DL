@@ -93,14 +93,13 @@ class Engine():
         
         callbacks = [csv_logger, checkpointer, test_callback, train_callback]    
 
-        print('This is where the model would be fit.')
-       # self.model.fit_generator(generator=train_generator,
-       #                     steps_per_epoch=self.steps_per_epoch,
-       #                     epochs=self.epochs,
-       #                     verbose=1,
-       #                     callbacks=callbacks,
-       #                     validation_data=val_generator,
-       #                     validation_steps=len(self.val_set), workers=4)
+        self.model.fit_generator(generator=train_generator,
+                            steps_per_epoch=self.steps_per_epoch,
+                            epochs=self.epochs,
+                            verbose=1,
+                            callbacks=callbacks,
+                            validation_data=val_generator,
+                            validation_steps=len(self.val_set), workers=4)
     def __test_model(self):
         if not self.model: #load the model if it wasn't created during the training phase
             model_dir = os.path.join(self.inputs, "models")
@@ -124,15 +123,14 @@ class Engine():
 
         test_generator = self.processor.test_generator(self.test_set)
         
-        print('This is where the model would be tested.')
-        #pred = self.model.predict_generator(test_generator, len(self.test_set))
-        #loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
+        pred = self.model.predict_generator(test_generator, len(self.test_set))
+        loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
         
-        #with open(os.path.join(self.outputs, "test.log"), 'w') as log:
-        #    log.write(str(loss)) 
+        with open(os.path.join(self.outputs, "test.log"), 'w') as log:
+            log.write(str(loss)) 
 
-        #print(loss)
-        #print(pred) 
+        print(loss)
+        print(pred) 
 
     
     def run(self):
@@ -194,9 +192,9 @@ class TestResultsCallback(Callback):
                 if self.test_gen.scaler:
                     pred = self.test_gen.scaler.inverse_transform(pred)
 
-                subjects = list(self.test_set['Subject'])
-                trial = list(self.test_set['Trial'])
-                hr = list(self.test_set['Heart Rate'])
+                subjects = list(self.test_set['SUBJECT'])
+                trial = list(self.test_set['TRIAL'])
+                hr = list(self.test_set['HEART_RATE_BPM'])
                 i = 0
                 s = 0
                 error = mean_squared_error(np.reshape([i for t in zip(hr,hr) for i in t], (-1, 1)), pred)
