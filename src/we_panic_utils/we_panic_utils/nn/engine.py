@@ -82,10 +82,15 @@ class Engine():
 
         test_results_file = os.path.join(self.outputs, "test_results.log")
         train_results = os.path.join(self.outputs, "unnormalized_training.log")
-        train_callback = TestResultsCallback(self.processor, self.train_set, 
-                                             train_results, self.batch_size,
+        
+        #this will record the output of the model on the training data at the end of every epoch
+        train_callback = TestResultsCallback(self.processor, 
+                                             self.train_set, 
+                                             train_results, 
+                                             self.batch_size,
                                              epochs=1)
 
+        #this will record the output of the model on the testing data at the end of every 5 epochs
         test_callback = TestResultsCallback(self.processor,
                                             self.test_set,
                                             test_results_file,

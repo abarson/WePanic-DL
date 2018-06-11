@@ -262,7 +262,8 @@ class FrameProcessor:
         horizontal_flip : bool - whether or not to flip horizontall with prob 0.5
         vertical_flip : bool - whether or not to flip vertically with prob 0.5
         greyscale_on : bool - whether or not the frames are to be converted to greyscale
-        test_selections : int - 
+        test_selections : int - how many random selections to sample from the test set 
+        sequence_length : int - the number of frames to be yielded by the generator
         batch_size : int - the batch size
     """
     def __init__(self,
@@ -316,7 +317,7 @@ class FrameProcessor:
             current_hr = hr[i]
             
             frame_dir = sorted(os.listdir(current_path))
-            #hard-code to 2 for now, because there are a lot of samples
+            
             for _ in range(test_selections):
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]

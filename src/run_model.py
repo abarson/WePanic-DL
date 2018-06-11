@@ -332,8 +332,7 @@ if __name__ == "__main__":
     x, y = args.dimensions
 
     if greyscale_on:
-        input_shape = (60, y, x, 1)
-
+        input_shape = (60, x, y, 1)
     else:
         input_shape = (60, x, y, 3)
 
