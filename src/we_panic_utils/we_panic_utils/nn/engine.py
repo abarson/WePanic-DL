@@ -105,6 +105,7 @@ class Engine():
                             callbacks=callbacks,
                             validation_data=val_generator,
                             validation_steps=len(self.val_set), workers=4)
+
     def __test_model(self):
         if not self.model: #load the model if it wasn't created during the training phase
             model_dir = os.path.join(self.inputs, "models")
