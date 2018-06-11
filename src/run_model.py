@@ -40,13 +40,12 @@ def parse_input():
     
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",
-                        type=str,
-                        nargs="+")
+                        type=str)
      
     parser.add_argument("--csv",
                         help="csv containing labels subject -- trial -- heart rate -- resp rate",
                         type=str,
-                        default="NextStartingPoint.csv")
+                        default="wepanic_collated_catalogue.csv")
 
     parser.add_argument("--train",
                         help="states whether the model should be trained",
@@ -133,6 +132,81 @@ def parse_input():
 
     return parser
 
+
+def validate_arguments(args):
+    """
+    --validate the arguments passed into this app,
+    --handle incomplete/bad input,
+    --save the world
+    
+    args:
+        namespace - the argparse namespace provide into this application
+
+    returns:
+        the same namespace with possibly modified inputs
+    --------------------------------------------------------------------
+    """
+        
+    if not os.path.exists(args.csv):
+        raise FileNotFoundError("can't locate %s" % args.csv)
+
+    if not os.path.isdir(args.data):
+        raise ArgumentError("Bad data directory : %s" % data_dir)
+
+
+    # if batch_size was provided to be negative, exit for bad input
+    if args.batch_size < 0:
+        raise ArgumentError("The --batch_size should be > 0; " +
+                            "got %d" % args.batch_size)
+
+    # if epochs was provided to be negative, exit for bad input
+    if args.epochs < 0:
+        raise ArgumentError("The --epochs should be > 0; " +
+                            "got %d" % args.epochs)
+    
+    # if --test=False and --train=False, exit because there's nothing to do
+    if (not args.train) and (not args.test):
+        raise ArgumentError("Both --train and --test were provided as False " +
+                            "exiting because there's nothing to do ...")
+    
+    # if --test was provided only
+    if args.test and not args.train:
+        # if no input directory specified, exit for bad input
+        if args.input_dir is None:
+            raise ArgumentError("--test was specified but found no input " +
+                                "directory, provide an input directory to " +
+                                "test a model only")
+        
+        # an input directory was specified but if doesn't exist
+        if not os.path.isdir(args.input_dir):
+            raise ArgumentError("Cannot find input directory %s" % args.input_dir)
+
+        # verify input directory structure
+        if not verify_directory_structure(args.input_dir):
+            raise ArgumentError("Problems with directory structure of %s" % args.input_dir)
+        
+    # if --test=True and --train=True, then we need only an output directory
+    if args.train and args.test:
+        args.input_dir = generate_output_directory(args.output_dir)
+    
+    bad_augs = []
+    for arg_name in ['batch_size', 'steps_per_epoch', 'epochs',
+                     'shear_range', 'width_shift_range', 'height_shift_range',
+                     'rotation_range', 'zoom_range']:
+        
+        if args[argname] < 0:
+            bad_augs.append("%s can't be < 0" % arg_name)
+
+        if argname in ['shear_range', 'width_shift_range', 'height_shift_range'] and args[argname] > 1:
+            bad_augs.append("%s is a value in [0, 1]" % argname)
+
+
+    if len(bad_augs) > 0:
+        raise ArgumentError(",".join(bad_augs))
+
+
+    return args
+        
 
 def summarize_arguments(args):
     """
@@ -228,91 +302,10 @@ def verify_directory_structure(dirname):
         return False
     
 
-def validate_arguments(args):
-    """
-    validate the arguments provided, handle bad/incomplete input
-
-    args:
-        args - the arguments provided to the script throught parse_input
-
-    returns:
-        regular : str - path to the "regular" data directory
-        augmented : str - path to the "augmented" data directory
-        csv : str - path to filtered_csv
-        batch_size : int - batch size
-        epochs : int - epochs to train for, if necessary
-        train : bool - whether or not to train
-        test : bool - whether or not to test
-        input_dir : str - the path to the directory containing post experiment/training meta data and results
-        output_dir : str - the path to the directory where we will place experimental meta data and results
-    """
-    for data_dir in args.data:
-        if not os.path.isdir(data_dir):
-            raise ArgumentError("Bad data directory : %s" % data_dir)
-    
-    regular, augmented = None, None
-
-    if len(args.data) > 1:
-        assert len(args.data) == 2, "Expected maximum two directories, regular and augmented; got %d" % len(args.data)
-        print("[validate_arguments] : taking %s to be `regular`, %s to be `augmented`" % (args.data[0], args.data[1]))
-        augmented = args.data[1]
-    
-    regular = args.data[0]
-
-    # if --test=False and --train=False, exit because there's nothing to do
-    if (not args.train) and (not args.test):
-        raise ArgumentError("Both --train and --test were provided as False " +
-                            "exiting because there's nothing to do ...")
-
-    # if batch_size was provided to be negative, exit for bad input
-    if args.batch_size < 0:
-        raise ArgumentError("The --batch_size should be > 0; " +
-                            "got %d" % args.batch_size)
-    
-    batch_size = args.batch_size
-
-    # if epochs was provided to be negative, exit for bad input
-    if args.epochs < 0:
-        raise ArgumentError("The --epochs should be > 0; " +
-                            "got %d" % args.epochs)
-   
-    epochs = args.epochs
-
-    # if --test was provided only
-    if args.test and not args.train:
-        # if no input directory specified, exit for bad input
-        if args.input_dir is None:
-            raise ArgumentError("--test was specified but found no input " +
-                                "directory, provide an input directory to " +
-                                "test a model only")
-        
-        # an input directory was specified but if doesn't exist
-        if not os.path.isdir(args.input_dir):
-            raise ArgumentError("Cannot find input directory %s" % args.input_dir)
-
-        # verify input directory structure
-        if not verify_directory_structure(args.input_dir):
-            raise ArgumentError("Problems with directory structure of %s" % args.input_dir)
-        
-        # verified everythign works, now erase the output directory because the input is the output
-        print("[validate_arguments] : overwriting output directory from %s to %s" % (args.output_dir, args.input_dir))
-        args.output_dir = args.input_dir
-
-    # if --test=True and --train=True, then we need only an output directory
-    if args.train and args.test:
-        generate_output_directory(args.output_dir)
-        
-    input_dir, output_dir = args.input_dir, args.output_dir
-    
-    assert os.path.exists(args.csv), "%s not found" % args.csv
- 
-    return regular, augmented, args.csv, batch_size, epochs, args.train, args.test, input_dir, output_dir, args.greyscale_on 
-
-
 if __name__ == "__main__":
     
     args = parse_input().parse_args()
-    regular, augmented, csv, batch_size, epochs, train, test, inputs, outputs, greyscale_on = validate_arguments(args)
+    args = validate_arguments(args)
     
     summarize_arguments(args)
 
@@ -336,13 +329,13 @@ if __name__ == "__main__":
 
     engine = Engine(data=regular,
                     model_type=args.model_type,
-                    csv=csv,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    train=train,
-                    test=test,
-                    inputs=inputs,
-                    outputs=outputs,
+                    csv=args.csv,
+                    batch_size=args.batch_size,
+                    epochs=args.epochs,
+                    train=args.train,
+                    test=args.test,
+                    inputs=args.input_dir,
+                    outputs=args.output_dir,
                     frameproc=fp,
                     input_shape=input_shape,
                     output_shape=2,
