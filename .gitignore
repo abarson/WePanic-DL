@@ -1,8 +1,18 @@
+##### goodbye swap files
 .*.sw*
+*.swp
+**/*.*.swp
+
+##### potentially conflicting model scripts/archives
 run_it
 run_history/
+
+##### data directories
 data/
-*.swp
 raw/
-**/*.*.swp
 frames/
+
+##### latex nonsense
+*.aux
+*.log
+out/

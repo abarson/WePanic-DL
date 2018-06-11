@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{fancyhdr}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\pagestyle{fancy}
+\lhead{WePanic-DL: Setting up easy SSH connections}
+\rhead{UVM, Summer 2018 \\ Daniel Berenberg}
+
+\begin{document}
+\subsubsection*{Introduction}
+This document is meant to show a quick tutorial to streamlining your ssh connections.
+By the end of this document you will have enabled the ability to enter commands of this flavor:
+\begin{gather*}
+\mathrm{\texttt{ssh} \ \textit{my-remote-server}} \\
+\mathrm{\texttt{scp} \ \textit{my-remote-server} \ \texttt{local\_file}:\texttt{remote\_destination}}
+\end{gather*}
+\textit{without} needing to enter your password. This is a method called \textbf{ssh aliasing}.
+Anyway, without further adieu, let's set it up. \\ \\
+%--------------------------------------------
+\subsubsection*{Setup}
+\begin{enumerate}
+\item Enter your \texttt{~/.ssh} folder.
+\item Create a file called \texttt{config} and enter the following information (verbatim):
+    \begin{quote}
+        \texttt{Host * \\
+        AddKeysToAgent yes \\
+        UseKeychain yes \\
+        IdentityFile ~/.ssh/id\_rsa \\
+        }
+    \end{quote}
+    In the same file, enter the your custom remote host information:
+    \begin{quote}
+        \texttt{Host} \textit{custom-host-alias} \\
+        \texttt{User} \textit{your-username-on-this-host} \\ 
+        \texttt{Hostname} \texttt{the\_actual\_hostname}
+    \end{quote}
+    In the case of WePanic, the only custom entry in this part of the file is the \texttt{Host} parameter. The
+    Username is \texttt{bloodletter} and the Hostname is \texttt{wepanic-dl.eastus.cloudapp.azure.com}. \\
+    You have now aliased your ssh. Trying \texttt{ssh} \textit{custom-host-alias} will work, but still prompt you
+    with a password. We'll fix that in the next step.
+
+\item Make an ssh key pair:
+    \begin{quote}
+        \texttt{ssh-keygen -t rsa}
+    \end{quote}
+    Press \texttt{enter} through the prompted messages; you DO NOT want an alternate location nor a passphrase.
+
+\item Install the ssh key on the remote machine.
+    \begin{quote}
+        \texttt{cat ~/.ssh/\textbf{id\_rsa.pub} | ssh user@remote "mkdir -p ~/.ssh; cat >> ~/.ssh/authorized\_keys"}
+    \end{quote}
+        Make sure to use \texttt{>>} not \texttt{>} to \textit{append} to the file rather than overwriting it! 
+\end{enumerate}
+\end{document}
