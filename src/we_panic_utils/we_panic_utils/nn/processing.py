@@ -276,7 +276,7 @@ class FrameProcessor:
                  vertical_flip=False,
                  batch_size=4,
                  sequence_length=60,
-                 greyscale_on=False
+                 greyscale_on=False,
                  test_selections=2):
         self.rotation_range = rotation_range
         self.width_shift_range = width_shift_range
@@ -309,21 +309,21 @@ class FrameProcessor:
 
     @threadsafe_generator    
     def test_generator(self, test_df):
-        paths, hr = list(test_df["FRAME_PTH"]), list(test_df["HEART_RATE_BPM"])
+        paths, hr, rr = list(test_df["FRAME_PTH"]), list(test_df["HEART_RATE_BPM"]), list(test_df["RESP_RATE_BR_PM"])
         i = 0
         while True:
             X, y = [], []
             current_path = paths[i]
-            current_hr = hr[i]
-            
+            current_hr = float(hr[i])
+            current_rr = float(rr[i]) 
             frame_dir = sorted(os.listdir(current_path))
             
-            for _ in range(test_selections):
+            for _ in range(self.test_selections):
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(current_path, frame) for frame in frames]
                 X.append(build_image_sequence(frames, greyscale_on=self.greyscale_on))
-                y.append(current_hr)
+                y.append([current_hr, current_rr])
 
             i+=1
             if i == len(test_df):
@@ -340,7 +340,8 @@ class FrameProcessor:
                 
                 random_index = random.randint(0, len(train_df)-1)
                 path = list(train_df['FRAME_PTH'])[random_index]
-                hr = list(train_df['HEART_RATE_BPM'])[random_index]
+                hr = float(list(train_df['HEART_RATE_BPM'])[random_index])
+                rr = float(list(train_df['RESP_RATE_BR_PM'])[random_index]) 
 
                 frame_dir = sorted(os.listdir(path))
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
@@ -376,7 +377,7 @@ class FrameProcessor:
                         sequence = sequence_flip_axis(sequence, 2)   # flip on the column axis
 
                 X.append(sequence)
-                y.append(hr)
+                y.append([hr, rr])
             
             #print(np.array(X).shape, np.array(y).shape, " (train generator)")
             yield np.array(X), np.array(y)

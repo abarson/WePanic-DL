@@ -7,6 +7,6 @@ python src/run_model.py 3D-CNN frames \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/test_cnn \
 --epochs 100 \
---steps_per_epoch 500 \
+--steps_per_epoch 100 \
 --batch_size 14 \
 --greyscale_on \

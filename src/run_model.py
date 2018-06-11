@@ -315,10 +315,8 @@ if __name__ == "__main__":
     regular, augmented, csv, batch_size, epochs, train, test, inputs, outputs, greyscale_on = validate_arguments(args)
     
     summarize_arguments(args)
-    scaler = None
 
-    fp = FrameProcessor(scaler,
-                        rotation_range=args.rotation_range,
+    fp = FrameProcessor(rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,
                         shear_range=args.shear_range,

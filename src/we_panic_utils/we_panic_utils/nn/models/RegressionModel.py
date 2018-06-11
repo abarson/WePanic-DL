@@ -96,7 +96,6 @@ class CNN_3D(RegressionModel):
         model = self.get_model() 
         metrics = ['mse']
 
-        #optimizer = Adam(lr=1e-5, decay=1e-6)
         sgd = SGD(lr=0.00001, decay=1e-6, nesterov=True, clipnorm=0.1, momentum=0.9)
         model.compile(loss='mean_squared_error', optimizer=sgd, metrics=metrics)
         print(model.summary())

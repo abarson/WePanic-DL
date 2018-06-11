@@ -202,23 +202,24 @@ class TestResultsCallback(Callback):
                 
                 pred = self.model.predict_generator(gen, len(self.test_set))
                 
-                if self.test_gen.scaler:
-                    pred = self.test_gen.scaler.inverse_transform(pred)
-
                 subjects = list(self.test_set['SUBJECT'])
                 trial = list(self.test_set['TRIAL'])
                 hr = list(self.test_set['HEART_RATE_BPM'])
+                rr = list(self.test_set['RESP_RATE_BR_PM'])
+                
                 i = 0
                 s = 0
-                error = mean_squared_error(np.reshape([i for t in zip(hr,hr) for i in t], (-1, 1)), pred)
+                error_hr = mean_squared_error(np.reshape([i for t in zip(hr,hr) for i in t], (-1, 1)), [row[0] for row in pred])
+                error_rr = mean_squared_error(np.reshape([i for t in zip(rr,rr) for i in t], (-1, 1)), [row[1] for row in pred])
+                error = error_hr + error_rr
                 log.write("Epoch: " + str(epoch+1) + ', Error: ' + str(error) + '\n')
                 for p in pred:
                     subj = subjects[s]
                     tri = trial[s]
                     h = hr[s]
+                    r = rr[s]
                     
-                    #val = p[0]
-                    log.write(str(subj) + ', ' + str(tri) + '| prediction=' + str(p) + ', actual=' + str(h) + '\n')
+                    log.write(str(subj) + ', ' + str(tri) + '| prediction=' + str(p) + ', actual=' + str([h, r]) + '\n')
                     i+=1
                     if i % 2 == 0:
                         s += 1
