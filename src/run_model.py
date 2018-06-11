@@ -151,7 +151,7 @@ def validate_arguments(args):
         raise FileNotFoundError("can't locate %s" % args.csv)
 
     if not os.path.isdir(args.data):
-        raise ArgumentError("Bad data directory : %s" % data_dir)
+        raise ArgumentError("Bad data directory : %s" % args.data)
 
 
     # if batch_size was provided to be negative, exit for bad input
@@ -194,16 +194,15 @@ def validate_arguments(args):
                      'shear_range', 'width_shift_range', 'height_shift_range',
                      'rotation_range', 'zoom_range']:
         
-        if args[argname] < 0:
+        if vars(args)[arg_name] < 0:
             bad_augs.append("%s can't be < 0" % arg_name)
 
-        if argname in ['shear_range', 'width_shift_range', 'height_shift_range'] and args[argname] > 1:
-            bad_augs.append("%s is a value in [0, 1]" % argname)
+        if arg_name in ['shear_range', 'width_shift_range', 'height_shift_range'] and vars(args)[arg_name] > 1:
+            bad_augs.append("%s is a value in [0, 1]" % arg_name)
 
 
     if len(bad_augs) > 0:
         raise ArgumentError(",".join(bad_augs))
-
 
     return args
         
@@ -212,23 +211,18 @@ def summarize_arguments(args):
     """
     report the arguments passed into the app 
     """
-    formatter = "[%s] %s"
-
-    print(formatter % ("model_type", args.model_type))
-    print(formatter % ("data", args.data))
-    print(formatter % ("csv", args.csv))
+    formatter = "[%s] %+15s"
     
-    formatter = "[%s] %r"
+    keys = vars(args).keys()
+    max_arglen = max([len(k) for k in keys])
+    
+    formatter = "[%{}s] %+15s".format(max_arglen)
 
-    print(formatter % ("train", args.train))
-    print(formatter % ("test", args.test))
+    for k in keys:
+        print(formatter % (k, vars(args)[k]))
 
-    formatter = "[%s] %d"
-
-    print(formatter % ("batch_size", args.batch_size))
-    print(formatter % ("epochs", args.epochs)) 
-    print(formatter % ("greyscale_on", args.greyscale_on)) 
-
+    
+    
 class ArgumentError(Exception):
     """
     custom exception to thrown due to bad parameter input
@@ -316,18 +310,18 @@ if __name__ == "__main__":
                         zoom_range=args.zoom_range,
                         vertical_flip=args.vertical_flip,
                         horizontal_flip=args.horizontal_flip,
-                        batch_size=batch_size,
-                        greyscale_on=greyscale_on)
+                        batch_size=args.batch_size,
+                        greyscale_on=args.greyscale_on)
 
     input_shape = None
     x, y = args.dimensions
 
-    if greyscale_on:
+    if args.greyscale_on:
         input_shape = (60, x, y, 1)
     else:
         input_shape = (60, x, y, 3)
 
-    engine = Engine(data=regular,
+    engine = Engine(data=args.data,
                     model_type=args.model_type,
                     csv=args.csv,
                     batch_size=args.batch_size,
@@ -347,6 +341,6 @@ if __name__ == "__main__":
     end = time.time()
     total = (end - start) / 60
 
-    if train:
-        with open(os.path.join(outputs, "time.txt"), 'w') as t:
+    if args.train:
+        with open(os.path.join(args.output_dir, "time.txt"), 'w') as t:
             t.write(str(total))
