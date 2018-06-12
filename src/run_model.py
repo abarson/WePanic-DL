@@ -151,48 +151,47 @@ def validate_arguments(args):
         raise FileNotFoundError("can't locate %s" % args.csv)
 
     if not os.path.isdir(args.data):
-        raise ArgumentError("Bad data directory : %s" % args.data)
+        raise NotADirectoryError("Bad data directory : %s" % args.data)
 
 
     # if batch_size was provided to be negative, exit for bad input
     if args.batch_size < 0:
-        raise ArgumentError("The --batch_size should be > 0; " +
-                            "got %d" % args.batch_size)
+        raise ValueError("The --batch_size should be > 0; " +
+                         "got %d" % args.batch_size)
 
     # if epochs was provided to be negative, exit for bad input
     if args.epochs < 0:
-        raise ArgumentError("The --epochs should be > 0; " +
-                            "got %d" % args.epochs)
+        raise ValueError("The --epochs should be > 0; " +
+                         "got %d" % args.epochs)
     
     # if --test=False and --train=False, exit because there's nothing to do
     if (not args.train) and (not args.test):
-        raise ArgumentError("Both --train and --test were provided as False " +
-                            "exiting because there's nothing to do ...")
+        raise ValueError("Both --train and --test were provided as False " +
+                         "exiting because there's nothing to do ...")
     
     # if --test was provided only
     if args.test and not args.train:
         # if no input directory specified, exit for bad input
         if args.input_dir is None:
-            raise ArgumentError("--test was specified but found no input " +
-                                "directory, provide an input directory to " +
-                                "test a model only")
+            raise ValueError("--test was specified but found no input " +
+                             "directory, provide an input directory to " +
+                              "test a model only")
         
         # an input directory was specified but if doesn't exist
         if not os.path.isdir(args.input_dir):
-            raise ArgumentError("Cannot find input directory %s" % args.input_dir)
+            raise NotADirectoryError("Cannot find input directory %s or it doesn't exist" % args.input_dir)
 
         # verify input directory structure
         if not verify_directory_structure(args.input_dir):
-            raise ArgumentError("Problems with directory structure of %s" % args.input_dir)
+            raise RuntimeError("Problems with directory structure of %s" % args.input_dir)
         
     # if --test=True and --train=True, then we need only an output directory
     if args.train and args.test:
         args.input_dir = generate_output_directory(args.output_dir)
     
     bad_augs = []
-    for arg_name in ['batch_size', 'steps_per_epoch', 'epochs',
-                     'shear_range', 'width_shift_range', 'height_shift_range',
-                     'rotation_range', 'zoom_range']:
+    for arg_name in ['steps_per_epoch', 'shear_range', 'width_shift_range', 
+                     'height_shift_range', 'rotation_range', 'zoom_range']:
         
         if vars(args)[arg_name] < 0:
             bad_augs.append("%s can't be < 0" % arg_name)
@@ -202,7 +201,7 @@ def validate_arguments(args):
 
 
     if len(bad_augs) > 0:
-        raise ArgumentError(",".join(bad_augs))
+        raise ValueError(",".join(bad_augs))
 
     return args
         

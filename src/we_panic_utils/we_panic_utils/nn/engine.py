@@ -78,7 +78,7 @@ class Engine():
         these objects are maintained as instance variables by the engine object for later use.
         """
 
-        if not self.model: #instantiate the model to be trained
+        if not self.model:  #instantiate the model to be trained
             self.model = self.__choose_model().instantiate()
         print("Training the model")
 
@@ -111,12 +111,13 @@ class Engine():
         callbacks = [csv_logger, checkpointer, test_callback, train_callback]    
 
         self.model.fit_generator(generator=train_generator,
-                            steps_per_epoch=self.steps_per_epoch,
-                            epochs=self.epochs,
-                            verbose=1,
-                            callbacks=callbacks,
-                            validation_data=val_generator,
-                            validation_steps=len(self.val_set), workers=4)
+                                 steps_per_epoch=self.steps_per_epoch,
+                                 epochs=self.epochs,
+                                 verbose=1,
+                                 callbacks=callbacks,
+                                 validation_data=val_generator,
+                                 validation_steps=len(self.val_set), workers=4)
+
     def __test_model(self):
         """
         Internal method to test the model. If the model was not trained before this method is called,
@@ -124,7 +125,7 @@ class Engine():
         instantiated during the training phase will be tested.
         """
 
-        if not self.model: #load the model if it wasn't created during the training phase
+        if not self.model:  #load the model if it wasn't created during the training phase
             model_dir = os.path.join(self.inputs, "models")
             print("Testing model without training. Loading model from {}".format(model_dir))
             model_path = "" 
@@ -139,7 +140,7 @@ class Engine():
             self.model = models.load_model(model_path)
 
             test_dir = os.path.join(self.inputs, "test.csv")
-            self.test_set = pd.read_csv(test_dir) #load the testing data csv
+            self.test_set = pd.read_csv(test_dir)  #load the testing data csv
 
         else: #test the model created during training
             print("Testing model after training.")
