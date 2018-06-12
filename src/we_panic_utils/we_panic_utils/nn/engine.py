@@ -9,6 +9,7 @@ from keras import backend as K
 import os
 import pandas as pd
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import StratifiedKFold
 import numpy as np
 
 class Engine():
@@ -150,6 +151,9 @@ class Engine():
         print(pred) 
 
     
+    def __cross_val(self, nfolds=4):
+        pass
+
     def run(self):
         """
         a general method that computes the 'procedure' to follow based on the

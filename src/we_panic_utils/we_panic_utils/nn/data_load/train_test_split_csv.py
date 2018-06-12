@@ -8,7 +8,7 @@ import pandas as pd
 import random
 random.seed(7)
 import numpy as np
-
+from sklearn.model_selection import StratifiedKFold
 """
 Public API
 """
@@ -136,6 +136,18 @@ def create_train_test_split_dataframes(data_path, metadata, output_dir,
     train_df.to_csv(os.path.join(output_dir, 'train.csv'), index=False)
 
     return train_df, test_df, val_df
+
+#return four dataframes four now?
+def cross_val_split(data_path, metadata, nfolds=4):
+    metadf = pd.read_csv(metadata)
+    metadf = metadf[metadf.GOOD == 1]
+    X = list(metadf['SUBJECT'])
+    y = list(metadf['TRIAL'])
+    skf = StratifiedKFold(n_splits=nfolds)
+    dataframes_x, dataframes_y = [], []
+    
+    for x_index, y_index in skf.split(X, y):
+        pass
 
 def ttswcsv(data_path, metadata, output_dir,
              test_split=0.2, val_split=0.2, verbose=True):

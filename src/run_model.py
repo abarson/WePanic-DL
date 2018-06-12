@@ -194,7 +194,7 @@ def validate_arguments(args):
                      'shear_range', 'width_shift_range', 'height_shift_range',
                      'rotation_range', 'zoom_range']:
         
-        if args[argname] < 0:
+        if args[arg_name] < 0:
             bad_augs.append("%s can't be < 0" % arg_name)
 
         if argname in ['shear_range', 'width_shift_range', 'height_shift_range'] and args[argname] > 1:
