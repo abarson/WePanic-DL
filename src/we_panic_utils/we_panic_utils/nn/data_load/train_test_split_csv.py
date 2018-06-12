@@ -141,12 +141,21 @@ def create_train_test_split_dataframes(data_path, metadata, output_dir,
 def cross_val_split(data_path, metadata, nfolds=4):
     metadf = pd.read_csv(metadata)
     metadf = metadf[metadf.GOOD == 1]
+    
+    path = list(train_df['FRAME_PTH'])[random_index]
     X = list(metadf['SUBJECT'])
     y = list(metadf['TRIAL'])
     skf = StratifiedKFold(n_splits=nfolds)
     dataframes_x, dataframes_y = [], []
     
+    path = list(train_df['FRAME_PTH'])[random_index]
     for x_index, y_index in skf.split(X, y):
+        xs = [X[xi] for xi in x_index]
+        ys = [y[yi] for yi in y_index]
+        
+        dfx = metadf[(metadf['SUBJECT'].isin(xs)) & (metadf['TRIAL'].isin(ys))]
+         
+        #dfx.append(metadf[(metadf['SUBJECT'] == ) & (metadf['Trial'] == trial)])
         pass
 
 def ttswcsv(data_path, metadata, output_dir,
