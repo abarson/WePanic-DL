@@ -17,18 +17,22 @@ class Engine():
     The engine for training/testing a model
 
     args:
-        data - directory containing subject frame data
-        model_type - the model to be trained/tested
-        csv - the csv containing all of the stats for every sample
-        batch_size - the batch size
-        epochs - number of epochs to train
-        train - boolean stating whether or not to train
-        test - boolean stating whether or not to test
-        inputs - the input directory to be used if testing without training
-        outputs - the output directory to save the new model to
-        frameproc - FrameProcessor object for augmentation
-        input_shape - shape of the sequence passed, 60 separate 100x100x3 frames
-        output_shape - the number of outputs
+        data ------------ directory containing subject frame data
+        model_type ------ the model to be trained/tested
+        csv ------------- the csv containing all of the stats for every sample
+        batch_size ------ the batch size
+        epochs ---------- number of epochs to train
+        train ----------- boolean stating whether or not to train
+        test ------------ boolean stating whether or not to test
+        inputs ---------- the input directory to be used if testing without training
+        outputs --------- the output directory to save the new model to
+        frameproc ------- FrameProcessor object for augmentation
+        input_shape ----- shape of the sequence passed, 60 separate 100x100x3 frames
+        output_shape ---- the number of outputs
+        steps_per_epoch - steps per epoch 
+        kfold ----------- not used if None, otherwise this is the number of folds to
+                        \ use in a kfold cross validation
+
     """
     def __init__(self, 
                  data,
@@ -43,7 +47,8 @@ class Engine():
                  frameproc,
                  input_shape,
                  output_shape,
-                 steps_per_epoch=100):
+                 steps_per_epoch,
+                 kfold=None):
 
         #passed in params
         self.data = data
