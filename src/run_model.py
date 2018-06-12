@@ -216,11 +216,20 @@ def summarize_arguments(args):
     keys = vars(args).keys()
     max_arglen = max([len(k) for k in keys])
     
-    formatter = "[%{}s] %+15s".format(max_arglen)
-
+    formatter = "[%{}s] %40s".format(max_arglen)
+    
+    summ_str = ""
     for k in keys:
-        print(formatter % (k, vars(args)[k]))
+        summ_str += formatter % (k, vars(args)[k]) + '\n'
+    
+    print(summ_str)
+    
+    arg_summary = os.path.join(args.output_dir, 'arg_summary.txt')
 
+    with open(arg_summary, 'w') as summary:
+        summary.write(summ_str)
+    
+    print('wrote arguments passed to %s' % arg_summary)
     
     
 class ArgumentError(Exception):
