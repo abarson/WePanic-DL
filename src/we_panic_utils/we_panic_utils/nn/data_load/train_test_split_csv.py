@@ -9,6 +9,7 @@ import random
 random.seed(7)
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
+
 """
 Public API
 """
@@ -104,18 +105,18 @@ def __dataframe_from_subject_info(metadf, subjects):
         dfs.append(metadf[(metadf['Subject'] == sub) & (metadf['Trial'] == trial)])
         #extract augmented videos associated with this particular subject-trial pair.
         dfs.append(metadf[metadf['Subject'].apply(lambda x: not x.isdigit() and int(x[-2:]) == int(sub)) 
-            & (metadf['Trial'] == trial)])
+                   & (metadf['Trial'] == trial)])
     return pd.concat(dfs)
 
 def create_train_test_split_dataframes(data_path, metadata, output_dir,
-            test_split=0.2, val_split=0.15, verbose=True):
+                                       test_split=0.2, val_split=0.15, verbose=True):
     """
     Description coming soon!
     """
 
     metadf = pd.read_csv(metadata)
-    metadf['Path'] = metadf.apply (lambda row: os.path.join(data_path, "S" + str(row["Subject"]).zfill(4), 
-        "Trial%d_frames" % row["Trial"]), axis=1)
+    metadf['Path'] = metadf.apply(lambda row: os.path.join(data_path, "S" + str(row["Subject"]).zfill(4), 
+                                                           "Trial%d_frames" % row["Trial"]), axis=1)
     
     real_subjects_df = metadf[metadf['Subject'].apply(lambda x: x.isdigit())]
     
@@ -137,6 +138,39 @@ def create_train_test_split_dataframes(data_path, metadata, output_dir,
 
     return train_df, test_df, val_df
 
+
+def fold(df, k=4):
+    """
+    a generator for serving up train/validation splits
+
+    args:
+        df - the dataframe that describes all of the valid data
+        k - the number of folds
+
+    yields:
+        training and validation dataframes
+    """
+    df = df[df['GOOD'] == 1]  # just to make sure
+    uniques = list(set(df['SUBJECT'].values.tolist()))
+    n_val = int(np.ceil(len(uniques) / k))
+    n_train = len(uniques) - n_val
+
+    validated = []
+    i = 0
+    while i < k:
+        train = validated + random.sample(uniques, n_train)
+        val = list(set(uniques) - set(train))
+
+        train_df = df[df['SUBJECT'].isin(train)]
+        val_df = df[df['SUBJECT'].isin(val)]
+
+        i += 1
+        validated.extend(val)
+        uniques = list(set(uniques) - set(validated))
+
+        yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
+
+"""
 #return four dataframes four now?
 def cross_val_split(data_path, metadata, nfolds=4):
     metadf = pd.read_csv(metadata)
@@ -157,6 +191,7 @@ def cross_val_split(data_path, metadata, nfolds=4):
          
         #dfx.append(metadf[(metadf['SUBJECT'] == ) & (metadf['Trial'] == trial)])
         pass
+"""
 
 def ttswcsv(data_path, metadata, output_dir,
              test_split=0.2, val_split=0.2, verbose=True):

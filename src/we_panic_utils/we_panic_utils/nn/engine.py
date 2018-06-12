@@ -1,5 +1,5 @@
 # intra-library imports
-from .data_load import ttswcsv
+from .data_load import ttswcsv, fold
 from .models import C3D, CNN_3D, CNN_3D_small
 
 # inter-library imports
@@ -11,6 +11,7 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import StratifiedKFold
 import numpy as np
+from glob import glob
 
 class Engine():
     """
@@ -71,6 +72,8 @@ class Engine():
         self.test_set = None
         self.val_set = None
 
+        self.kfold = kfold
+
     def __train_model(self):
         """
         Internal method to train the model. This method is responsible for instantiating the model
@@ -118,6 +121,19 @@ class Engine():
                                  validation_data=val_generator,
                                  validation_steps=len(self.val_set), workers=4)
 
+    @property
+    def model_path(self):
+        model_dir = os.path.join(self.inputs, 'models')
+        model_path = ''
+        
+        for path in os.listdir(model_dir):
+            if self.model_type in path and path.endswith(".h5"):
+                model_path = os.path.join(model_dir, path)
+                break
+
+        if model_path == '':
+            raise FileNotFoundError("Could not locate model file in {}-- have you trained the model yet?".format(model_dir))
+
     def __test_model(self):
         """
         Internal method to test the model. If the model was not trained before this method is called,
@@ -126,18 +142,8 @@ class Engine():
         """
 
         if not self.model:  #load the model if it wasn't created during the training phase
-            model_dir = os.path.join(self.inputs, "models")
-            print("Testing model without training. Loading model from {}".format(model_dir))
-            model_path = "" 
-            for path in os.listdir(model_dir):
-                if self.model_type in path and path.endswith(".h5"):
-                    model_path = os.path.join(model_dir, path)
-                    break
 
-            if model_path == "":
-                raise FileNotFoundError("Could not locate model file in {}-- have you trained the model yet?".format(model_dir))
-
-            self.model = models.load_model(model_path)
+            self.model = models.load_model(self.model_path)
 
             test_dir = os.path.join(self.inputs, "test.csv")
             self.test_set = pd.read_csv(test_dir)  #load the testing data csv
