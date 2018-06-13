@@ -346,7 +346,8 @@ if __name__ == "__main__":
                     frameproc=fp,
                     input_shape=input_shape,
                     output_shape=2,
-                    steps_per_epoch=args.steps_per_epoch)
+                    steps_per_epoch=args.steps_per_epoch,
+                    kfold=args.kfold)
 
     print("starting ... ")
     start = time.time()

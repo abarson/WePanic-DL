@@ -1,0 +1,20 @@
+[        model_type]                                   3D-CNN
+[              data]                                   frames
+[               csv]           wepanic_collated_catalogue.csv
+[             train]                                    False
+[              test]                                    False
+[        batch_size]                                        4
+[            epochs]                                      100
+[        output_dir]                                  outputs
+[         input_dir]                                  outputs
+[    rotation_range]                                        0
+[ width_shift_range]                                      0.0
+[height_shift_range]                                      0.0
+[        zoom_range]                                      0.0
+[       shear_range]                                      0.0
+[     vertical_flip]                                    False
+[   horizontal_flip]                                    False
+[      greyscale_on]                                    False
+[   steps_per_epoch]                                      100
+[        dimensions]                                 (32, 32)
+[             kfold]                                        4

@@ -26,6 +26,8 @@ def check_exists_create_if_not(directory, suppress=False):
             print("[check_exists_create_if_not] making a dir: %s" % directory)
         os.makedirs(directory)
 
+    return directory 
+
 def fetch_path(subj, data_dir):
 
     subject = "S" + ("0" * (4-len(subj))) + subj

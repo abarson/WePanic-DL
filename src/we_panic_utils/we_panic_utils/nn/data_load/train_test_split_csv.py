@@ -156,15 +156,17 @@ def fold(df, k=4):
     n_train = len(uniques) - n_val
 
     validated = []
-    i = 0
-    while i < k:
-        train = validated + random.sample(uniques, n_train)
-        val = list(set(uniques) - set(train))
+    for _ in range(k):
+        
+        try:
+            train = validated + random.sample(uniques, n_train - len(validated))
+        except ValueError:
+            train = validated
 
+        val = list(set(uniques) - set(train))
         train_df = df[df['SUBJECT'].isin(train)]
         val_df = df[df['SUBJECT'].isin(val)]
 
-        i += 1
         validated.extend(val)
         uniques = list(set(uniques) - set(validated))
 

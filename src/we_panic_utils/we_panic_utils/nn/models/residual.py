@@ -15,15 +15,15 @@ noteworthy citations:
 
 from __future__ import division
 from keras.models import Model
-from keras.layers import Input, Activation, Dense, Flatten, Lambda, LSTM, ConvLSTM2D
-from keras.layers.convolutional import Conv2D, MaxPooling2D, AveragePooling2D
-from keras.layers.merge import add
-from keras.layers.wrappers import TimeDistributed
-from keras.layers.normalization import BatchNormalization
-from keras.regularizers import l2
-from keras import backend as K
+#from keras.layers import Input, Activation, Dense, Flatten, Lambda, LSTM, ConvLSTM2D
+#from keras.layers.convolutional import Conv2D, MaxPooling2D, AveragePooling2D
+#from keras.layers.merge import add
+#from keras.layers.wrappers import TimeDistributed
+#from keras.layers.normalization import BatchNormalization
+#from keras.regularizers import l2
+#from keras import backend as K
 
-from keras_resnet.blocks import time_distributed_bottleneck_2d
+#f#rom keras_resnet.blocks import time_distributed_bottleneck_2d
 
 K.set_image_data_format('channels_last')
 

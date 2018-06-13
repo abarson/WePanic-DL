@@ -1,7 +1,7 @@
 # intra-library imports
 from .data_load import ttswcsv, fold
 from .models import C3D, CNN_3D, CNN_3D_small
-from .basics import check_exists_create_if_not
+from ..basic_utils.basics import check_exists_create_if_not
 
 # inter-library imports
 from keras import models
@@ -115,7 +115,6 @@ class Engine():
         
         return model_pth
     
-    @property
     def callbacks(self,
                   train_results='unnormalized-training_results.log',
                   test_results='test_results.log',
@@ -140,9 +139,10 @@ class Engine():
 
         else:
             checkpointer = ModelCheckpoint(filepath=os.path.join(self.outputs, 'models', chkpt), verbose=1, save_best_only=True)
-
-        test_results = os.path.join(self.outputs, test_results)
-        train_results = os.path.join(self.outputs, train_results)
+        
+        results_dir = check_exists_create_if_not(os.path.join(self.outputs, 'results',))
+        test_results = os.path.join(results_dir, test_results)
+        train_results = os.path.join(results_dir, train_results)
         
         #this will record the output of the model on the training data at the end of every epoch
         train_callback = TestResultsCallback(self.processor, 
@@ -155,7 +155,7 @@ class Engine():
         test_callback = TestResultsCallback(self.processor,
                                             self.test_set,
                                             test_results,
-                                            self.batsch_size)
+                                            self.batch_size)
         
         callbacks = [csv_logger, checkpointer, test_callback, train_callback]    
         
@@ -193,7 +193,9 @@ class Engine():
         """
         split the data a la cross-validation and train up some models
         """
-        
+            
+        print('>>> cross validating on %d folds' % self.kfold)
+
         # get all the data
         metadf = pd.read_csv(self.metadata)
         
@@ -201,11 +203,11 @@ class Engine():
         good_samps = metadf[metadf['GOOD'] == 1]
 
         # records for later
-        cv_results = pd.DataFrame(columns=['model_type','model_idx','predictive_acc','loss'])
+        cv_results = pd.DataFrame(columns=['model_type','model_idx', 'loss']) #'predictive_acc')
         
 
         # do self.kfold separate training/validation iters
-        for idx, train_set, val_set in enumerate(fold(good_samps, k=self.kfold)):
+        for idx, (train_set, val_set) in enumerate(fold(good_samps, k=self.kfold)):
             
             # record :)
             self._record_cvsets(train_set, val_set, idx) 
@@ -214,15 +216,27 @@ class Engine():
             # model up
             if self.model_path is not None:
                 self.model = models.load_model(self.model_path)
-            
+                
+            else:
+                self.model = self.__choose_model().instantiate()
+                
+            if not os.path.exists(os.path.join(self.outputs, 'model_summary.txt')):
+                with open(os.path.join(self.outputs,'model_summary.txt'), 'w') as summary:
+                    self.model.summary(print_fn=lambda x: summary.write(x + '\n'))
+
             # get the train/val gens
-            tgen = self.processor.train_generator(train_set) 
-            vgen = self.processor.test_generator(val_set)
+            self.test_set = val_set
+            self.train_set = train_set
+
+            tgen = self.processor.train_generator(self.train_set) 
+            vgen = self.processor.test_generator(self.test_set)
             
+            print('>>> validation set size: %d' % len(self.test_set))
+            vsteps = len(self.test_set)
             # get some callbacks with custom filepaths
             callbacks = self.callbacks(train_results='unnormalized_training{}.log'.format(idx),
                                        test_results='test_results{}.log'.format(idx),
-                                       csv_log='training.log{}'.format(idx),
+                                       csv_log='training{}.log'.format(idx),
                                        chkpt='CV_%d_%s.h5' % (idx, self.model_type)) 
             
             # fit
@@ -232,18 +246,18 @@ class Engine():
                                      verbose=1,
                                      callbacks=callbacks,
                                      validation_data=vgen,
-                                     validation_steps=len(val_set), workers=4)
+                                     validation_steps=vsteps,
+                                     workers=4)
             
             # record predictive acc and loss
-            pred = self.model.predict_generator(vgen, len(val_set))
-            loss = self.model.evaluate_generator(vgen, len(val_set))[0]
-            cv_results.loc[idx] = [self.model_type, idx, pred, loss]
+            #pred = self.model.predict_generator(vgen, vsteps)
+            loss = self.model.evaluate_generator(vgen, vsteps)[0]
+            cv_results.loc[idx] = [self.model_type, idx, loss]
         
         cv_results.to_csv(os.path.join(self.outputs,'cvresults.csv'))
     
-        print('finished a %d-fold cross validation\n\tpredictive_acc: %0.5f\n\tloss: %0.5f\n\t' % (self.kfold,
-                                                                                                   cv_results['predictive_acc'].mean(),
-                                                                                                   cv_results['loss'].mean()))
+        print('finished a %d-fold cross validation\n\tavg_loss: %0.5f' % (self.kfold,
+                                                                          cv_results['loss'].mean()))
 
     def _record_cvsets(self, train, val, idx):
         """
@@ -252,6 +266,7 @@ class Engine():
 
         """
         cvsets = check_exists_create_if_not(os.path.join(self.outputs, 'CVsets'))
+        print(cvsets)
         train.to_csv(os.path.join(cvsets, 'train{}.csv'.format(idx)))
         val.to_csv(os.path.join(cvsets, 'val{}.csv'.format(idx)))
 
@@ -272,8 +287,7 @@ class Engine():
 
             if self.test:
                 self.__test_model()
-
-    
+        
     def __choose_model(self):
         """
         choose a model based on preferences
