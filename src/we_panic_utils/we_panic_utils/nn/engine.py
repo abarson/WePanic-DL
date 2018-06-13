@@ -215,11 +215,12 @@ class Engine():
             
             # if we are fine tuning a model or something, load that
             # model up
-            if self.model_path is not None:
-                self.model = models.load_model(self.model_path)
+            #if self.model_path is not None:
+            #    self.model = models.load_model(self.model_path)
                 
-            else:
-                self.model = self.__choose_model().instantiate()
+            #else:
+            print('>>> new model ...')
+            self.model = self.__choose_model().instantiate()
                 
             if not os.path.exists(os.path.join(self.outputs, 'model_summary.txt')):
                 with open(os.path.join(self.outputs,'model_summary.txt'), 'w') as summary:
