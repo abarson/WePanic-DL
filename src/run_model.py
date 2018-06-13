@@ -129,6 +129,11 @@ def parse_input():
                         type=int,
                         nargs=2,
                         default=(32,32))
+    
+    parser.add_argument('--kfold',
+                        help='folds for CV',
+                        type=int,
+                        default=None)
 
     return parser
 
@@ -165,7 +170,7 @@ def validate_arguments(args):
                          "got %d" % args.epochs)
     
     # if --test=False and --train=False, exit because there's nothing to do
-    if (not args.train) and (not args.test):
+    if (not args.train) and (not args.test) and args.kfold is None:
         raise ValueError("Both --train and --test were provided as False " +
                          "exiting because there's nothing to do ...")
     
@@ -186,7 +191,7 @@ def validate_arguments(args):
             raise RuntimeError("Problems with directory structure of %s" % args.input_dir)
         
     # if --test=True and --train=True, then we need only an output directory
-    if args.train and args.test:
+    if (args.train and args.test) or args.kfold is not None:
         args.input_dir = generate_output_directory(args.output_dir)
     
     bad_augs = []
