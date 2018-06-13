@@ -252,7 +252,10 @@ class Engine():
             
             # record predictive acc and loss
             #pred = self.model.predict_generator(vgen, vsteps)
+            loss = None
+            self.model = models.load_model(os.path.join(self.outputs, 'models', 'CV_%d_%s.h5' % (idx, self.model_type)))
             loss = self.model.evaluate_generator(vgen, vsteps)[0]
+
             end = time.time()
             total = (end - start) / 60
             
