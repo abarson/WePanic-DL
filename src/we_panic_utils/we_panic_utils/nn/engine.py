@@ -12,7 +12,7 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import StratifiedKFold
 import numpy as np
-from glob import glob
+import time
 
 class Engine():
     """
@@ -203,12 +203,13 @@ class Engine():
         good_samps = metadf[metadf['GOOD'] == 1]
 
         # records for later
-        cv_results = pd.DataFrame(columns=['model_type','model_idx', 'loss']) #'predictive_acc')
+        cv_results = pd.DataFrame(columns=['model_type','model_idx','elapsed_time', 'loss']) #'predictive_acc')
         
 
         # do self.kfold separate training/validation iters
         for idx, (train_set, val_set) in enumerate(fold(good_samps, k=self.kfold)):
             
+            start = time.time()
             # record :)
             self._record_cvsets(train_set, val_set, idx) 
             
@@ -252,8 +253,11 @@ class Engine():
             # record predictive acc and loss
             #pred = self.model.predict_generator(vgen, vsteps)
             loss = self.model.evaluate_generator(vgen, vsteps)[0]
-            cv_results.loc[idx] = [self.model_type, idx, loss]
-        
+            end = time.time()
+            total = (end - start) / 60
+            
+            cv_results.loc[idx] = [self.model_type, idx, total, loss]
+         
         cv_results.to_csv(os.path.join(self.outputs,'cvresults.csv'))
     
         print('finished a %d-fold cross validation\n\tavg_loss: %0.5f' % (self.kfold,

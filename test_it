@@ -3,8 +3,8 @@
 pip install --upgrade src/we_panic_utils/
 screen python src/run_model.py 3D-CNN frames \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/exp0_noaugmentation_3DCNN \
---epochs 40 \
---steps_per_epoch 500 \
+--output_dir run_history/TEST \
+--epochs 1 \
+--steps_per_epoch 10 \
 --batch_size 14 \
 --kfold 4
