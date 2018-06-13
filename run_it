@@ -7,5 +7,5 @@ screen python src/run_model.py 3D-CNN frames \
 --epochs 40 \
 --steps_per_epoch 500 \
 --batch_size 14 \
---kfold 4
+--kfold 4 \
 --greyscale_on
