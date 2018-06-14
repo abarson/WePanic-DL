@@ -1,3 +1,4 @@
+from we_panic_utils.basic_utils.basics import check_exists_create_if_not
 import os
 import numpy as np
 import sys
@@ -5,10 +6,12 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib import cm 
 
+plt.switch_backend('agg')
+
 LOSS = 1
 VAL_LOSS = 3
 
-def plot_multiple_losses(dir_in, save_dir):
+def plot_multiple_losses(dir_in):
     """
     Given a directory within the run history archive, this method will extract all of
     the training log files and produce two plots for all folds of a single cross validation training.
@@ -32,11 +35,11 @@ def plot_multiple_losses(dir_in, save_dir):
     patches = [mpatches.Patch(color=color, label=("Fold " + str(i))) for i, color in enumerate(color)]
 
     plt.subplot(211)
-    plt.title(dir_in.split('/')[-1] + ' Cross Validation')
-    plt.ylabel('Training Loss')
-    for loss, c in zip(losses, color):
-        plt.plot([i for i in range(len(loss))], loss, c=c) 
+    for i, (loss, c) in enumerate(zip(losses, color)):
+        plt.plot([j for j in range(len(loss))], loss, c=c, label='Fold {}'.format(i))
+
     plt.legend(handles=patches)
+    #plt.legend()
 
     plt.subplot(212)
     plt.ylabel('Validation Loss')
@@ -44,9 +47,11 @@ def plot_multiple_losses(dir_in, save_dir):
         plt.plot([i for i in range(len(val_loss))], val_loss, c=c) 
 
     plt.tight_layout()
-
-    plt.savefig(os.path.join(save_dir, dir_in.split('/')[-1] + '.png'))
-    plt.show()
+    
+    figdir = check_exists_create_if_not(os.path.join(dir_in, 'figs')) # dir_in.split('/')[-1]+'.png'))
+    myplot = os.path.join(figdir, dir_in.split('/')[-1] + '.png')
+    plt.savefig(myplot)
+#    plt.show()
 
 def __extract_losses(log_file):
     """
@@ -72,5 +77,4 @@ def __extract_losses(log_file):
 
 if __name__ == '__main__':
     f = sys.argv[1]
-    o = sys.argv[2]
-    plot_multiple_losses(f, o)
+    plot_multiple_losses(f)
