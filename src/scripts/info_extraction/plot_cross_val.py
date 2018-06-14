@@ -35,11 +35,12 @@ def plot_multiple_losses(dir_in):
     patches = [mpatches.Patch(color=color, label=("Fold " + str(i))) for i, color in enumerate(color)]
 
     plt.subplot(211)
+    plt.title(dir_in.split('/')[-1] + ' Cross Validation')
+    plt.ylabel('Training Loss')
     for i, (loss, c) in enumerate(zip(losses, color)):
         plt.plot([j for j in range(len(loss))], loss, c=c, label='Fold {}'.format(i))
 
     plt.legend(handles=patches)
-    #plt.legend()
 
     plt.subplot(212)
     plt.ylabel('Validation Loss')
@@ -51,7 +52,6 @@ def plot_multiple_losses(dir_in):
     figdir = check_exists_create_if_not(os.path.join(dir_in, 'figs')) # dir_in.split('/')[-1]+'.png'))
     myplot = os.path.join(figdir, dir_in.split('/')[-1] + '.png')
     plt.savefig(myplot)
-#    plt.show()
 
 def __extract_losses(log_file):
     """
