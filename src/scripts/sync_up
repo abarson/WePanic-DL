@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo '>>> getting syncable folders on the cloud'
+unsynced=$(rsync --dry-run -avzhe ssh dlgpu:~/WePanic-DL/run_history | awk '{print $5}' | head --lines=-3)
+
+for item in $unsynced; do
+
+    n_slash=$(echo $item | sed -E 's/(.)/\1\n/g' | grep -c '/')
+    #echo $n_slash : $item
+    if [ $n_slash -eq 1 ]; then
+        tarname=$(echo $item | cut -d '/' -f 2).tar.gz
+        relpath=$(echo $item | cut -d '/' -f 2)
+        echo '>>>' $tarname $item
+        echo ---------------------------------
+        echo '>>> [dlgpu] tarring'
+        ssh dlgpu "cd ~/WePanic-DL/run_history; tar -czf $tarname $relpath"
+        echo '>>> [arachnazar] copying down'
+        scp dlgpu:~/WePanic-DL/run_history/$tarname ~/Desktop/projects/VAIL/WePanic-DL/run_history
+        echo '>>> [dlgpu] cleaning up'
+        ssh dlgpu "cd ~/WePanic-DL/run_history; rm $tarname"
+        echo '>>> [arachanzar] opening up recieved package'
+        cd ~/Desktop/projects/VAIL/WePanic-DL/run_history
+        tar -xzf $tarname
+        rm $tarname
+    fi
+done
