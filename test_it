@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-screen python src/run_model.py 3D-CNN frames \
+python src/run_model.py 3D-CNN frames \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
 --epochs 1 \
