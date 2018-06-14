@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib import cm 
 
+plt.switch_backend('agg')
 LOSS = 1
 VAL_LOSS = 3
 

@@ -48,8 +48,8 @@ class Engine():
                  outputs,
                  frameproc,
                  input_shape,
-                 output_shape,
-                 steps_per_epoch,
+                 output_shape=2,
+                 steps_per_epoch=500,
                  kfold=None):
 
         #passed in params
@@ -172,12 +172,12 @@ class Engine():
 
             self.model = models.load_model(self.model_path)
 
-            test_dir = os.path.join(self.inputs, "test.csv")
-            self.test_set = pd.read_csv(test_dir)  #load the testing data csv
+            #test_dir = os.path.join(self.inputs, "test.csv")
+            #self.test_set = pd.read_csv(test_dir)  #load the testing data csv
 
         else: #test the model created during training
             print("Testing model after training.")
-
+        
         test_generator = self.processor.test_generator(self.test_set)
         pred = self.model.predict_generator(test_generator, len(self.test_set))
         loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
@@ -185,9 +185,10 @@ class Engine():
         with open(os.path.join(self.outputs, "test.log"), 'w') as log:
             log.write(str(loss)) 
 
-        print(loss)
-        print(pred) 
+        #print(loss)
+        #print(pred) 
 
+        return pred, loss
     
     def __cross_val(self):
         """
@@ -294,7 +295,7 @@ class Engine():
                 self.__train_model()
 
             if self.test:
-                self.__test_model()
+                return self.__test_model()
         
     def __choose_model(self):
         """
