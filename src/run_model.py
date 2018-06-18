@@ -135,6 +135,11 @@ def parse_input():
                         type=int,
                         default=None)
 
+    parser.add_argument('--num_val_clips',
+                        help='number of validation clips to sample from validation set',
+                        type=int,
+                        default=None)
+
     return parser
 
 
@@ -324,7 +329,8 @@ if __name__ == "__main__":
                         vertical_flip=args.vertical_flip,
                         horizontal_flip=args.horizontal_flip,
                         batch_size=args.batch_size,
-                        greyscale_on=args.greyscale_on)
+                        greyscale_on=args.greyscale_on,
+                        num_val_clips=args.num_val_clips)
 
     input_shape = None
     x, y = args.dimensions

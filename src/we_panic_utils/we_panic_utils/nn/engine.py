@@ -355,7 +355,7 @@ class TestResultsCallback(Callback):
                     
                     log.write(str(subj) + ', ' + str(tri) + '| prediction=' + str(p) + ', actual=' + str([h, r]) + '\n')
                     i+=1
-                    if i % 2 == 0:
+                    if i % self.test_gen.num_val_clips == 0:
                         s += 1
                     if s == len(subjects):
                         s = 0
