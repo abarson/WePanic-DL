@@ -35,8 +35,10 @@ NEXT_STARTING_POINT_DATA = [(6, 1), (6, 2), (8, 2), (13, 1),
 NEW_BATCH = [(38, 1), (38, 2), (39, 1), (39, 2),
              (47, 1), (47, 2), (48, 1), (48, 2)]
 
+OUR_RECORDS = [(101, 1), (101, 2), (102, 1), (103, 2),
+               (104, 1), (104, 2)]
 
-GOOD_PAIRS = list(set(GOOD_STARTING_POINT_DATA + NEXT_STARTING_POINT_DATA + NEW_BATCH))
+GOOD_PAIRS = list(set(GOOD_STARTING_POINT_DATA + NEXT_STARTING_POINT_DATA + NEW_BATCH + OUR_RECORDS))
 
 # our tidy data columns
 COLUMNS = 'SUBJECT,TRIAL,FRAME_PTH,HEART_RATE_BPM,RESP_RATE_BR_PM,GOOD'.split(',')
