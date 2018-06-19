@@ -1,16 +1,65 @@
-import sys
 import os
+import pandas as pd
 import numpy as np
+
 from functools import reduce
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib import cm 
-
 plt.switch_backend('agg')
+
+from we_panic_utils.basic_utils.basics import check_exists_create_if_not
+
 LOSS = 1
 VAL_LOSS = 3
 
-def compare_losses(directories):
+def plot_multiple_losses(dir_in, dir_out=None):
+    """
+    Given a directory within the run history archive, this method will extract all of
+    the training log files and produce two plots for all folds of a single cross validation training.
+    This method supports any number of folds, and will assign each fold a unique color and label.
+
+    params:
+        dir_in : the input experiment directory 
+    """
+
+    logs = [os.path.join(dir_in, log) for log in os.listdir(dir_in) if '.log' in log]
+    logs.sort()
+    plt.figure('Cross Validation Training Loss and Validation Loss')
+    losses, val_losses = [], []
+    for log in logs:
+        print(log)
+        loss, val_loss = __extract_losses(log)
+        losses.append(loss)
+        val_losses.append(val_loss)
+    
+    color=cm.rainbow(np.linspace(0,1,len(logs)))
+    patches = [mpatches.Patch(color=color, label=("Fold " + str(i))) for i, color in enumerate(color)]
+
+    plt.subplot(211)
+    plt.title(dir_in.split('/')[-1] + ' Cross Validation')
+    plt.ylabel('Training Loss')
+    for i, (loss, c) in enumerate(zip(losses, color)):
+        plt.plot([j for j in range(len(loss))], loss, c=c, label='Fold {}'.format(i))
+
+    plt.legend(handles=patches)
+
+    plt.subplot(212)
+    plt.ylabel('Validation Loss')
+    for val_loss, c in zip(val_losses, color):
+        plt.plot([i for i in range(len(val_loss))], val_loss, c=c) 
+
+    plt.tight_layout()
+    
+    if dir_out is None:
+        figdir = check_exists_create_if_not(os.path.join(dir_in, 'figs')) # dir_in.split('/')[-1]+'.png'))
+        myplot = os.path.join(figdir, dir_in.split('/')[-1] + '.png')
+    else:
+        check_exists_create_if_not(os.path.join(dir_out))
+        myplot = os.path.join(dir_out, dir_in.split('/')[-1] + '.png')
+    plt.savefig(myplot)
+
+def compare_losses(directories, dir_out):
     log_collections = []
     for d in directories:
         logs = [os.path.join(d, log) for log in os.listdir(d) if '.log' in log]
@@ -42,10 +91,15 @@ def compare_losses(directories):
 
     plt.tight_layout()
     
-    #figdir = check_exists_create_if_not(os.path.join(dir_in, 'figs')) # dir_in.split('/')[-1]+'.png'))
-    #myplot = os.path.join(figdir, dir_in.split('/')[-1] + '.png')
-    plt.savefig('cross_val.png')
-    plt.show()
+    all_models_str = ""
+    for directory in directories:
+        all_models_str += directory.split('/')[-1] + '+'
+    all_models_str = all_models_str.strip('+')
+    all_models_str += '.png'
+    
+    figdir = check_exists_create_if_not(os.path.join(dir_out)) # dir_in.split('/')[-1]+'.png'))
+    myplot = os.path.join(figdir, all_models_str)
+    plt.savefig(myplot)
 
 def __average_train_val_losses(log_collection):
     train_avgs, val_avgs = [], []
@@ -81,10 +135,3 @@ def __extract_losses(log_file):
             loss.append(float(float(line[LOSS])))
             val_loss.append(float(line[VAL_LOSS]))
         return loss, val_loss
-
-if __name__ == "__main__":
-    paths = sys.argv[1:]
-    if len(paths) < 2:
-        print("Please enter at least two paths for comparison.")
-        sys.exit()
-    compare_losses(paths)
