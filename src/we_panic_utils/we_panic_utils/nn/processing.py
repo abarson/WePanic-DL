@@ -278,6 +278,7 @@ class FrameProcessor:
                  sequence_length=60,
                  greyscale_on=False,
                  num_val_clips=10):
+
         self.rotation_range = rotation_range
         self.width_shift_range = width_shift_range
         self.height_shift_range = height_shift_range
@@ -309,6 +310,7 @@ class FrameProcessor:
 
     @threadsafe_generator    
     def test_generator(self, test_df):
+        print(self.num_val_clips)
         paths, hr, rr = list(test_df["FRAME_PTH"]), list(test_df["HEART_RATE_BPM"]), list(test_df["RESP_RATE_BR_PM"])
         i = 0
         while True:
