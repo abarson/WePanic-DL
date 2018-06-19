@@ -138,7 +138,7 @@ def parse_input():
     parser.add_argument('--num_val_clips',
                         help='number of validation clips to sample from validation set',
                         type=int,
-                        default=None)
+                        default=10)
 
     return parser
 
