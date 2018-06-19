@@ -95,11 +95,11 @@
 93,47.0,2,frames/S0047/Trial2_frames,68.0,12.0,1
 94,48.0,1,frames/S0048/Trial1_frames,58.0,42.0,1
 95,48.0,2,frames/S0048/Trial2_frames,80.0,42.0,1
-96,101.0,1,frames/S0101/Trial1_frames,80.0,18.0,1
-97,101.0,2,frames/S0101/Trial2_frames,126.0,40.0,1
-98,102.0,1,frames/S0102/Trial1_frames,62.0,22.0,1
+96,101.0,1,frames/S0101/Trial1_frames,80.0,18.0,2
+97,101.0,2,frames/S0101/Trial2_frames,126.0,40.0,2
+98,102.0,1,frames/S0102/Trial1_frames,62.0,22.0,2
 99,102.0,2,frames/S0102/Trial2_frames,122.0,28.0,0
 100,103.0,1,frames/S0103/Trial1_frames,82.0,14.0,0
-101,103.0,2,frames/S0103/Trial2_frames,152.0,30.0,1
-102,104.0,1,frames/S0104/Trial1_frames,72.0,18.0,1
-103,104.0,2,frames/S0104/Trial2_frames,77.0,30.0,1
+101,103.0,2,frames/S0103/Trial2_frames,152.0,30.0,2
+102,104.0,1,frames/S0104/Trial1_frames,72.0,18.0,2
+103,104.0,2,frames/S0104/Trial2_frames,77.0,30.0,2

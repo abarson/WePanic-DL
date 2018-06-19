@@ -38,7 +38,7 @@ NEW_BATCH = [(38, 1), (38, 2), (39, 1), (39, 2),
 OUR_RECORDS = [(101, 1), (101, 2), (102, 1), (103, 2),
                (104, 1), (104, 2)]
 
-GOOD_PAIRS = list(set(GOOD_STARTING_POINT_DATA + NEXT_STARTING_POINT_DATA + NEW_BATCH + OUR_RECORDS))
+GOOD_PAIRS = list(set(GOOD_STARTING_POINT_DATA + NEXT_STARTING_POINT_DATA + NEW_BATCH))
 
 # our tidy data columns
 COLUMNS = 'SUBJECT,TRIAL,FRAME_PTH,HEART_RATE_BPM,RESP_RATE_BR_PM,GOOD'.split(',')
@@ -123,6 +123,9 @@ if __name__ == '__main__':
         for trial in [1, 2]:
             
             good = tf_dict[(subject, trial) in GOOD_PAIRS]
+            if (subject, trial) in OUR_RECORDS:
+                good = 2  # throw this pair into the untouched test set
+
             hrate = data[hrate_col.format(trial)]
             resp_rate = data[resp_rate_col.format(trial)]
             frame_pth = os.path.join(FRAME_DIR, subj_fmt % subject, trial_fmt % trial) 
