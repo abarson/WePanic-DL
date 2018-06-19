@@ -3,12 +3,14 @@ from .data_load import ttswcsv, fold
 from .models import C3D, CNN_3D, CNN_3D_small
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
-from .functions import cos_cyclic_lr
+from .functions import cos_cyclic_lr, euclidean_distance_loss
 
 # inter-library imports
 from keras import models
 from keras.callbacks import CSVLogger, ModelCheckpoint, Callback
+from keras.optimizers import Adam
 from keras import backend as K
+
 import os
 import pandas as pd
 from sklearn.metrics import mean_squared_error
@@ -266,7 +268,11 @@ class Engine():
             # record predictive acc and loss
             #pred = self.model.predict_generator(vgen, vsteps)
             loss = None
-            self.model = models.load_model(os.path.join(self.outputs, 'models', 'CV_%d_%s.h5' % (idx, self.model_type)))
+            self.model = models.load_model(os.path.join(self.outputs, 'models', 'CV_%d_%s.h5' % (idx, self.model_type)),
+                                           compile=False)
+
+            optimizer = Adam(lr=1e-5, decay=1e-6)
+            self.model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=['mse'])
             loss = self.model.evaluate_generator(vgen, vsteps)[0]
 
             end = time.time()

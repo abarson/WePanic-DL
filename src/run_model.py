@@ -147,7 +147,7 @@ def parse_input():
                         help='cyclic learning rate function to apply',
                         type=str,
                         default=None)
-
+    
     return parser
 
 

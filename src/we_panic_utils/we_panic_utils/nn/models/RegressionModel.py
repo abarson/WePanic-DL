@@ -6,6 +6,8 @@ from keras.layers.convolutional import Conv3D, MaxPooling3D
 from keras.layers import BatchNormalization
 from keras.models import Model
 
+from ..functions import euclidean_distance_loss
+
 class RegressionModel():
     
     def __init__(self, input_shape, output_shape):
@@ -16,7 +18,7 @@ class RegressionModel():
         model = self.get_model() 
         optimizer = Adam(lr=1e-5, decay=1e-6)
         metrics = ['mse']
-        model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=metrics)
+        model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=metrics)
         model.summary()
 
         return model
