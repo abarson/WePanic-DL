@@ -2,6 +2,7 @@
 from .data_load import ttswcsv, fold
 from .models import C3D, CNN_3D, CNN_3D_small
 from ..basic_utils.basics import check_exists_create_if_not
+from .callbacks import TestResultsCallback
 
 # inter-library imports
 from keras import models
@@ -37,17 +38,17 @@ class Engine():
 
     """
     def __init__(self, 
-                 data,
                  model_type, 
+                 data,
+                 frameproc,
                  csv, 
-                 batch_size, 
-                 epochs, 
-                 train, 
-                 test, 
                  inputs, 
                  outputs,
-                 frameproc,
-                 input_shape,
+                 epochs, 
+                 batch_size=14, 
+                 train=False, 
+                 test=False, 
+                 input_shape=(60, 32, 32, 1),
                  output_shape=2,
                  steps_per_epoch=500,
                  kfold=None):
@@ -312,51 +313,3 @@ class Engine():
             return CNN_3D_small(self.input_shape, self.output_shape)
         
         raise ValueError("Model type does not exist: {}".format(self.model_type))
-
-##This needs a touch up
-class TestResultsCallback(Callback):
-    """
-    a callback for testing the model at certain timesteps
-    and viewing its actual output
-    """
-    def __init__(self, test_gen, test_set, log_file, batch_size, epochs=5):
-        self.test_gen = test_gen
-        self.test_set = test_set
-        self.log_file = log_file
-        self.batch_size = batch_size
-        self.epochs=epochs
-
-    def on_epoch_end(self, epoch, logs):
-
-        #get the actual mse
-        if (epoch+1) % self.epochs == 0:
-            print('Logging tests at epoch', epoch)
-            with open(self.log_file, 'a') as log:
-                gen = self.test_gen.test_generator(self.test_set)
-                
-                pred = self.model.predict_generator(gen, len(self.test_set))
-                
-                subjects = list(self.test_set['SUBJECT'])
-                trial = list(self.test_set['TRIAL'])
-                hr = list(self.test_set['HEART_RATE_BPM'])
-                rr = list(self.test_set['RESP_RATE_BR_PM'])
-                
-                i = 0
-                s = 0
-                error_hr = mean_squared_error(np.reshape([i for t in zip(hr,hr) for i in t], (-1, 1)), [row[0] for row in pred])
-                error_rr = mean_squared_error(np.reshape([i for t in zip(rr,rr) for i in t], (-1, 1)), [row[1] for row in pred])
-                error = error_hr + error_rr
-                log.write("Epoch: " + str(epoch+1) + ', Error: ' + str(error) + '\n')
-                for p in pred:
-                    subj = subjects[s]
-                    tri = trial[s]
-                    h = hr[s]
-                    r = rr[s]
-                    
-                    log.write(str(subj) + ', ' + str(tri) + '| prediction=' + str(p) + ', actual=' + str([h, r]) + '\n')
-                    i+=1
-                    if i % self.test_gen.num_val_clips == 0:
-                        s += 1
-                    if s == len(subjects):
-                        s = 0
-
