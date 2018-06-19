@@ -277,7 +277,7 @@ class FrameProcessor:
                  batch_size=4,
                  sequence_length=60,
                  greyscale_on=False,
-                 test_selections=2):
+                 num_val_clips=10):
         self.rotation_range = rotation_range
         self.width_shift_range = width_shift_range
         self.height_shift_range = height_shift_range
@@ -286,7 +286,7 @@ class FrameProcessor:
         self.horizontal_flip = horizontal_flip
         self.vertical_flip = vertical_flip
         self.greyscale_on = greyscale_on
-        self.test_selections = test_selections
+        self.num_val_clips = num_val_clips
         self.sequence_length = sequence_length
         self.batch_size = batch_size
         self.test_iter = 0
@@ -318,7 +318,7 @@ class FrameProcessor:
             current_rr = float(rr[i]) 
             frame_dir = sorted(os.listdir(current_path))
             
-            for _ in range(self.test_selections):
+            for _ in range(self.num_val_clips):
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(current_path, frame) for frame in frames]
