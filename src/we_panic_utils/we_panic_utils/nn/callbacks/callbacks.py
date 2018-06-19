@@ -17,7 +17,7 @@ class CyclicLRScheduler(Callback):
     Cylic learning rate scheduler
     """
 
-    def __init__(self, schedule, batches_per_epoch, output_dir, verbose=True):
+    def __init__(self, batches_per_epoch, output_dir, schedule, verbose=True):
         super().__init__()
         self.schedule = schedule
         self.batches_per_epoch = batches_per_epoch
@@ -51,7 +51,8 @@ class CyclicLRScheduler(Callback):
             with open(self.output_log, 'a') as f:
                 print(f'\nStep {self.epoch * self.batches_per_epoch + batch}:'
                       f' learning rate = {lr}.', file=f)
-                
+    
+        
 ##This needs a touch up
 class TestResultsCallback(Callback):
     """
