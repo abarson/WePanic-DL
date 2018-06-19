@@ -2,8 +2,9 @@
 functions submodule, defines some useful learning rates, losses, etc to be used
 in conjunction with various functional parts of keras api
 """
+import numpy as np
 
-def cos_cyclic_lr(step, lr, lr0=0.02, total_steps=400, cycles=8):
+def cos_cyclic_lr(step, lr, lr0=0.2, total_steps=400, cycles=8):
     """
          Defines a cyclic learning rate schedule which decays from lr0 to a tiny value
          before starting the next cycle back at lr0.
@@ -20,3 +21,5 @@ def cos_cyclic_lr(step, lr, lr0=0.02, total_steps=400, cycles=8):
 
     """
     return 0.5 * lr0 * (np.cos(np.pi * (step % np.ceil(total_steps / cycles)) / np.ceil(total_steps / cycles)) + 1)
+
+

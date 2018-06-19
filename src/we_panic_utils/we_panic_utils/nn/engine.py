@@ -2,7 +2,8 @@
 from .data_load import ttswcsv, fold
 from .models import C3D, CNN_3D, CNN_3D_small
 from ..basic_utils.basics import check_exists_create_if_not
-from .callbacks import TestResultsCallback
+from .callbacks import TestResultsCallback, CyclicLRScheduler
+from .functions import cos_cyclic_lr
 
 # inter-library imports
 from keras import models
@@ -20,21 +21,23 @@ class Engine():
     The engine for training/testing a model
 
     args:
-        data ------------ directory containing subject frame data
-        model_type ------ the model to be trained/tested
-        csv ------------- the csv containing all of the stats for every sample
-        batch_size ------ the batch size
-        epochs ---------- number of epochs to train
-        train ----------- boolean stating whether or not to train
-        test ------------ boolean stating whether or not to test
-        inputs ---------- the input directory to be used if testing without training
-        outputs --------- the output directory to save the new model to
-        frameproc ------- FrameProcessor object for augmentation
-        input_shape ----- shape of the sequence passed, 60 separate 100x100x3 frames
-        output_shape ---- the number of outputs
-        steps_per_epoch - steps per epoch 
-        kfold ----------- not used if None, otherwise this is the number of folds to
-                        \ use in a kfold cross validation
+        data ------------: directory containing subject frame data
+        model_type ------: the model to be trained/tested
+        csv -------------: the csv containing all of the stats for every sample
+        batch_size ------: the batch size
+        epochs ----------: number of epochs to train
+        train -----------: boolean stating whether or not to train
+        test ------------: boolean stating whether or not to test
+        inputs ----------: the input directory to be used if testing without training
+        outputs ---------: the output directory to save the new model to
+        frameproc -------: FrameProcessor object for augmentation
+        input_shape -----: shape of the sequence passed, 60 separate 100x100x3 frames
+        output_shape ----: the number of outputs
+        steps_per_epoch -: steps per epoch 
+        kfold -----------: not used if None, otherwise this is the number of folds to
+                        \: use in a kfold cross validation
+        cyclic_lr ------: instance of CyclicLRScheduler
+
 
     """
     def __init__(self, 
@@ -51,7 +54,8 @@ class Engine():
                  input_shape=(60, 32, 32, 1),
                  output_shape=2,
                  steps_per_epoch=500,
-                 kfold=None):
+                 kfold=None,
+                 cyclic_lr=None):
 
         #passed in params
         self.data = data
@@ -75,6 +79,7 @@ class Engine():
         self.val_set = None
 
         self.kfold = kfold
+        self.cyclic_lr = cyclic_lr
 
     def __train_model(self):
         """
@@ -158,7 +163,12 @@ class Engine():
                                             test_results,
                                             self.batch_size)
         
-        callbacks = [csv_logger, checkpointer, test_callback, train_callback]    
+
+        callbacks = [csv_logger, checkpointer] #test_callback]  # train_callback]    
+
+        if self.cyclic_lr is not None:
+            assert isinstance(self.cyclic_lr, CyclicLRScheduler), 'cyclic_lr should be a CyclicLRScheduler'
+            callbacks.append(self.cyclic_lr)
         
         return callbacks
 

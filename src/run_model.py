@@ -14,6 +14,9 @@ import we_panic_utils.basic_utils as basic_utils
 from we_panic_utils.nn import Engine
 from we_panic_utils.nn.processing import FrameProcessor
 
+import we_panic_utils.nn.functions as funcs
+from we_panic_utils.nn.callbacks import CyclicLRScheduler
+from functools import partial
 
 def parse_input():
     """
@@ -140,6 +143,11 @@ def parse_input():
                         type=int,
                         default=10)
 
+    parser.add_argument('--cyclic_lr',
+                        help='cyclic learning rate function to apply',
+                        type=str,
+                        default=None)
+
     return parser
 
 
@@ -212,6 +220,22 @@ def validate_arguments(args):
 
     if len(bad_augs) > 0:
         raise ValueError(",".join(bad_augs))
+
+    
+    if args.cyclic_lr is not None:
+        try:
+            inner_func = getattr(funcs, args.cyclic_lr)
+            lr_func = partial(inner_func,
+                              lr0=0.2,
+                              total_steps=args.epochs * args.steps_per_epoch,
+                              cycles=10)
+
+            args.cyclic_lr = CyclicLRScheduler(output_dir=args.output_dir,
+                                               schedule=lr_func,
+                                               steps_per_epoch=args.steps_per_epoch) 
+
+        except AttributeError as e:
+            sys.exit(e)
 
     return args
         
@@ -340,6 +364,9 @@ if __name__ == "__main__":
     else:
         input_shape = (60, x, y, 3)
 
+    #if args.cyclir_lr is not None:
+    #    lr_fun_str = args.cyclic_lr
+
     engine = Engine(data=args.data,
                     model_type=args.model_type,
                     csv=args.csv,
@@ -353,7 +380,8 @@ if __name__ == "__main__":
                     input_shape=input_shape,
                     output_shape=2,
                     steps_per_epoch=args.steps_per_epoch,
-                    kfold=args.kfold)
+                    kfold=args.kfold,
+                    cyclic_lr=args.cyclic_lr)
 
     print("starting ... ")
     start = time.time()

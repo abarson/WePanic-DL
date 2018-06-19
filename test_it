@@ -7,4 +7,5 @@ python src/run_model.py 3D-CNN frames \
 --epochs 1 \
 --steps_per_epoch 10 \
 --batch_size 14 \
---kfold 4
+--kfold 4 \
+--cyclic_lr cos_cyclic_lr 
