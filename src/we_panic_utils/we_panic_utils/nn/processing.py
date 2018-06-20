@@ -245,7 +245,8 @@ def process_img(frame, input_shape, greyscale_on=False, redscale_on=False):
     
     if redscale_on:
         x = x[:,:,-1]
-
+        x = np.reshape(x, x.shape + tuple([1])) 
+    
     return x
 
 
@@ -305,7 +306,8 @@ class FrameProcessor:
         self.sequence_length = sequence_length
         self.batch_size = batch_size
         self.test_iter = 0
-
+        
+        print('[processing] redscale_on : %s' % self.redscale_on)
         assert type(self.rotation_range) == int, "rotation_range should be integer valued"
 
         assert type(self.width_shift_range) == float, "width_shift_range should be a float"
@@ -364,7 +366,7 @@ class FrameProcessor:
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(path, frame) for frame in frames]
 
-                sequence = build_image_sequence(frames, greyscale_on=self.greyscale_on)
+                sequence = build_image_sequence(frames, greyscale_on=self.greyscale_on, redscale_on=self.redscale_on)
                 
                 # now we want to apply the augmentation
                 if self.rotation_range > 0.0:

@@ -242,7 +242,7 @@ def validate_arguments(args):
         except AttributeError as e:
             sys.exit(e)
 
-    if not args.greyscale_on and args.redscale_on:
+    if args.greyscale_on and args.redscale_on:
         raise ValueError("both redscale and greyscale cannot be activated")
 
     return args
@@ -352,7 +352,6 @@ if __name__ == "__main__":
     args = validate_arguments(args)
     
     summarize_arguments(args)
-
     fp = FrameProcessor(rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,

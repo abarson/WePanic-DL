@@ -215,6 +215,7 @@ class Engine():
         
         # only samples deemed good
         good_samps = metadf[metadf['GOOD'] == 1]
+        the_most_testiest_samps = metadf[metadf['GOOD'] == 2]
 
         # records for later
         cv_results = pd.DataFrame(columns=['model_type','model_idx','elapsed_time', 'loss']) #'predictive_acc')
@@ -245,8 +246,9 @@ class Engine():
             self.train_set = train_set
 
             tgen = self.processor.train_generator(self.train_set) 
-            vgen = self.processor.test_generator(self.test_set)
-            
+            vgen = self.processor.test_generator(self.test_set) 
+            te_gen = self.processor.test_generator(the_most_testiest_samps)
+
             print('>>> validation set size: %d' % len(self.test_set))
             vsteps = len(self.test_set)
             # get some callbacks with custom filepaths
@@ -273,7 +275,7 @@ class Engine():
 
             optimizer = Adam(lr=1e-5, decay=1e-6)
             self.model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=['mse'])
-            loss = self.model.evaluate_generator(vgen, vsteps)[0]
+            loss = self.model.evaluate_generator(te_gen, len(the_most_testiest_samps))[0]
 
             end = time.time()
             total = (end - start) / 60
