@@ -8,4 +8,5 @@ python src/run_model.py 3D-CNN frames \
 --steps_per_epoch 10 \
 --batch_size 14 \
 --kfold 4 \
---cyclic_lr cos_cyclic_lr 
+--cyclic_lr cos_cyclic_lr \
+--redscale_on
