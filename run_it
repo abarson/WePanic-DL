@@ -1,9 +1,9 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-screen python src/run_model.py 3D-CNN frames \
+screen python src/run_model.py ShallowC3D frames \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/3DCNN_VHflip_rot10_redscale_on \
+--output_dir run_history/ShallowC3D_VHflip_rot10_redscale_on \
 --epochs 30 \
 --steps_per_epoch 500 \
 --batch_size 14 \
@@ -12,3 +12,4 @@ screen python src/run_model.py 3D-CNN frames \
 --horizontal_flip \
 --redscale_on \
 --cyclic_lr cos_cyclic_lr \
+--rotation_range 10
