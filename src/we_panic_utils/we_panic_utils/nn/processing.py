@@ -15,7 +15,7 @@ import keras.backend as K
 from skimage.color import rgb2grey
 from PIL import ImageEnhance
 from PIL import Image as pil_image
-
+import scipy as sp
 from sklearn.preprocessing import MinMaxScaler
 
 class threadsafe_iterator:
@@ -248,6 +248,14 @@ def process_img(frame, input_shape, greyscale_on=False, redscale_on=False):
 
     return x
 
+
+def DFT_img_sequence(imgs, x_dim, y_dim):
+    imgs = np.array(imgs)
+    for x in range(x_dim):
+        for y in range(y_dim):
+            pix = imgs[::,x,y]
+            imgs[::,x,y] = sp.fft(pix).real
+    return imgs
 
 class FrameProcessor:
     """
