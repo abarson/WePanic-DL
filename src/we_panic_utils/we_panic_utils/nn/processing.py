@@ -211,11 +211,11 @@ def get_sample_frames(sample):
     return filenames
   
 
-def build_image_sequence(frames, input_shape=(32, 32, 3), greyscale_on=False):
+def build_image_sequence(frames, input_shape=(32, 32, 3), greyscale_on=False, redscale_on=False):
     """
     return a list of images from filenames
     """
-    return [process_img(frame, input_shape, greyscale_on=greyscale_on) for frame in frames]
+    return [process_img(frame, input_shape, greyscale_on=greyscale_on, redscale_on=redscale_on) for frame in frames]
 
 
 def just_greyscale(arr):
