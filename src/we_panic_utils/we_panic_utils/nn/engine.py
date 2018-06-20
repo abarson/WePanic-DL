@@ -156,17 +156,15 @@ class Engine():
         train_callback = TestResultsCallback(self.processor, 
                                              self.train_set, 
                                              train_results, 
-                                             self.batch_size,
                                              epochs=1)
 
         #this will record the output of the model on the testing data at the end of every 5 epochs
         test_callback = TestResultsCallback(self.processor,
                                             self.test_set,
-                                            test_results,
-                                            self.batch_size)
+                                            test_results)
         
 
-        callbacks = [csv_logger, checkpointer] #test_callback]  # train_callback]    
+        callbacks = [csv_logger, checkpointer, train_callback] #test_callback]  # train_callback]    
 
         if self.cyclic_lr is not None:
             assert isinstance(self.cyclic_lr, CyclicLRScheduler), 'cyclic_lr should be a CyclicLRScheduler'

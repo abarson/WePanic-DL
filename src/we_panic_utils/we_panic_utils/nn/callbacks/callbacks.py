@@ -59,44 +59,39 @@ class TestResultsCallback(Callback):
     a callback for testing the model at certain timesteps
     and viewing its actual output
     """
-    def __init__(self, test_gen, test_set, log_file, batch_size, epochs=5):
+
+    def __init__(self, test_gen, test_set, log_file, epochs=5):
         self.test_gen = test_gen
         self.test_set = test_set
         self.log_file = log_file
-        self.batch_size = batch_size
         self.epochs=epochs
 
-    def on_epoch_end(self, epoch, logs):
+        self.__remove_file_if_exists(log_file) 
 
-        #get the actual mse
+    def __remove_file_if_exists(self, log):
+        if os.path.exists(log):
+            os.remove(log)
+
+    def on_epoch_end(self, epoch, logs):
         if (epoch+1) % self.epochs == 0:
-            print('Logging tests at epoch', epoch)
+            print('Logging tests at epoch', epoch+1)
             with open(self.log_file, 'a') as log:
                 gen = self.test_gen.test_generator(self.test_set)
-                
                 pred = self.model.predict_generator(gen, len(self.test_set))
-                
+
                 subjects = list(self.test_set['SUBJECT'])
                 trial = list(self.test_set['TRIAL'])
                 hr = list(self.test_set['HEART_RATE_BPM'])
                 rr = list(self.test_set['RESP_RATE_BR_PM'])
+                log.write("Epoch: " + str(epoch+1) + '\n')
                 
-                i = 0
-                s = 0
-                error_hr = mean_squared_error(np.reshape([i for t in zip(hr,hr) for i in t], (-1, 1)), [row[0] for row in pred])
-                error_rr = mean_squared_error(np.reshape([i for t in zip(rr,rr) for i in t], (-1, 1)), [row[1] for row in pred])
-                error = error_hr + error_rr
-                log.write("Epoch: " + str(epoch+1) + ', Error: ' + str(error) + '\n')
-                for p in pred:
-                    subj = subjects[s]
-                    tri = trial[s]
-                    h = hr[s]
-                    r = rr[s]
-                    
-                    log.write(str(subj) + ', ' + str(tri) + '| prediction=' + str(p) + ', actual=' + str([h, r]) + '\n')
-                    i+=1
-                    if i % self.test_gen.num_val_clips == 0:
-                        s += 1
-                    if s == len(subjects):
-                        s = 0
+                #Divide the list of predictions into a number of partitions equal to the number of validation clips per subject
+                preds = [pred[i:i+self.test_gen.num_val_clips] for i in range(0, len(pred), self.test_gen.num_val_clips)]
 
+                for s, t, hr, rr, p in zip(subjects, trial, hr, rr, preds):
+                    hr_avg = format(sum(p[0:,0])/len(p), '.3f')
+                    rr_avg = format(sum(p[0:,1])/len(p), '.3f')
+                    hr_std = format(np.std(p[0:,0]), '.2f')
+                    rr_std = format(np.std(p[0:,1]), '.2f')
+                    log.write('{:<4} {} | avg_hr={:<10} avg_rr={:<10} | act_hr={:<6} act_rr={:<6} | hr_std={:<6} rr_std={:<6}\n'
+                            .format(int(s), t, hr_avg, rr_avg, hr, rr, hr_std, rr_std))
