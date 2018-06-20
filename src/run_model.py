@@ -349,9 +349,9 @@ def verify_directory_structure(dirname):
 if __name__ == "__main__":
     
     args = parse_input().parse_args()
+    summarize_arguments(args)
     args = validate_arguments(args)
     
-    summarize_arguments(args)
     fp = FrameProcessor(rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,

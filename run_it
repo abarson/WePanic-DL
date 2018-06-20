@@ -3,11 +3,12 @@
 pip install --upgrade src/we_panic_utils/
 screen python src/run_model.py 3D-CNN frames \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/exp0_noaugmentation_3DCNN_VHflip \
---epochs 40 \
+--output_dir run_history/3DCNN_VHflip_redscale_on \
+--epochs 30 \
 --steps_per_epoch 500 \
 --batch_size 14 \
 --kfold 4 \
 --vertical_flip \
 --horizontal_flip \
---greyscale_on
+--redscale_on \
+--cyclic_lr cos_cyclic_lr \
