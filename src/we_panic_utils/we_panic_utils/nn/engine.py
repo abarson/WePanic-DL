@@ -1,6 +1,6 @@
 # intra-library imports
 from .data_load import ttswcsv, fold
-from .models import C3D, CNN_3D, CNN_3D_small
+#from .models import C3D, CNN_3D, CNN_3D_small
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
 from .functions import cos_cyclic_lr, euclidean_distance_loss
@@ -350,14 +350,6 @@ class Engine():
         """
         choose a model based on preferences
         """
-
-        if self.model_type == "C3D": 
-            return C3D(self.input_shape, self.output_shape)
         
-        if self.model_type == "3D-CNN":
-            return CNN_3D(self.input_shape, self.output_shape)
-        
-        if self.model_type == "CNN_3D_small":
-            return CNN_3D_small(self.input_shape, self.output_shape)
-        
-        raise ValueError("Model type does not exist: {}".format(self.model_type))
+        eval('from .models import %s' % self.model_type)
+        eval('return %s(self.input_shape, self.output_shape' % self.model_type)

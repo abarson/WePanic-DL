@@ -2,6 +2,16 @@
 command line app for train/testing models.
 """
 
+# intra library imports
+import we_panic_utils.basic_utils as basic_utils
+import we_panic_utils.nn.functions as funcs
+import we_panic_utils.nn.models as models
+
+from we_panic_utils.nn import Engine
+from we_panic_utils.nn.processing import FrameProcessor
+from we_panic_utils.nn.callbacks import CyclicLRScheduler
+
+# inter library imports
 import argparse
 import sys
 import os
@@ -9,13 +19,6 @@ import time
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
-
-import we_panic_utils.basic_utils as basic_utils
-from we_panic_utils.nn import Engine
-from we_panic_utils.nn.processing import FrameProcessor
-
-import we_panic_utils.nn.functions as funcs
-from we_panic_utils.nn.callbacks import CyclicLRScheduler
 from functools import partial
 
 def parse_input():
@@ -39,7 +42,7 @@ def parse_input():
     parser.add_argument("model_type",
                         help="the type of model to run",
                         type=str,
-                        choices=["C3D", "3D-CNN", "CNN_3D_small"])
+                        choices=basic_utils.basics.get_module_attributes(models))
     
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",

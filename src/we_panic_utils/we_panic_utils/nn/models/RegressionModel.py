@@ -173,3 +173,5 @@ class CNN_3D_small(RegressionModel):
         model.add(Dropout(0.5))
         model.add(Dense(self.output_shape, activation='linear'))
         return model
+
+#class ShallowC3D
