@@ -107,22 +107,37 @@ class Engine():
                                  validation_data=val_generator,
                                  validation_steps=len(self.val_set), workers=4)
 
-    @property
-    def model_path(self):
-        """
-        a property for finding the path to the model if it exists
-        """
-        model_dir = os.path.join(self.inputs, 'models')
-        model_pth = None
-        
-        for path in os.listdir(model_dir):
-            if self.model_type in path and path.endswith(".h5"):
+    #@property
+    #def model_path(self):
+    #    """
+    #    a property for finding the path to the model if it exists
+    #    """
+    #    model_dir = os.path.join(self.inputs, 'models')
+    #    model_pth = None
+    #    
+    #    for path in os.listdir(model_dir):
+    #        if self.model_type in path and path.endswith(".h5"):
 
-                model_pth = os.path.join(model_dir, path)
-                return model_pth
-        
-        return model_pth
+    #            model_pth = os.path.join(model_dir, path)
+    #            return model_pth
+    #    
+    #    return model_pth
     
+    def __infer_top_model(self):
+        """
+        call this method when we want to check for the best model in 
+        a directory as shown by that directory's cvresults.csv
+        """
+    
+        cvresults = pd.read_csv(os.path.join(self.inputs, 'cvresults.csv')) 
+        minimum_loss = cvresults['loss'].min()
+        top_row = cvresults[cvresults['loss'] == minimum_loss]
+        idx = top_row['model_idx'].values.tolist()[0]
+        model_type = top_row['model_type'].values.tolist()[0]
+        model_name = 'CV_%d_%s.h5' % (idx, model_type)
+        
+        return os.path.join(self.inputs, 'models', model_name) 
+
     def callbacks(self,
                   train_results='unnormalized-training_results.log',
                   test_results='test_results.log',
@@ -164,7 +179,7 @@ class Engine():
                                             test_results)
         
 
-        callbacks = [csv_logger, checkpointer, train_callback] #test_callback]  # train_callback]    
+        callbacks = [csv_logger, checkpointer, train_callback] #test_callback]    
 
         if self.cyclic_lr is not None:
             assert isinstance(self.cyclic_lr, CyclicLRScheduler), 'cyclic_lr should be a CyclicLRScheduler'
@@ -180,26 +195,44 @@ class Engine():
         """
 
         if not self.model:  #load the model if it wasn't created during the training phase
+            
+            print('>>> No model found, inferring top model given the input directory')
+            self.model = models.load_model(self.__infer_top_model(), compile=False)
+            metadf = pd.read_csv(self.metadata)
+            self.test_set = metadf[metadf['GOOD'] == 2]
+            print('>>> Built test set')
+            optimizer = Adam(lr=1e-5, decay=1e-6)
+            self.model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=['mse'])
+            print('>>> Compiled and ready to go')
 
-            self.model = models.load_model(self.model_path)
-
-            #test_dir = os.path.join(self.inputs, "test.csv")
-            #self.test_set = pd.read_csv(test_dir)  #load the testing data csv
-
-        else: #test the model created during training
+        else:  #test the model created during training
             print("Testing model after training.")
         
         test_generator = self.processor.test_generator(self.test_set)
-        pred = self.model.predict_generator(test_generator, len(self.test_set))
-        loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
         
-        with open(os.path.join(self.outputs, "test.log"), 'w') as log:
-            log.write(str(loss)) 
+        model_name = self.__infer_top_model().split('/')[-1]
+        model_name = model_name.rstrip('.h5')
+        test_slug = 'testSetPerformance_name-%s_loss%0.4f.csv'
+        performance_df = pd.DataFrame(columns=['actual_hr,predicted_hr,actual_rr,predicted_rr'.split(',')])
+        #loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
 
-        #print(loss)
-        #print(pred) 
+        for i in range(len(self.test_set)):
+            print('[__test_model]: sample %d' % i)
+            Xs, ys = next(test_generator) 
+            
+            hrs, rrs = zip(*ys)
+            mean_hr, mean_rr = np.mean(hrs), np.mean(rrs) 
 
-        return pred, loss
+            preds = self.model.predict(Xs, batch_size=len(Xs))   
+            preds_hr, preds_rr = zip(*preds) 
+            mean_pred_hr, mean_pred_rr = np.mean(preds_hr), np.mean(preds_rr)
+            
+            row = [mean_hr, mean_pred_hr, mean_rr, mean_pred_rr]
+
+            performance_df.loc[i] = row
+        
+        print(performance_df)
+        #return pred, loss
     
     def __cross_val(self):
         """
@@ -213,7 +246,7 @@ class Engine():
         
         # only samples deemed good
         good_samps = metadf[metadf['GOOD'] == 1]
-        the_most_testiest_samps = metadf[metadf['GOOD'] == 2]
+        self.the_most_testiest_samps = metadf[metadf['GOOD'] == 2]
 
         # records for later
         cv_results = pd.DataFrame(columns=['model_type','model_idx','elapsed_time', 'loss']) #'predictive_acc')
@@ -292,7 +325,6 @@ class Engine():
 
         """
         cvsets = check_exists_create_if_not(os.path.join(self.outputs, 'CVsets'))
-        print(cvsets)
         train.to_csv(os.path.join(cvsets, 'train{}.csv'.format(idx)))
         val.to_csv(os.path.join(cvsets, 'val{}.csv'.format(idx)))
 

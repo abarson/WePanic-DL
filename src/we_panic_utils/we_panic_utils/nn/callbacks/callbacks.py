@@ -51,8 +51,7 @@ class CyclicLRScheduler(Callback):
             with open(self.output_log, 'a') as f:
                 print(f'\nStep {self.epoch * self.steps_per_epoch + batch}:'
                       f' learning rate = {lr}.', file=f)
-    
-        
+
 ##This needs a touch up
 class TestResultsCallback(Callback):
     """
