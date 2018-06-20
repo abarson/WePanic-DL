@@ -30,10 +30,10 @@ if __name__ == '__main__':
     
     im = Image.open(args.input_image)
     tens = np.array(im)
-    R = tens[:,:,0]
-    
+    tens[:,:,0] = 255*np.zeros(tens[:,:,2].shape)
+    tens[:,:,1] = 255*np.zeros(tens[:,:,2].shape)
     name = args.input_image.split('/')[-1].split('.')[0] + '_red.png'
 
-    toimage(R, cmin=0.0, cmax=...).save(name)
+    toimage(tens, cmin=0.0, cmax=...).save(name)
 
 
