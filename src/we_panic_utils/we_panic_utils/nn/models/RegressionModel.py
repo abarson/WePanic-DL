@@ -174,7 +174,7 @@ class CNN_3D_small(RegressionModel):
         model.add(Dense(self.output_shape, activation='linear'))
         return model
 
-class ShallowC3D(RegressionModel)
+class ShallowC3D(RegressionModel):
     def __init__(self, input_shape, output_shape):
         RegressionModel.__init__(self, input_shape, output_shape)
 

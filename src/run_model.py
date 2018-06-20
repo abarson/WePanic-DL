@@ -42,7 +42,7 @@ def parse_input():
     parser.add_argument("model_type",
                         help="the type of model to run",
                         type=str,
-                        choices=basic_utils.basics.get_module_attributes(models))
+                        choices=basic_utils.basics.get_module_attributes(models,exclude_set=['RegressionModel']))
     
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",

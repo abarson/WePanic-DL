@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-python src/run_model.py 3D-CNN frames \
+python src/run_model.py ShallowC3D frames \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
 --epochs 1 \
@@ -9,4 +9,7 @@ python src/run_model.py 3D-CNN frames \
 --batch_size 14 \
 --kfold 4 \
 --cyclic_lr cos_cyclic_lr \
---redscale_on
+--redscale_on \
+--vertical_flip \
+--horizontal_flip \
+--rotation_range 10 
