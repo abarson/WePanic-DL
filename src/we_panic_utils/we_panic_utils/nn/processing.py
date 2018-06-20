@@ -223,7 +223,7 @@ def just_greyscale(arr):
     x = (0.21 * x[:, :, :1]) + (0.72 * x[:, :, 1:2]) + (0.07 * x[:, :, -1:])
     return x
 
-def process_img(frame, input_shape, greyscale_on=False):
+def process_img(frame, input_shape, greyscale_on=False, redscale_on=False):
     """
     load up an image as a numpy array
 
@@ -242,6 +242,10 @@ def process_img(frame, input_shape, greyscale_on=False):
 
     if greyscale_on:
         x = (0.21 * x[:, :, :1]) + (0.72 * x[:, :, 1:2]) + (0.07 * x[:, :, -1:])
+    
+    if redscale_on:
+        x = x[:,:,-1]
+
     return x
 
 
@@ -277,6 +281,7 @@ class FrameProcessor:
                  batch_size=4,
                  sequence_length=60,
                  greyscale_on=False,
+                 redscale_on=False,
                  num_val_clips=10):
 
         self.rotation_range = rotation_range
@@ -287,6 +292,7 @@ class FrameProcessor:
         self.horizontal_flip = horizontal_flip
         self.vertical_flip = vertical_flip
         self.greyscale_on = greyscale_on
+        self.redscale_on = redscale_on
         self.num_val_clips = num_val_clips
         self.sequence_length = sequence_length
         self.batch_size = batch_size
@@ -324,7 +330,7 @@ class FrameProcessor:
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(current_path, frame) for frame in frames]
-                X.append(build_image_sequence(frames, greyscale_on=self.greyscale_on))
+                X.append(build_image_sequence(frames, greyscale_on=self.greyscale_on, redscale_on=self.redscale_on))
                 y.append([current_hr, current_rr])
 
             i+=1

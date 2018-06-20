@@ -122,6 +122,11 @@ def parse_input():
                         default=False,
                         action="store_true")
     
+    parser.add_argument("--redscale_on",
+                        help="convert images to redscale at runtime",
+                        default=False,
+                        action="store_true")
+
     parser.add_argument("--steps_per_epoch",
                         help="steps per epoch during training",
                         default=100,
@@ -236,6 +241,9 @@ def validate_arguments(args):
 
         except AttributeError as e:
             sys.exit(e)
+
+    if not args.greyscale_on and args.redscale_on:
+        raise ValueError("both redscale and greyscale cannot be activated")
 
     return args
         
@@ -354,13 +362,15 @@ if __name__ == "__main__":
                         horizontal_flip=args.horizontal_flip,
                         batch_size=args.batch_size,
                         greyscale_on=args.greyscale_on,
+                        redscale_on=args.redscale_on,
                         num_val_clips=args.num_val_clips)
 
     input_shape = None
     x, y = args.dimensions
 
-    if args.greyscale_on:
+    if args.greyscale_on or args.redscale_on:
         input_shape = (60, x, y, 1)
+
     else:
         input_shape = (60, x, y, 3)
 

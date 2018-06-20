@@ -6,8 +6,7 @@ import sys
 import os
 import argparse
 import numpy as np
-from PIL import Image
-from scipy.misc import toimage
+import cv2
 
 def parse_args():
 
@@ -28,12 +27,15 @@ if __name__ == '__main__':
         raise FileNotFoundError('cannot locate %s' % args.input_image)
 
     
-    im = Image.open(args.input_image)
-    tens = np.array(im)
-    tens[:,:,0] = 255*np.zeros(tens[:,:,2].shape)
-    tens[:,:,1] = 255*np.zeros(tens[:,:,2].shape)
+    im = cv2.imread(args.input_image)
     name = args.input_image.split('/')[-1].split('.')[0] + '_red.png'
 
-    toimage(tens, cmin=0.0, cmax=...).save(name)
+    r = im.copy()
+    r[:, :, 0] = 0
+    r[:, :, 1] = 0
+
+    #cv2.imshow('R-RGB',r)
+    #cv2.waitKey(0)
+    cv2.imwrite(name, r)
 
 
