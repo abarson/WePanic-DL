@@ -245,8 +245,8 @@ class Engine():
             self.train_set = train_set
 
             tgen = self.processor.train_generator(self.train_set) 
-            vgen = self.processor.test_generator(self.test_set)
-            
+            vgen = self.processor.test_generator(self.test_set) 
+
             print('>>> validation set size: %d' % len(self.test_set))
             vsteps = len(self.test_set)
             # get some callbacks with custom filepaths
