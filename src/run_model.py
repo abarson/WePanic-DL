@@ -235,9 +235,9 @@ def validate_arguments(args):
         try:
             inner_func = getattr(funcs, args.cyclic_lr)
             lr_func = partial(inner_func,
-                              lr0=0.2,
+                              lr0=0.002,
                               total_steps=args.epochs * args.steps_per_epoch,
-                              cycles=10)
+                              cycles=300)
             
             args.cylic_LR_schedule = args.cyclic_lr
             args.cyclic_lr = CyclicLRScheduler(output_dir=args.output_dir,

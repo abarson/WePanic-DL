@@ -106,22 +106,6 @@ class Engine():
                                  validation_data=val_generator,
                                  validation_steps=len(self.val_set), workers=4)
 
-    #@property
-    #def model_path(self):
-    #    """
-    #    a property for finding the path to the model if it exists
-    #    """
-    #    model_dir = os.path.join(self.inputs, 'models')
-    #    model_pth = None
-    #    
-    #    for path in os.listdir(model_dir):
-    #        if self.model_type in path and path.endswith(".h5"):
-
-    #            model_pth = os.path.join(model_dir, path)
-    #            return model_pth
-    #    
-    #    return model_pth
-    
     def __infer_top_model(self):
         """
         call this method when we want to check for the best model in 
