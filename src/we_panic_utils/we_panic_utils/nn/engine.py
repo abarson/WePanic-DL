@@ -164,7 +164,7 @@ class Engine():
                                             test_results)
         
 
-        callbacks = [csv_logger, checkpointer, train_callback] #test_callback]  # train_callback]    
+        callbacks = [csv_logger, checkpointer, train_callback, test_callback]  # train_callback]    
 
         if self.cyclic_lr is not None:
             assert isinstance(self.cyclic_lr, CyclicLRScheduler), 'cyclic_lr should be a CyclicLRScheduler'
