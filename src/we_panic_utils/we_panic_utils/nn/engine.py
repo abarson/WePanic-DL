@@ -215,7 +215,7 @@ class Engine():
             performance_df.loc[i] = row
         
         print(performance_df)
-        #return pred, loss
+        performance_df.to_csv(os.path.join(self.outputs, test_slug))
     
     def __cross_val(self):
         """
@@ -333,8 +333,6 @@ class Engine():
         """
         choose a model based on preferences
         """
-        input_shape = self.input_shape
-        #output_shape = self.outdput_shape
         import importlib 
         
         module_object = importlib.import_module('.models',package='we_panic_utils.nn')
