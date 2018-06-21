@@ -3,7 +3,7 @@ command line app for train/testing models.
 """
 
 # intra library imports
-import we_panic_utils.basic_utils as basic_utils
+import we_panic_utils.basic_utils.basics as B
 import we_panic_utils.nn.functions as funcs
 import we_panic_utils.nn.models as models
 
@@ -20,6 +20,10 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 from functools import partial
+
+# get available models, loss functions
+MODEL_CHOICES = B.get_module_attributes(models, exclude_set=['RegressionModel'])
+LOSS_FUNCTIONS = list(filter(lambda fun: fun.split('_')[-1] == 'loss', B.basics.get_module_attributes(funcs))) + funcs.get_keras_losses()
 
 def parse_input():
     """
@@ -42,7 +46,7 @@ def parse_input():
     parser.add_argument("model_type",
                         help="the type of model to run",
                         type=str,
-                        choices=basic_utils.basics.get_module_attributes(models,exclude_set=['RegressionModel']))
+                        choices=MODEL_CHOICES)
     
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",
@@ -155,6 +159,11 @@ def parse_input():
                         help='cyclic learning rate function to apply',
                         type=str,
                         default=None)
+
+    parser.add_argument('--loss',
+                        help='loss function inn [keras.losses, we_panic_utils.functions]',
+                        default=None,
+                        choices=LOSS_FUNCTIONS)
     
     return parser
 

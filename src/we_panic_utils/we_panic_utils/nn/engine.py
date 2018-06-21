@@ -2,7 +2,7 @@
 from .data_load import ttswcsv, fold
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
-from .functions import cos_cyclic_lr, euclidean_distance_loss
+from .functions import get_keras_losses
 
 # inter-library imports
 from keras import models
@@ -37,8 +37,8 @@ class Engine():
         steps_per_epoch -: steps per epoch 
         kfold -----------: not used if None, otherwise this is the number of folds to
                         \: use in a kfold cross validation
-        cyclic_lr ------: instance of CyclicLRScheduler
-
+        cyclic_lr -------: instance of CyclicLRScheduler
+        loss_fun ------------: the loss function that should be used
 
     """
     def __init__(self, 
@@ -56,7 +56,8 @@ class Engine():
                  output_shape=2,
                  steps_per_epoch=500,
                  kfold=None,
-                 cyclic_lr=None):
+                 cyclic_lr=None,
+                 loss_fun=None):
 
         #passed in params
         self.data = data
@@ -72,18 +73,28 @@ class Engine():
         self.output_shape = output_shape
         self.processor = frameproc
         self.steps_per_epoch = steps_per_epoch
+        self.kfold = kfold
+        self.cyclic_lr = cyclic_lr
+        self.loss_fun = loss_fun
 
         #created instance variables
         self.model = None
         self.train_set = None
         self.test_set = None
         self.val_set = None
-
-        self.kfold = kfold
-        self.cyclic_lr = cyclic_lr
+        
+        if self.loss_fun is None:
+            self.loss_fun = 'mean_squared_error'
+            self.loss_fun = self.__choose_loss()
 
     def __train_model(self):
         """
+        _________
+       (      O  )
+      {___________}
+        { TODO }   ** Update for newer iterations of project ***
+        {_||||_}    
+
         Internal method to train the model. This method is responsible for instantiating the model
         based on the user's inputs, as well as the train, test, and validation sets. Once instantiated,
         these objects are maintained as instance variables by the engine object for later use.
@@ -185,7 +196,7 @@ class Engine():
             self.test_set = metadf[metadf['GOOD'] == 2]
             print('>>> Built test set')
             optimizer = Adam(lr=1e-5, decay=1e-6)
-            self.model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=['mse'])
+            self.model.compile(loss=self.loss, optimizer=optimizer, metrics=['mse'])
             print('>>> Compiled and ready to go')
 
         else:  #test the model created during training
@@ -234,7 +245,7 @@ class Engine():
         # records for later
         cv_results = pd.DataFrame(columns=['model_type','model_idx','elapsed_time', 'loss']) #'predictive_acc')
         
-
+        
         # do self.kfold separate training/validation iters
         for idx, (train_set, val_set) in enumerate(fold(good_samps, k=self.kfold)):
             
@@ -333,9 +344,25 @@ class Engine():
         """
         choose a model based on preferences
         """
-        import importlib 
-        
+        import importlib  
         module_object = importlib.import_module('.models',package='we_panic_utils.nn')
         target_class = getattr(module_object, self.model_type)
 
-        return target_class(self.input_shape, self.output_shape)
+        return target_class(self.input_shape, self.output_shape, loss=self.loss)
+
+    def __choose_loss(self):
+        """
+        choose loss function based on preferences
+        """
+
+       
+        if self.loss_fun in get_keras_losses():
+            import keras.losses
+            target_fun = getattr(keras.losses, self.loss_fun)
+        else:
+
+            import importlib
+            module_object = importlib.import_module('.functions', package='we_panic_utils.nn')
+            target_fun = getattr(module_object, self.loss_fun)
+
+        return target_fun

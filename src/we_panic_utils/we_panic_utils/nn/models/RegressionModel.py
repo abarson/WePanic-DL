@@ -1,24 +1,22 @@
 from keras.layers import Dense, Flatten, Dropout, ZeroPadding3D, Input
 from keras.models import Sequential  # load_model
 from keras.optimizers import Adam,  RMSprop, SGD
-from keras.layers.wrappers import TimeDistributed
 from keras.layers.convolutional import Conv3D, MaxPooling3D
 from keras.layers import BatchNormalization
 from keras.models import Model
 
-from ..functions import euclidean_distance_loss
-
 class RegressionModel():
     
-    def __init__(self, input_shape, output_shape):
+    def __init__(self, input_shape, output_shape, loss='mean_squared_error'):
         self.input_shape = input_shape
         self.output_shape = output_shape
+        self.loss = loss
     
     def instantiate(self):
         model = self.get_model() 
         optimizer = Adam(lr=1e-5, decay=1e-6)
         metrics = ['mse']
-        model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=metrics)
+        model.compile(loss=self.loss, optimizer=optimizer, metrics=metrics)
         model.summary()
 
         return model
@@ -27,8 +25,8 @@ class RegressionModel():
         raise NotImplementedError 
 
 class C3D(RegressionModel):
-    def __init__(self, input_shape, output_shape):
-        RegressionModel.__init__(self, input_shape, output_shape)
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
 
     def instantiate(self):
         return super(C3D, self).instantiate()
@@ -90,19 +88,11 @@ class C3D(RegressionModel):
 
 class CNN_3D(RegressionModel):
    
-    def __init__(self, input_shape, output_shape):
-        RegressionModel.__init__(self, input_shape, output_shape)
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
 
     def instantiate(self):
         return super(CNN_3D, self).instantiate()
-    
-        model = self.get_model() 
-        metrics = ['mse']
-
-        sgd = SGD(lr=0.00001, decay=1e-6, nesterov=True, clipnorm=0.1, momentum=0.9)
-        model.compile(loss='mean_squared_error', optimizer=sgd, metrics=metrics)
-        print(model.summary())
-        return model
 
     def get_model(self):
        
@@ -140,8 +130,8 @@ class CNN_3D(RegressionModel):
 
 class CNN_3D_small(RegressionModel):
    
-    def __init__(self, input_shape, output_shape):
-        RegressionModel.__init__(self, input_shape, output_shape)
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
 
     def instantiate(self):
         return super(CNN_3D_small, self).instantiate()
@@ -175,8 +165,8 @@ class CNN_3D_small(RegressionModel):
         return model
 
 class ShallowC3D(RegressionModel):
-    def __init__(self, input_shape, output_shape):
-        RegressionModel.__init__(self, input_shape, output_shape)
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
 
     def instantiate(self):
         return super(ShallowC3D, self).instantiate()

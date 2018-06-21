@@ -5,6 +5,8 @@ in conjunction with various functional parts of keras api
 import numpy as np
 import keras.backend as K
 
+from ...basic_utils.basics import get_module_attributes
+
 def cos_cyclic_lr(step, lr, lr0=0.2, total_steps=400, cycles=8):
     """
          Defines a cyclic learning rate schedule which decays from lr0 to a tiny value
@@ -30,3 +32,18 @@ def euclidean_distance_loss(y_true, y_pred):
     """
 
     return K.sqrt(K.sum(K.square(y_true - y_pred), axis=-1, keepdims=True))
+
+def get_keras_losses():
+    import keras.losses
+    return get_module_attributes(keras.losses, exclude_set=['absolute_import',
+                                                            'print_function',
+                                                            'serialize_keras_object',
+                                                            'deserialize_keras_object',
+                                                            'division',
+                                                            'six',
+                                                            'K',
+                                                            'get',
+                                                            'serialize',
+                                                            'deserialize'])
+
+    
