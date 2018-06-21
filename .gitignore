@@ -16,3 +16,6 @@ frames/
 *.aux
 *.log
 out/
+
+##### scary files
+*.tar.gz
