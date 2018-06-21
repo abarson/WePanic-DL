@@ -304,7 +304,7 @@ class Engine():
                                            compile=False)
 
             optimizer = Adam(lr=1e-5, decay=1e-6)
-            self.model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=['mse'])
+            self.model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mse'])
             loss = self.model.evaluate_generator(te_gen, len(self.the_most_testiest_samps))[0]
 
             end = time.time()
