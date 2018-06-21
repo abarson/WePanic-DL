@@ -18,7 +18,7 @@ class RegressionModel():
         model = self.get_model() 
         optimizer = Adam(lr=1e-5, decay=1e-6)
         metrics = ['mse']
-        model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=metrics)
+        model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=metrics)
         model.summary()
 
         return model
