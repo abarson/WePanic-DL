@@ -1,6 +1,5 @@
 # intra-library imports
 from .data_load import ttswcsv, fold
-#from .models import C3D, CNN_3D, CNN_3D_small
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
 from .functions import cos_cyclic_lr, euclidean_distance_loss
@@ -278,7 +277,7 @@ class Engine():
 
             tgen = self.processor.train_generator(self.train_set) 
             vgen = self.processor.test_generator(self.test_set) 
-            te_gen = self.processor.test_generator(the_most_testiest_samps)
+            te_gen = self.processor.test_generator(self.the_most_testiest_samps)
 
             print('>>> validation set size: %d' % len(self.test_set))
             vsteps = len(self.test_set)
@@ -306,7 +305,7 @@ class Engine():
 
             optimizer = Adam(lr=1e-5, decay=1e-6)
             self.model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=['mse'])
-            loss = self.model.evaluate_generator(te_gen, len(the_most_testiest_samps))[0]
+            loss = self.model.evaluate_generator(te_gen, len(self.the_most_testiest_samps))[0]
 
             end = time.time()
             total = (end - start) / 60
@@ -350,6 +349,11 @@ class Engine():
         """
         choose a model based on preferences
         """
+        input_shape = self.input_shape
+        #output_shape = self.outdput_shape
+        import importlib 
         
-        eval('from .models import %s' % self.model_type)
-        eval('return %s(self.input_shape, self.output_shape' % self.model_type)
+        module_object = importlib.import_module('.models',package='we_panic_utils.nn')
+        target_class = getattr(module_object, self.model_type)
+
+        return target_class(self.input_shape, self.output_shape)
