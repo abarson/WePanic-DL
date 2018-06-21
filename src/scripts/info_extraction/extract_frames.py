@@ -77,7 +77,7 @@ if __name__ == "__main__":
     #  we're going to assume the csvs specified are properly formatted and the columns are correct
     
     metadf = pd.read_csv(metadata)
-    selects_df = metadf[metadf['GOOD'] == 1]
+    selects_df = metadf[metadf['GOOD'] > 0]
     fmt_file = "Trial%d.MOV"
     
     imgs_captured = []

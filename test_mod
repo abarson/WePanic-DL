@@ -1,0 +1,12 @@
+#!/bin/sh
+
+pip install --upgrade src/we_panic_utils/
+python src/run_model.py CNN_3D frames \
+--csv wepanic_collated_catalogue.csv \
+--input_dir run_history/3DCNN_VHflip_redscale_on \
+--steps_per_epoch 500 \
+--epochs 1 \
+--batch_size 14 \
+--redscale_on \
+--cyclic_lr cos_cyclic_lr \
+--test

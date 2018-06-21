@@ -2,6 +2,16 @@
 command line app for train/testing models.
 """
 
+# intra library imports
+import we_panic_utils.basic_utils as basic_utils
+import we_panic_utils.nn.functions as funcs
+import we_panic_utils.nn.models as models
+
+from we_panic_utils.nn import Engine
+from we_panic_utils.nn.processing import FrameProcessor
+from we_panic_utils.nn.callbacks import CyclicLRScheduler
+
+# inter library imports
 import argparse
 import sys
 import os
@@ -9,13 +19,6 @@ import time
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
-
-import we_panic_utils.basic_utils as basic_utils
-from we_panic_utils.nn import Engine
-from we_panic_utils.nn.processing import FrameProcessor
-
-import we_panic_utils.nn.functions as funcs
-from we_panic_utils.nn.callbacks import CyclicLRScheduler
 from functools import partial
 
 def parse_input():
@@ -39,7 +42,7 @@ def parse_input():
     parser.add_argument("model_type",
                         help="the type of model to run",
                         type=str,
-                        choices=["C3D", "3D-CNN", "CNN_3D_small"])
+                        choices=basic_utils.basics.get_module_attributes(models,exclude_set=['RegressionModel']))
     
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",
@@ -195,6 +198,7 @@ def validate_arguments(args):
     # if --test was provided only
     if args.test and not args.train:
         # if no input directory specified, exit for bad input
+        args.output_dir = args.input_dir
         if args.input_dir is None:
             raise ValueError("--test was specified but found no input " +
                              "directory, provide an input directory to " +
@@ -234,11 +238,11 @@ def validate_arguments(args):
                               lr0=0.2,
                               total_steps=args.epochs * args.steps_per_epoch,
                               cycles=10)
-
+            
+            args.cylic_LR_schedule = args.cyclic_lr
             args.cyclic_lr = CyclicLRScheduler(output_dir=args.output_dir,
                                                schedule=lr_func,
                                                steps_per_epoch=args.steps_per_epoch) 
-
         except AttributeError as e:
             sys.exit(e)
 
@@ -261,6 +265,8 @@ def summarize_arguments(args):
     
     summ_str = ""
     for k in keys:
+        if k == 'cyclic_lr':
+            continue
         summ_str += formatter % (k, vars(args)[k]) + '\n'
     
     print(summ_str)
@@ -270,16 +276,8 @@ def summarize_arguments(args):
     with open(arg_summary, 'w') as summary:
         summary.write(summ_str)
     
-    print('wrote arguments passed to %s' % arg_summary)
+    print('Wrote input args to %s' % arg_summary)
     
-    
-class ArgumentError(Exception):
-    """
-    custom exception to thrown due to bad parameter input
-    """
-    pass
-
-
 def generate_output_directory(output_dirname):
     """
     create an output directory that contains looks like this:
@@ -328,18 +326,6 @@ def verify_directory_structure(dirname):
             print("[verify_directory_structure] - no %s/models/ directory" % dirname)
             verified = False
         
-        if not os.path.exists(os.path.join(dirname, "train.csv")):
-            print("[verify_directory_structure] - no %s/train.csv" % dirname)
-            verified = False
-
-        if not os.path.exists(os.path.join(dirname, "val.csv")):
-            print("[verify_directory_structure] - no %s/validation.csv" % dirname)
-            verified = False
-
-        if not os.path.exists(os.path.join(dirname, "test.csv")):
-            print("[verify_directory_structure] - no %s/test.csv" % dirname)
-            verified = False
-
         return verified
 
     else:
@@ -349,9 +335,9 @@ def verify_directory_structure(dirname):
 if __name__ == "__main__":
     
     args = parse_input().parse_args()
-    summarize_arguments(args)
     args = validate_arguments(args)
-    
+    summarize_arguments(args)
+
     fp = FrameProcessor(rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,
@@ -373,9 +359,6 @@ if __name__ == "__main__":
     else:
         input_shape = (60, x, y, 3)
 
-    #if args.cyclir_lr is not None:
-    #    lr_fun_str = args.cyclic_lr
-
     engine = Engine(data=args.data,
                     model_type=args.model_type,
                     csv=args.csv,
@@ -392,7 +375,15 @@ if __name__ == "__main__":
                     kfold=args.kfold,
                     cyclic_lr=args.cyclic_lr)
 
-    print("starting ... ")
+    start_banner =  """\t\t\t_________________________________
+                       |   ______________________  __   | 
+                       |   |    \  __| _   |  |  \|  |  |
+                       |   | :  /  __|\__  |  |      |  |
+                       |   | :  \____|__/  /  |      |  |
+                       |   |____/_________/|__|__|\__|  |
+                       |________________________________|"""
+
+    print(start_banner,sep='')
     start = time.time()
     engine.run()
     end = time.time()

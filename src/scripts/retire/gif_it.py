@@ -6,6 +6,7 @@ Created on Thu Oct 26 20:42:08 2017
 @author: danberenberg
 """
 
+import os
 import sys
 import argparse
 import warnings
@@ -17,11 +18,12 @@ except ImportError:
 
 VALID_EXTENSIONS = ('png', 'jpg')
 
-def create_gif(filenames,out_dir,name):
+def create_gif(filenames,name):
     print (name)
     images = []
-    for i,filename in enumerate(filenames):
-        image = imageio.imread(filename)
+    frames = os.listdir(filenames)
+    for i,filename in enumerate(frames):
+        image = imageio.imread(os.path.join(filenames, filename))
         print (i,image)
         images.append(image)
 
@@ -34,7 +36,7 @@ def create_gif(filenames,out_dir,name):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("images",help="images that will be compiled into a gif"
-                        ,nargs="+",type=str)
+                        ,type=str)
 
     parser.add_argument("gif_name",help="name of gif",type=str)
 
@@ -55,13 +57,13 @@ if __name__ == '__main__':
         args = parse_args().parse_args()
 
         filenames = args.images
-        out_dir   = args.out_dir
+        #out_dir   = args.out_dir
         name      = args.gif_name
 
         
-        if not all(f.lower().endswith(VALID_EXTENSIONS) for f in filenames):
-            print('Only png and jpg files allowed')
-            sys.exit(1)
+#        if not all(f.lower().endswith(VALID_EXTENSIONS) for f in filenames):
+#            print('Only png and jpg files allowed')
+#            sys.exit(1)
   
-        print (filenames,out_dir,name)
-        create_gif(filenames,out_dir,name)
+        print (filenames,name)
+        create_gif(filenames,name)

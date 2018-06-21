@@ -6,7 +6,7 @@ from .data_load import buckets
 import threading 
 import os
 import random
-random.seed(7)
+#random.seed(7)
 import numpy as np
 
 from keras.preprocessing.image import load_img, img_to_array
@@ -307,7 +307,6 @@ class FrameProcessor:
         self.batch_size = batch_size
         self.test_iter = 0
         
-        print('[processing] redscale_on : %s' % self.redscale_on)
         assert type(self.rotation_range) == int, "rotation_range should be integer valued"
 
         assert type(self.width_shift_range) == float, "width_shift_range should be a float"
@@ -326,7 +325,7 @@ class FrameProcessor:
 
     @threadsafe_generator    
     def test_generator(self, test_df):
-        print(self.num_val_clips)
+        #print(self.num_val_clips)
         paths, hr, rr = list(test_df["FRAME_PTH"]), list(test_df["HEART_RATE_BPM"]), list(test_df["RESP_RATE_BR_PM"])
         i = 0
         while True:

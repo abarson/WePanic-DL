@@ -18,7 +18,7 @@ class RegressionModel():
         model = self.get_model() 
         optimizer = Adam(lr=1e-5, decay=1e-6)
         metrics = ['mse']
-        model.compile(loss=euclidean_distance_loss, optimizer=optimizer, metrics=metrics)
+        model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=metrics)
         model.summary()
 
         return model
@@ -172,4 +172,44 @@ class CNN_3D_small(RegressionModel):
         model.add(Dense(256, activation='relu'))
         model.add(Dropout(0.5))
         model.add(Dense(self.output_shape, activation='linear'))
+        return model
+
+class ShallowC3D(RegressionModel):
+    def __init__(self, input_shape, output_shape):
+        RegressionModel.__init__(self, input_shape, output_shape)
+
+    def instantiate(self):
+        return super(ShallowC3D, self).instantiate()
+    
+    def get_model(self):
+        model = Sequential()
+        # 1st layer group
+        model.add(Conv3D(64, 3, 3, 3, activation='relu',
+                         border_mode='same', name='conv1',
+                         subsample=(1, 1, 1),
+                         input_shape=self.input_shape))
+        model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2),
+                               border_mode='valid', name='pool1'))
+        # 2nd layer group
+        model.add(Conv3D(128, 3, 3, 3, activation='relu',
+                         border_mode='same', name='conv2',
+                         subsample=(1, 1, 1)))
+        model.add(MaxPooling3D(pool_size=(2, 2, 2), strides=(2, 2, 2),
+                               border_mode='valid', name='pool2'))
+        # 3rd layer group
+        #model.add(Conv3D(256, 3, 3, 3, activation='relu',
+        #                 border_mode='same', name='conv3a',
+        #                 subsample=(1, 1, 1)))
+        model.add(Conv3D(256, 3, 3, 3, activation='relu',
+                         border_mode='same', name='conv3b',
+                         subsample=(1, 1, 1)))
+        model.add(MaxPooling3D(pool_size=(2, 2, 2), strides=(2, 2, 2),
+                               border_mode='valid', name='pool3'))
+        model.add(Flatten())
+
+        # FC layers group
+        model.add(Dense(512, activation='relu', name='fc7'))
+        model.add(Dropout(0.5))
+        model.add(Dense(self.output_shape, activation='linear'))
+
         return model
