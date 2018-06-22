@@ -4,8 +4,8 @@ command line app for train/testing models.
 
 # intra library imports
 import we_panic_utils.basic_utils.basics as B
-import we_panic_utils.nn.functions as funcs
 import we_panic_utils.nn.models as models
+import we_panic_utils.nn.functions as funcs
 
 from we_panic_utils.nn import Engine
 from we_panic_utils.nn.processing import FrameProcessor
@@ -164,6 +164,11 @@ def parse_input():
                         help='loss function inn [keras.losses, we_panic_utils.functions]',
                         default=None,
                         choices=LOSS_FUNCTIONS)
+
+    parser.add_argument('--early_stopping',
+                        help='tolerance for # of iterations without improvement to start',
+                        default=None,
+                        type=int)
     
     return parser
 
@@ -227,7 +232,7 @@ def validate_arguments(args):
     
     bad_augs = []
     for arg_name in ['steps_per_epoch', 'shear_range', 'width_shift_range', 
-                     'height_shift_range', 'rotation_range', 'zoom_range']:
+                     'height_shift_range', 'rotation_range', 'zoom_range', 'early_stopping']:
         
         if vars(args)[arg_name] < 0:
             bad_augs.append("%s can't be < 0" % arg_name)
@@ -254,7 +259,7 @@ def validate_arguments(args):
                                                steps_per_epoch=args.steps_per_epoch) 
         except AttributeError as e:
             sys.exit(e)
-
+    
     if args.greyscale_on and args.redscale_on:
         raise ValueError("both redscale and greyscale cannot be activated")
 
@@ -274,8 +279,9 @@ def summarize_arguments(args):
     
     summ_str = ""
     for k in keys:
-        if k == 'cyclic_lr':
+        if k in ['cyclic_lr']:
             continue
+
         summ_str += formatter % (k, vars(args)[k]) + '\n'
     
     print(summ_str)
@@ -303,8 +309,8 @@ def generate_output_directory(output_dirname):
 
     model_dir = os.path.join(output_dirname, "models")
 
-    basic_utils.basics.check_exists_create_if_not(output_dirname)
-    basic_utils.basics.check_exists_create_if_not(model_dir)
+    B.check_exists_create_if_not(output_dirname)
+    B.check_exists_create_if_not(model_dir)
 
     return output_dirname
 
@@ -382,7 +388,8 @@ if __name__ == "__main__":
                     output_shape=2,
                     steps_per_epoch=args.steps_per_epoch,
                     kfold=args.kfold,
-                    cyclic_lr=args.cyclic_lr)
+                    cyclic_lr=args.cyclic_lr,
+                    loss_fun=args.loss)
 
     start_banner =  """\t\t\t_________________________________
                        |   ______________________  __   | 

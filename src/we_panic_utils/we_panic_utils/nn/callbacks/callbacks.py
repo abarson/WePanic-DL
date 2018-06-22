@@ -52,7 +52,6 @@ class CyclicLRScheduler(Callback):
                 print(f'\nStep {self.epoch * self.steps_per_epoch + batch}:'
                       f' learning rate = {lr}.', file=f)
 
-##This needs a touch up
 class TestResultsCallback(Callback):
     """
     a callback for testing the model at certain timesteps
@@ -94,3 +93,4 @@ class TestResultsCallback(Callback):
                     rr_std = format(np.std(p[0:,1]), '.2f')
                     log.write('{:<4} {} | avg_hr={:<10} avg_rr={:<10} | act_hr={:<6} act_rr={:<6} | hr_std={:<6} rr_std={:<6}\n'
                             .format(int(s), t, hr_avg, rr_avg, hr, rr, hr_std, rr_std))
+

@@ -1,4 +1,5 @@
 # intra-library imports
+
 from .data_load import ttswcsv, fold
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
@@ -6,7 +7,7 @@ from .functions import get_keras_losses
 
 # inter-library imports
 from keras import models
-from keras.callbacks import CSVLogger, ModelCheckpoint, Callback
+from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
 from keras.optimizers import Adam
 from keras import backend as K
 
@@ -57,6 +58,7 @@ class Engine():
                  steps_per_epoch=500,
                  kfold=None,
                  cyclic_lr=None,
+                 early_stopping=None,
                  loss_fun=None):
 
         #passed in params
@@ -76,6 +78,7 @@ class Engine():
         self.kfold = kfold
         self.cyclic_lr = cyclic_lr
         self.loss_fun = loss_fun
+        self.early_stopping = early_stopping
 
         #created instance variables
         self.model = None
@@ -83,17 +86,22 @@ class Engine():
         self.test_set = None
         self.val_set = None
         
+        if self.early_stopping is not None:
+            self.early_stopping = EarlyStopping(patience=self.early_stopping)
+
         if self.loss_fun is None:
             self.loss_fun = 'mean_squared_error'
-            self.loss_fun = self.__choose_loss()
+
+        self.loss_fun = self.__choose_loss()
 
     def __train_model(self):
         """
-        _________
-       (      O  )
-      {___________}
-        { TODO }   ** Update for newer iterations of project ***
-        {_||||_}    
+         _______
+        ( TODO  )
+       ( SHROOM  ) ==============================================*
+      {___________}                                              |
+        { ____ }   ** Update for newer iterations of project *** |
+        {_||||_} ================================================*
 
         Internal method to train the model. This method is responsible for instantiating the model
         based on the user's inputs, as well as the train, test, and validation sets. Once instantiated,
@@ -179,6 +187,8 @@ class Engine():
             assert isinstance(self.cyclic_lr, CyclicLRScheduler), 'cyclic_lr should be a CyclicLRScheduler'
             callbacks.append(self.cyclic_lr)
         
+        if self.early_stopping is not None:
+            assert isintance(self.early_stopping, EarlyStopping), 'early_stopping should be a EarlyStopping'
         return callbacks
 
     def __test_model(self):
@@ -348,14 +358,13 @@ class Engine():
         module_object = importlib.import_module('.models',package='we_panic_utils.nn')
         target_class = getattr(module_object, self.model_type)
 
-        return target_class(self.input_shape, self.output_shape, loss=self.loss)
+        return target_class(self.input_shape, self.output_shape, loss=self.loss_fun)
 
     def __choose_loss(self):
         """
         choose loss function based on preferences
         """
 
-       
         if self.loss_fun in get_keras_losses():
             import keras.losses
             target_fun = getattr(keras.losses, self.loss_fun)

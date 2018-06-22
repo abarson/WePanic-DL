@@ -1,15 +1,16 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-python src/run_model.py ShallowC3D frames \
+python src/run_model.py CNN_3D frames \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
 --epochs 1 \
 --steps_per_epoch 10 \
 --batch_size 14 \
 --kfold 4 \
---cyclic_lr cos_cyclic_lr \
 --redscale_on \
 --vertical_flip \
 --horizontal_flip \
---rotation_range 10 
+--rotation_range 10 \
+--loss euclidean_distance_loss \
+--early_stopping 10
