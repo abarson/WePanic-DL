@@ -55,7 +55,6 @@ class Engine():
                  train=False, 
                  test=False, 
                  input_shape=(60, 32, 32, 1),
-                 output_shape=2,
                  steps_per_epoch=500,
                  kfold=None,
                  cyclic_lr=None,
@@ -74,7 +73,6 @@ class Engine():
         self.inputs = inputs
         self.outputs = outputs
         self.input_shape = input_shape
-        self.output_shape = output_shape
         self.processor = frameproc
         self.steps_per_epoch = steps_per_epoch
         self.kfold = kfold

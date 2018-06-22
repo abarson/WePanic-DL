@@ -11,6 +11,7 @@ import numpy as np
 from keras.callbacks import Callback
 import os
 from sklearn.metrics import mean_squared_error
+from functools import reduce
 
 class CyclicLRScheduler(Callback):
     """
@@ -63,7 +64,9 @@ class TestResultsCallback(Callback):
         self.test_set = test_set
         self.log_file = log_file
         self.epochs=epochs
-
+        
+        #todo: put this somewhere else
+        self.translate_dict = {'HEART_RATE_BPM' : 'hr', 'RESP_RATE_BR_PM' : 'rr'}
         self.__remove_file_if_exists(log_file) 
 
     def __remove_file_if_exists(self, log):
@@ -76,21 +79,26 @@ class TestResultsCallback(Callback):
             with open(self.log_file, 'a') as log:
                 gen = self.test_gen.test_generator(self.test_set)
                 pred = self.model.predict_generator(gen, len(self.test_set))
-
+                
+                feats = [list(self.test_set[feat]) for feat in self.test_gen.features]
                 subjects = list(self.test_set['SUBJECT'])
                 trial = list(self.test_set['TRIAL'])
-                hr = list(self.test_set['HEART_RATE_BPM'])
-                rr = list(self.test_set['RESP_RATE_BR_PM'])
+
                 log.write("Epoch: " + str(epoch+1) + '\n')
                 
                 #Divide the list of predictions into a number of partitions equal to the number of validation clips per subject
                 preds = [pred[i:i+self.test_gen.num_val_clips] for i in range(0, len(pred), self.test_gen.num_val_clips)]
+                
+                for s, t, *fs, p in zip(subjects, trial, *feats, preds):
+                    avgs = [format(sum(p[0:,i])/len(p), '.3f') for i in range(len(fs))] 
+                    stds = [format(np.std(p[0:,i]), '.2f') for i in range(len(fs))]
 
-                for s, t, hr, rr, p in zip(subjects, trial, hr, rr, preds):
-                    hr_avg = format(sum(p[0:,0])/len(p), '.3f')
-                    rr_avg = format(sum(p[0:,1])/len(p), '.3f')
-                    hr_std = format(np.std(p[0:,0]), '.2f')
-                    rr_std = format(np.std(p[0:,1]), '.2f')
-                    log.write('{:<4} {} | avg_hr={:<10} avg_rr={:<10} | act_hr={:<6} act_rr={:<6} | hr_std={:<6} rr_std={:<6}\n'
-                            .format(int(s), t, hr_avg, rr_avg, hr, rr, hr_std, rr_std))
-
+                    #I'm so sorry
+                    #This formats the log file to look pretty, while being robust to the number of features
+                    avg_str = reduce(lambda x1, x2:x1+x2, ['avg_{}={:<10}'.
+                        format(self.translate_dict[self.test_gen.features[i]], avgs[i]) for i in range(len(avgs))])
+                    act_str = reduce(lambda x1, x2:x1+x2, ['act_{}={:<5}'.
+                            format(self.translate_dict[self.test_gen.features[i]], int(fs[i])) for i in range(len(fs))])
+                    std_str = reduce(lambda x1, x2:x1+x2, ['std_{}={:<6}'.
+                        format(self.translate_dict[self.test_gen.features[i]], stds[i]) for i in range(len(stds))])
+                    log.write('{:<4} {} | {} | {} | {}\n'.format(int(s), t, avg_str, act_str, std_str))

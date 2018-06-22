@@ -411,7 +411,6 @@ if __name__ == "__main__":
                     outputs=args.output_dir,
                     frameproc=fp,
                     input_shape=input_shape,
-                    output_shape=2,
                     steps_per_epoch=args.steps_per_epoch,
                     kfold=args.kfold,
                     cyclic_lr=args.cyclic_lr,
