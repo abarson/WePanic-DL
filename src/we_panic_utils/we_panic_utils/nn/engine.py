@@ -45,6 +45,7 @@ class Engine():
     def __init__(self, 
                  model_type, 
                  data,
+                 features,
                  frameproc,
                  csv, 
                  inputs, 
@@ -64,6 +65,7 @@ class Engine():
         #passed in params
         self.data = data
         self.model_type = model_type
+        self.features = features
         self.metadata = csv
         self.batch_size = batch_size
         self.epochs = epochs
@@ -360,7 +362,7 @@ class Engine():
         module_object = importlib.import_module('.models',package='we_panic_utils.nn')
         target_class = getattr(module_object, self.model_type)
 
-        return target_class(self.input_shape, self.output_shape, loss=self.loss_fun)
+        return target_class(self.input_shape, len(self.features), loss=self.loss_fun)
 
     def __choose_loss(self):
         """

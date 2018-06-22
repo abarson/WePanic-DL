@@ -36,6 +36,7 @@ sys.stdout = stderr
 # get available models, loss functions
 MODEL_CHOICES = B.get_module_attributes(models, exclude_set=['RegressionModel'])
 LOSS_FUNCTIONS = list(filter(lambda fun: fun.split('_')[-1] == 'loss', B.basics.get_module_attributes(funcs))) + funcs.get_keras_losses()
+FEATURE_TRANSLATE = {'hr' : 'HEART_RATE_BPM', 'rr' : 'RESP_RATE_BR_PM'}
 
 def parse_input():
     """
@@ -63,7 +64,14 @@ def parse_input():
     parser.add_argument("data",
                         help="director[y|ies] to draw data from",
                         type=str)
-     
+
+    parser.add_argument("--features",
+                        help="the features to use for model training",
+                        nargs='+', 
+                        type=str,
+                        default='hr',
+                        choices=['hr', 'rr'])
+
     parser.add_argument("--csv",
                         help="csv containing labels subject -- trial -- heart rate -- resp rate",
                         type=str,
@@ -272,6 +280,9 @@ def validate_arguments(args):
         except AttributeError as e:
             sys.exit(e)
     
+    if len(args.features) > 1:
+        assert (args[0] != args[1], "The same feature cannot be chosen twice for training")
+
     if args.greyscale_on and args.redscale_on:
         raise ValueError("both redscale and greyscale cannot be activated")
 
@@ -360,11 +371,13 @@ def verify_directory_structure(dirname):
     
 
 if __name__ == "__main__":
-    
+    feat_trans = [FEATURE_TRANSLATE[feat] for feat in args.features]
+
     args = parse_input().parse_args()
     args = validate_arguments(args)
     summarize_arguments(args)
-    fp = FrameProcessor(rotation_range=args.rotation_range,
+    fp = FrameProcessor(features=feat_trans,
+                        rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,
                         shear_range=args.shear_range,
@@ -387,6 +400,7 @@ if __name__ == "__main__":
 
     engine = Engine(data=args.data,
                     model_type=args.model_type,
+                    features=feat_trans,
                     csv=args.csv,
                     batch_size=args.batch_size,
                     epochs=args.epochs,
