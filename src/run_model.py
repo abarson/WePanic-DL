@@ -14,11 +14,12 @@ from functools import partial
 
 
 # haahahaahahah remoe stupid LOGS!!!!
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-stderr = sys.stderr
+
+#os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+#stderr = sys.stderr
 
 # goodbye Using Tensorflow backend.
-sys.stderr = open('/dev/null', 'w')
+#sys.stderr = open('/dev/null', 'w')
 
 # intra library imports
 import we_panic_utils.basic_utils.basics as B
@@ -30,7 +31,7 @@ from we_panic_utils.nn.processing import FrameProcessor
 from we_panic_utils.nn.callbacks import CyclicLRScheduler
 
 # fix it up
-sys.stdout = stderr
+#sys.stdout = stderr
 
 
 # get available models, loss functions
@@ -206,7 +207,6 @@ def validate_arguments(args):
         the same namespace with possibly modified inputs
     --------------------------------------------------------------------
     """
-        
     if not os.path.exists(args.csv):
         raise FileNotFoundError("can't locate %s" % args.csv)
 
@@ -278,10 +278,11 @@ def validate_arguments(args):
                                                schedule=lr_func,
                                                steps_per_epoch=args.steps_per_epoch) 
         except AttributeError as e:
+            print(e)
             sys.exit(e)
-    
+
     if len(args.features) > 1:
-        assert (args[0] != args[1], "The same feature cannot be chosen twice for training")
+        assert args.features[0] != args.features[1], "The same feature cannot be chosen twice for training"
 
     if args.greyscale_on and args.redscale_on:
         raise ValueError("both redscale and greyscale cannot be activated")
@@ -371,10 +372,10 @@ def verify_directory_structure(dirname):
     
 
 if __name__ == "__main__":
-    feat_trans = [FEATURE_TRANSLATE[feat] for feat in args.features]
-
     args = parse_input().parse_args()
     args = validate_arguments(args)
+
+    feat_trans = [FEATURE_TRANSLATE[feat] for feat in args.features]
     summarize_arguments(args)
     fp = FrameProcessor(features=feat_trans,
                         rotation_range=args.rotation_range,

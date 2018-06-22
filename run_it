@@ -1,13 +1,15 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-screen python src/run_model.py CNN_3D frames \
+
+python src/run_model.py CNN_3D frames \
+--features hr rr \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/CNN_3D_redscale_on_euclidean_distance_loss \
+--output_dir run_history/test_new_feature_system \
 --epochs 30 \
 --steps_per_epoch 500 \
 --batch_size 14 \
 --kfold 4 \
 --redscale_on \
---early_stopping 12
+--early_stopping 12 \
 --loss euclidean_distance_loss

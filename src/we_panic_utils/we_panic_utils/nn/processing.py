@@ -294,7 +294,7 @@ class FrameProcessor:
                  redscale_on=False,
                  num_val_clips=10):
         
-        self.features = features,
+        self.features = features
         self.rotation_range = rotation_range
         self.width_shift_range = width_shift_range
         self.height_shift_range = height_shift_range
@@ -334,7 +334,7 @@ class FrameProcessor:
         while True:
             X, y = [], []
             current_path = paths[i]
-            current_feats = [float(feats[i]) for i in range(len(feats))]
+            current_feats = [feats[n][i] for n in range(len(feats))]
             #current_hr = float(hr[i])
             #current_rr = float(rr[i]) 
             frame_dir = sorted(os.listdir(current_path))
