@@ -17,7 +17,7 @@ class RegressionModel():
         optimizer = Adam(lr=1e-5, decay=1e-6)
         metrics = ['mse']
         model.compile(loss=self.loss, optimizer=optimizer, metrics=metrics)
-        model.summary()
+        #model.summary()
 
         return model
 

@@ -188,7 +188,8 @@ class Engine():
             callbacks.append(self.cyclic_lr)
         
         if self.early_stopping is not None:
-            assert isintance(self.early_stopping, EarlyStopping), 'early_stopping should be a EarlyStopping'
+            callbacks.append(self.early_stopping)
+
         return callbacks
 
     def __test_model(self):
@@ -275,6 +276,7 @@ class Engine():
             if not os.path.exists(os.path.join(self.outputs, 'model_summary.txt')):
                 with open(os.path.join(self.outputs,'model_summary.txt'), 'w') as summary:
                     self.model.summary(print_fn=lambda x: summary.write(x + '\n'))
+                    print('>>> wrote model summary to {}'.format(os.path.join(self.outputs, 'model_summary.txt')))
 
             # get the train/val gens
             self.test_set = val_set

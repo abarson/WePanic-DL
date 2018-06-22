@@ -2,15 +2,6 @@
 command line app for train/testing models.
 """
 
-# intra library imports
-import we_panic_utils.basic_utils.basics as B
-import we_panic_utils.nn.models as models
-import we_panic_utils.nn.functions as funcs
-
-from we_panic_utils.nn import Engine
-from we_panic_utils.nn.processing import FrameProcessor
-from we_panic_utils.nn.callbacks import CyclicLRScheduler
-
 # inter library imports
 import argparse
 import sys
@@ -20,6 +11,27 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 from functools import partial
+
+
+# haahahaahahah remoe stupid LOGS!!!!
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+stderr = sys.stderr
+
+# goodbye Using Tensorflow backend.
+sys.stderr = open('/dev/null', 'w')
+
+# intra library imports
+import we_panic_utils.basic_utils.basics as B
+import we_panic_utils.nn.models as models
+import we_panic_utils.nn.functions as funcs
+
+from we_panic_utils.nn import Engine
+from we_panic_utils.nn.processing import FrameProcessor
+from we_panic_utils.nn.callbacks import CyclicLRScheduler
+
+# fix it up
+sys.stdout = stderr
+
 
 # get available models, loss functions
 MODEL_CHOICES = B.get_module_attributes(models, exclude_set=['RegressionModel'])
@@ -352,7 +364,6 @@ if __name__ == "__main__":
     args = parse_input().parse_args()
     args = validate_arguments(args)
     summarize_arguments(args)
-
     fp = FrameProcessor(rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,
