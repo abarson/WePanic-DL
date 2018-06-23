@@ -3,13 +3,13 @@
 pip install --upgrade src/we_panic_utils/
 
 python src/run_model.py CNN_3D frames \
---features hr rr \
+--features hr \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/test_new_feature_system \
---epochs 30 \
+--test \
+--input_dir run_history/test_new_feature_system \
+--epochs 1 \
 --steps_per_epoch 500 \
 --batch_size 14 \
---kfold 4 \
 --redscale_on \
 --early_stopping 12 \
 --loss euclidean_distance_loss

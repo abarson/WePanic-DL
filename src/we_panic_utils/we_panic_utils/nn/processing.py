@@ -329,14 +329,11 @@ class FrameProcessor:
     def test_generator(self, test_df):
         paths = list(test_df['FRAME_PTH'])
         feats = [list(test_df[feat]) for feat in self.features]
-        #hr, rr = list(test_df["HEART_RATE_BPM"]), list(test_df["RESP_RATE_BR_PM"])
         i = 0
         while True:
             X, y = [], []
             current_path = paths[i]
             current_feats = [feats[n][i] for n in range(len(feats))]
-            #current_hr = float(hr[i])
-            #current_rr = float(rr[i]) 
             frame_dir = sorted(os.listdir(current_path))
             
             for _ in range(self.num_val_clips):
@@ -344,13 +341,11 @@ class FrameProcessor:
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(current_path, frame) for frame in frames]
                 X.append(build_image_sequence(frames, greyscale_on=self.greyscale_on, redscale_on=self.redscale_on))
-                #y.append([current_hr, current_rr])
                 y.append(current_feats)
             i+=1
             if i == len(test_df):
                 i = 0
             
-            #print(np.array(X).shape, np.array(y).shape, " (test generator)")
             yield np.array(X), np.array(y)
 
     def train_generator(self, train_df):
@@ -362,8 +357,6 @@ class FrameProcessor:
                 random_index = random.randint(0, len(train_df)-1)
                 path = list(train_df['FRAME_PTH'])[random_index]
                 current_feats = [float(list(train_df[feat])[random_index]) for feat in self.features]
-                #hr = float(list(train_df['HEART_RATE_BPM'])[random_index])
-                #rr = float(list(train_df['RESP_RATE_BR_PM'])[random_index]) 
 
                 frame_dir = sorted(os.listdir(path))
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
@@ -401,5 +394,4 @@ class FrameProcessor:
                 X.append(sequence)
                 y.append(current_feats)
             
-            #print(np.array(X).shape, np.array(y).shape, " (train generator)")
             yield np.array(X), np.array(y)

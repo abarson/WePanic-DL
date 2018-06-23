@@ -207,7 +207,7 @@ class Engine():
             self.test_set = metadf[metadf['GOOD'] == 2]
             print('>>> Built test set')
             optimizer = Adam(lr=1e-5, decay=1e-6)
-            self.model.compile(loss=self.loss, optimizer=optimizer, metrics=['mse'])
+            self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
             print('>>> Compiled and ready to go')
 
         else:  #test the model created during training
@@ -218,26 +218,31 @@ class Engine():
         model_name = self.__infer_top_model().split('/')[-1]
         model_name = model_name.rstrip('.h5')
         test_slug = 'testSetPerformance_name-%s_loss%0.4f.csv'
-        performance_df = pd.DataFrame(columns=['actual_hr,predicted_hr,actual_rr,predicted_rr'.split(',')])
-        #loss = self.model.evaluate_generator(test_generator, len(self.test_set))[0]
+        
+        map_me = {'HEART_RATE_BPM' : 'hr', 'RESP_RATE_BR_PM' : 'rr'}
+        header = sum([['actual_{}'.format(map_me[f]), 'predicted_{}'.format(map_me[f])] for f in self.features], [])
+        print(header) 
+        performance_df = pd.DataFrame(columns=header)
 
         for i in range(len(self.test_set)):
             print('[__test_model]: sample %d' % i)
             Xs, ys = next(test_generator) 
             
-            hrs, rrs = zip(*ys)
-            mean_hr, mean_rr = np.mean(hrs), np.mean(rrs) 
+            feats = zip(*ys)
+            mean_feats = [np.mean(feat) for feat in feats]
 
             preds = self.model.predict(Xs, batch_size=len(Xs))   
-            preds_hr, preds_rr = zip(*preds) 
-            mean_pred_hr, mean_pred_rr = np.mean(preds_hr), np.mean(preds_rr)
+            feat_preds = zip(*preds)
+            mean_preds = [np.mean(pred) for pred in feat_preds]
             
-            row = [mean_hr, mean_pred_hr, mean_rr, mean_pred_rr]
-
+            row = sum([list(value) for value in zip(*[mean_feats, mean_preds])], [])
+            #row = sum([mean_feats, mean_preds], [])
+            
+            print(row)
             performance_df.loc[i] = row
         
         print(performance_df)
-        performance_df.to_csv(os.path.join(self.outputs, test_slug))
+        performance_df.to_csv(os.path.join(self.outputs, test_slug), index=False)
     
     def __cross_val(self):
         """

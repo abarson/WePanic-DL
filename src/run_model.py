@@ -15,11 +15,11 @@ from functools import partial
 
 # haahahaahahah remoe stupid LOGS!!!!
 
-#os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-#stderr = sys.stderr
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+stderr = sys.stderr
 
 # goodbye Using Tensorflow backend.
-#sys.stderr = open('/dev/null', 'w')
+sys.stderr = open('/dev/null', 'w')
 
 # intra library imports
 import we_panic_utils.basic_utils.basics as B
@@ -31,7 +31,7 @@ from we_panic_utils.nn.processing import FrameProcessor
 from we_panic_utils.nn.callbacks import CyclicLRScheduler
 
 # fix it up
-#sys.stdout = stderr
+sys.stdout = stderr
 
 
 # get available models, loss functions

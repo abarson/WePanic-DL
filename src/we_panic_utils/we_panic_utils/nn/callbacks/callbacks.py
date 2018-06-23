@@ -92,13 +92,14 @@ class TestResultsCallback(Callback):
                 for s, t, *fs, p in zip(subjects, trial, *feats, preds):
                     avgs = [format(sum(p[0:,i])/len(p), '.3f') for i in range(len(fs))] 
                     stds = [format(np.std(p[0:,i]), '.2f') for i in range(len(fs))]
-
+                    
+                    concat = lambda x1,x2:x1+x2
                     #I'm so sorry
                     #This formats the log file to look pretty, while being robust to the number of features
-                    avg_str = reduce(lambda x1, x2:x1+x2, ['avg_{}={:<10}'.
+                    avg_str = reduce(concat, ['avg_{}={:<10}'.
                         format(self.translate_dict[self.test_gen.features[i]], avgs[i]) for i in range(len(avgs))])
-                    act_str = reduce(lambda x1, x2:x1+x2, ['act_{}={:<5}'.
+                    act_str = reduce(concat, ['act_{}={:<5}'.
                             format(self.translate_dict[self.test_gen.features[i]], int(fs[i])) for i in range(len(fs))])
-                    std_str = reduce(lambda x1, x2:x1+x2, ['std_{}={:<6}'.
+                    std_str = reduce(concat, ['std_{}={:<6}'.
                         format(self.translate_dict[self.test_gen.features[i]], stds[i]) for i in range(len(stds))])
                     log.write('{:<4} {} | {} | {} | {}\n'.format(int(s), t, avg_str, act_str, std_str))
