@@ -11,6 +11,8 @@ run_history/
 data/
 raw/
 frames/
+picky_16_16/
+picky_32_32/
 
 ##### latex nonsense
 *.aux
