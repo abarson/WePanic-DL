@@ -2,14 +2,15 @@
 
 pip install --upgrade src/we_panic_utils/
 
-python src/run_model.py CNN_3D frames \
+screen python src/run_model.py ShallowC3D picky_16_16 \
 --features hr \
 --csv wepanic_collated_catalogue.csv \
---test \
---input_dir run_history/test_new_feature_system \
---epochs 1 \
+--output_dir run_history/p_16_16_grey \
+--epochs 30 \
+--dimensions 16 16 \
 --steps_per_epoch 500 \
 --batch_size 14 \
---redscale_on \
+--greyscale_on \
+--kfold 4 \
 --early_stopping 12 \
---loss euclidean_distance_loss
+--loss mean_squared_error

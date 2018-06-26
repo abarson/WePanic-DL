@@ -8,7 +8,7 @@ import pandas as pd
 import random
 random.seed(7)
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
+import math
 
 """
 Public API
@@ -171,6 +171,50 @@ def fold(df, k=4):
         uniques = list(set(uniques) - set(validated))
 
         yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
+
+def fold_v2(df, k=4):
+    """
+    a generator for serving up train/validation splits
+
+    args:
+        df - the dataframe that describes all of the valid data
+        k - the number of folds
+
+    yields:
+        training and validation dataframes
+    """
+    df = df[df['GOOD'] == 1]  # just to make sure
+    df['SUBJECT'] = df['SUBJECT'].apply(lambda row : int(row))
+    subs = list(df['SUBJECT'].values.tolist())
+    tris = list(df['TRIAL'].values.tolist())
+    
+    indexes = [i for i in range(len(subs))]
+
+    tot = len(df)
+    completed = 0
+    current_index = 0
+
+    for _ in range(k):
+       
+        take_out = math.ceil(tot / (k - completed))
+        tot -= take_out
+        completed += 1
+        train_in = indexes[:current_index] + indexes[current_index+take_out:]
+        test_in = indexes[current_index:current_index+take_out]
+        current_index += take_out
+        
+        #filter out rows of the original df that contain subj/tri pairs that are in the train set
+        train_df = df[df[['SUBJECT', 'TRIAL']].apply(lambda x : 
+            __filter_column(*x, zipped=[(subs[index], tris[index]) for index in train_in]), axis=1)]
+
+        #filter out rows of the original df that contain subj/tri pairs that are in the val set
+        val_df = df[df[['SUBJECT', 'TRIAL']].apply(lambda x : 
+            __filter_column(*x, zipped=[(subs[index], tris[index]) for index in test_in]), axis=1)]
+
+        yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
+
+def __filter_column(*x, zipped):
+    return (x[0], x[1]) in zipped
 
 """
 #return four dataframes four now?

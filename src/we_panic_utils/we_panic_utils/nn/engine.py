@@ -1,6 +1,6 @@
 # intra-library imports
 
-from .data_load import ttswcsv, fold
+from .data_load import ttswcsv, fold, fold_v2
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
 from .functions import get_keras_losses
@@ -263,7 +263,7 @@ class Engine():
         
         
         # do self.kfold separate training/validation iters
-        for idx, (train_set, val_set) in enumerate(fold(good_samps, k=self.kfold)):
+        for idx, (train_set, val_set) in enumerate(fold_v2(good_samps, k=self.kfold)):
             
             start = time.time()
             # record :)

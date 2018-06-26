@@ -22,14 +22,14 @@ import sys, os
 import argparse
 
 # some invariants
-FRAME_DIR = 'frames/'
+FRAME_DIR = 'picky_32_32/'
 
 # good subject trial pairs
 
 
 
 NEW_BATCH = [
-            (2, 1), (4, 1), (4, 2), (6, 1), (13, 1), (13, 2),
+            (2, 1), (6, 1), (13, 1), (13, 2),
             (25, 1), (31, 1), (38, 1), (38, 2), (39, 1), (48, 1),
             (48, 2), (101, 1), (101, 2), (102, 1), (105, 1), (105, 2),
             (106, 1), (106, 2), (107, 1), (107, 2), (108, 1), (108, 2),
@@ -39,6 +39,7 @@ NEW_BATCH = [
 GOOD_STARTING_POINT_DATA = []
 NEXT_STARTING_POINT_DATA = []
 OUR_RECORDS = []
+
 #GOOD_STARTING_POINT_DATA = [(2, 1), (2, 2), (4, 1), (4, 2),
 #                            (12, 1), (12, 2), (13, 2), (23, 1),
 #                            (23, 2), (31, 1), (31, 2)]
