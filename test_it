@@ -4,7 +4,7 @@ pip install --upgrade src/we_panic_utils/
 python src/run_model.py CNN_3D picky_32_32 \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
---features hr \
+--features rr \
 --epochs 1 \
 --steps_per_epoch 10 \
 --batch_size 14 \
