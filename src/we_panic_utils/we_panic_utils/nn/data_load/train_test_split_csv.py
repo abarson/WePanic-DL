@@ -214,7 +214,7 @@ def fold_v2(df, k=4):
         try:
             yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
         
-        except KeyError:
+        except ValueError:
             yield train_df, val_df
 
 def __filter_column(*x, zipped):
