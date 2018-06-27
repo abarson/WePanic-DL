@@ -217,6 +217,9 @@ def fold_v2(df, k=4):
         except ValueError:
             yield train_df, val_df
 
+        except KeyError:
+            yield train_df, val_df
+
 def __filter_column(*x, zipped):
     return (x[0], x[1]) in zipped
 
