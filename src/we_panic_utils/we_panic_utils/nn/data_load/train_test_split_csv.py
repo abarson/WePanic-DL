@@ -210,8 +210,12 @@ def fold_v2(df, k=4):
         #filter out rows of the original df that contain subj/tri pairs that are in the val set
         val_df = df[df[['SUBJECT', 'TRIAL']].apply(lambda x : 
             __filter_column(*x, zipped=[(subs[index], tris[index]) for index in test_in]), axis=1)]
-
-        yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
+        
+        try:
+            yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
+        
+        except KeyError:
+            yield train_df, val_df
 
 def __filter_column(*x, zipped):
     return (x[0], x[1]) in zipped

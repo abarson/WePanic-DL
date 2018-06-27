@@ -1,16 +1,19 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-python src/run_model.py CNN_3D frames \
+python src/run_model.py CNN_3D picky_32_32 \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
+--features hr \
 --epochs 1 \
 --steps_per_epoch 10 \
 --batch_size 14 \
 --kfold 4 \
---redscale_on \
---vertical_flip \
---horizontal_flip \
---rotation_range 10 \
---loss euclidean_distance_loss \
---early_stopping 10
+--epochs 100 \
+--dimensions 32 32 \
+--steps_per_epoch 500 \
+--batch_size 14 \
+--greyscale_on \
+--kfold 4 \
+--early_stopping 20 \
+--loss mean_squared_error
