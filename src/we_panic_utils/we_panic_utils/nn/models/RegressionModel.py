@@ -154,7 +154,6 @@ class CNN_3D_small(RegressionModel):
         model.add(Conv3D(128, kernel_size=(3, 3, 3),
                   activation='relu'))
         model.add(MaxPooling3D(pool_size=2, strides=2)) 
-        # batch norm??
 
         model.add(Flatten())
         model.add(Dense(256, activation='relu'))

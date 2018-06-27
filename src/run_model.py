@@ -15,11 +15,11 @@ from functools import partial
 
 # haahahaahahah remoe stupid LOGS!!!!
 
-#os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-#stderr = sys.stderr
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+stderr = sys.stderr
 
 # goodbye Using Tensorflow backend.
-#sys.stderr = open('/dev/null', 'w')
+sys.stderr = open('/dev/null', 'w')
 
 # intra library imports
 import we_panic_utils.basic_utils.basics as B
@@ -31,7 +31,7 @@ from we_panic_utils.nn.processing import FrameProcessor
 from we_panic_utils.nn.callbacks import CyclicLRScheduler
 
 # fix it up
-#sys.stdout = stderr
+sys.stdout = stderr
 
 
 # get available models, loss functions
@@ -377,7 +377,18 @@ if __name__ == "__main__":
 
     feat_trans = [FEATURE_TRANSLATE[feat] for feat in args.features]
     summarize_arguments(args)
+
+    input_shape = None
+    x, y = args.dimensions
+
+    if args.greyscale_on or args.redscale_on:
+        input_shape = (60, x, y, 1)
+
+    else:
+        input_shape = (60, x, y, 3)
+
     fp = FrameProcessor(features=feat_trans,
+                        input_shape=input_shape[1:],
                         rotation_range=args.rotation_range,
                         width_shift_range=args.width_shift_range,
                         height_shift_range=args.height_shift_range,
@@ -390,14 +401,6 @@ if __name__ == "__main__":
                         redscale_on=args.redscale_on,
                         num_val_clips=args.num_val_clips)
 
-    input_shape = None
-    x, y = args.dimensions
-
-    if args.greyscale_on or args.redscale_on:
-        input_shape = (60, x, y, 1)
-
-    else:
-        input_shape = (60, x, y, 3)
 
     engine = Engine(data=args.data,
                     model_type=args.model_type,

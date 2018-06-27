@@ -281,6 +281,7 @@ class FrameProcessor:
     """
     def __init__(self,
                  features,
+                 input_shape,
                  rotation_range=0,
                  width_shift_range=0.,
                  height_shift_range=0.,
@@ -295,6 +296,7 @@ class FrameProcessor:
                  num_val_clips=10):
         
         self.features = features
+        self.input_shape = input_shape
         self.rotation_range = rotation_range
         self.width_shift_range = width_shift_range
         self.height_shift_range = height_shift_range
@@ -340,7 +342,8 @@ class FrameProcessor:
                 start = random.randint(0, len(frame_dir)-self.sequence_length)
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(current_path, frame) for frame in frames]
-                X.append(build_image_sequence(frames, greyscale_on=self.greyscale_on, redscale_on=self.redscale_on))
+                X.append(build_image_sequence(frames, input_shape=self.input_shape, 
+                    greyscale_on=self.greyscale_on, redscale_on=self.redscale_on))
                 y.append(current_feats)
             i+=1
             if i == len(test_df):
@@ -363,7 +366,8 @@ class FrameProcessor:
                 frames = frame_dir[start:start+self.sequence_length]
                 frames = [os.path.join(path, frame) for frame in frames]
 
-                sequence = build_image_sequence(frames, greyscale_on=self.greyscale_on, redscale_on=self.redscale_on)
+                sequence = build_image_sequence(frames, input_shape=self.input_shape,
+                        greyscale_on=self.greyscale_on, redscale_on=self.redscale_on)
                 
                 # now we want to apply the augmentation
                 if self.rotation_range > 0.0:
