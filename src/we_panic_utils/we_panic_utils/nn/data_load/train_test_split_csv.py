@@ -216,29 +216,6 @@ def fold_v2(df, k=4):
 def __filter_column(*x, zipped):
     return (x[0], x[1]) in zipped
 
-"""
-#return four dataframes four now?
-def cross_val_split(data_path, metadata, nfolds=4):
-    metadf = pd.read_csv(metadata)
-    metadf = metadf[metadf.GOOD == 1]
-    
-    path = list(train_df['FRAME_PTH'])[random_index]
-    X = list(metadf['SUBJECT'])
-    y = list(metadf['TRIAL'])
-    skf = StratifiedKFold(n_splits=nfolds)
-    dataframes_x, dataframes_y = [], []
-    
-    path = list(train_df['FRAME_PTH'])[random_index]
-    for x_index, y_index in skf.split(X, y):
-        xs = [X[xi] for xi in x_index]
-        ys = [y[yi] for yi in y_index]
-        
-        dfx = metadf[(metadf['SUBJECT'].isin(xs)) & (metadf['TRIAL'].isin(ys))]
-         
-        #dfx.append(metadf[(metadf['SUBJECT'] == ) & (metadf['Trial'] == trial)])
-        pass
-"""
-
 def ttswcsv(data_path, metadata, output_dir,
              test_split=0.2, val_split=0.2, verbose=True):
 

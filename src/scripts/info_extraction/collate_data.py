@@ -20,44 +20,24 @@ OBJECTIVE
 import pandas as pd
 import sys, os
 import argparse
+import random
+from sklearn.model_selection import train_test_split
+
+#random.seed(42) # why not
+seed = 42 # why not
 
 # some invariants
-FRAME_DIR = 'picky_32_32/'
-
-# good subject trial pairs
-
-
 
 NEW_BATCH = [
             (2, 1), (6, 1), (13, 1), (13, 2),
             (25, 1), (31, 1), (38, 1), (38, 2), (39, 1), (48, 1),
             (48, 2), (101, 1), (101, 2), (102, 1), (105, 1), (105, 2),
             (106, 1), (106, 2), (107, 1), (107, 2), (108, 1), (108, 2),
-            (109, 1), (109, 2), (110, 1), (110, 2), (111, 1), (111, 2)
+            (109, 1), (109, 2), (110, 1), (110, 2), (111, 1), (111, 2),
+            (112, 1), (112, 2), (113, 1), (113, 2)
             ]
 
-GOOD_STARTING_POINT_DATA = []
-NEXT_STARTING_POINT_DATA = []
-OUR_RECORDS = []
-
-#GOOD_STARTING_POINT_DATA = [(2, 1), (2, 2), (4, 1), (4, 2),
-#                            (12, 1), (12, 2), (13, 2), (23, 1),
-#                            (23, 2), (31, 1), (31, 2)]
-#
-#NEXT_STARTING_POINT_DATA = [(6, 1), (6, 2), (8, 2), (13, 1), 
-#                            (25, 1), (30, 1)]
-#
-#NEW_BATCH = [(38, 1), (38, 2), (39, 1), (39, 2),
-#             (47, 1), (47, 2), (48, 1), (48, 2)]
-#
-#OUR_RECORDS = [(101, 1), (101, 2), (102, 1), (103, 2),
-#               (104, 1), (104, 2), (105, 1), (105, 2),
-#               (106, 1), (106, 2), (107, 1), (107, 2),
-#               (108, 1), (108, 2), (109, 1), (109, 2),
-#               (110, 1), (110, 2), (111, 1), (111, 2),
-#               (123, 1)]
-
-GOOD_PAIRS = list(set(GOOD_STARTING_POINT_DATA + NEXT_STARTING_POINT_DATA + NEW_BATCH))
+GOOD_PAIRS = list(set(NEW_BATCH))
 
 # our tidy data columns
 COLUMNS = 'SUBJECT,TRIAL,FRAME_PTH,HEART_RATE_BPM,RESP_RATE_BR_PM,GOOD'.split(',')
@@ -70,7 +50,11 @@ def parse_args():
     parser.add_argument('dlcd_loc',
                         type=str,
                         help='the location of DeepLearningClassData.csv on your computer')
-
+    
+    parser.add_argument('--frame_dir',
+                        type=str,
+                        help='the frame directory',
+                        default='picky_32_32')
     return parser
 
 
@@ -109,6 +93,7 @@ def verify(filename):
 
     
 if __name__ == '__main__':
+    args = parse_args().parse_args()
     dlcd_loc = parse_args().parse_args().dlcd_loc
     print('assuming this script was called from the top level of this directory ...')
 
@@ -133,6 +118,9 @@ if __name__ == '__main__':
     trial_fmt = 'Trial%d_frames'
     
     i = 0
+
+    Xs, ys = [], []
+
     for row in dlcd_df.iterrows():
         idx, data = row
         
@@ -142,19 +130,33 @@ if __name__ == '__main__':
         for trial in [1, 2]:
             
             good = tf_dict[(subject, trial) in GOOD_PAIRS]
-            if (subject, trial) in OUR_RECORDS:
-                good = 2  # throw this pair into the untouched test set
+
+            if good == 1:
+                Xs.append((subject, trial))            
+                ys.append(1)
 
             hrate = data[hrate_col.format(trial)]
             resp_rate = data[resp_rate_col.format(trial)]
-            frame_pth = os.path.join(FRAME_DIR, subj_fmt % subject, trial_fmt % trial) 
+            frame_pth = os.path.join(args.frame_dir, subj_fmt % subject, trial_fmt % trial) 
             
             collated_row = [subject, trial, frame_pth, hrate, resp_rate, good]
             collated_df.loc[i] = collated_row
 
             i += 1
+    
+    
+    # get a test set
+    Xtrain, Xtest, _, _, = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
+    print('Train : ', Xtrain)
+    print('Test: ', Xtest)
+    for subj, tri in Xtest:
+        row_idx = collated_df.loc[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)].index
+        collated_df.loc[row_idx, 'GOOD'] = 2
+        
+        #collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)]['GOOD'] = 2  # add to test set
 
-    collated_df.to_csv(OUTPUT_CSV)
+
+    collated_df.to_csv(OUTPUT_CSV, index=False)
     print('wrote collated data to %s' % OUTPUT_CSV)
 
 
