@@ -53,5 +53,5 @@ if __name__ == '__main__':
     plt.scatter(hr_test, rr_test, label='testing data')
     plt.xlabel('heart rate (BPM)')
     plt.ylabel('respiratory rate (BR PM)')
-
+    plt.legend()
     plt.savefig(os.path.join(figs_dir, output_file))
