@@ -345,6 +345,7 @@ class FrameProcessor:
                 X.append(build_image_sequence(frames, input_shape=self.input_shape, 
                     greyscale_on=self.greyscale_on, redscale_on=self.redscale_on))
                 y.append(current_feats)
+
             i+=1
             if i == len(test_df):
                 i = 0
