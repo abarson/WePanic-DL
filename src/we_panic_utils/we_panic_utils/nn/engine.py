@@ -33,7 +33,7 @@ class Engine():
         inputs ----------: the input directory to be used if testing without training
         outputs ---------: the output directory to save the new model to
         frameproc -------: FrameProcessor object for augmentation
-        input_shape -----: shape of the sequence passed, 60 separate 100x100x3 frames
+        input_shape -----: shape of the sequence passed, SEQ_LEN separate (Rows, Cols, Channs) frames
         output_shape ----: the number of outputs
         steps_per_epoch -: steps per epoch 
         kfold -----------: not used if None, otherwise this is the number of folds to

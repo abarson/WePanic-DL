@@ -2,7 +2,7 @@ from keras.layers import Dense, Flatten, Dropout, ZeroPadding3D, Input
 from keras.models import Sequential  # load_model
 from keras.optimizers import Adam,  RMSprop, SGD
 from keras.layers.convolutional import Conv3D, MaxPooling3D
-from keras.layers import BatchNormalization
+from keras.layers import Activation, BatchNormalization
 from keras.models import Model
 
 class RegressionModel():
@@ -84,6 +84,53 @@ class C3D(RegressionModel):
         model.add(Dropout(0.5))
         model.add(Dense(self.output_shape, activation='linear'))
 
+        return model
+
+class BN_CNN_3D_DO(RegressionModel):
+   
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
+
+    def instantiate(self):
+        return super(BN_CNN_3D_DO, self).instantiate()
+
+    def get_model(self):
+       
+        model = Sequential()
+        
+        model.add(Conv3D(64, kernel_size=(3, 3, 3), 
+                  input_shape=self.input_shape))
+        model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+
+        model.add(Conv3D(128, kernel_size=(3, 2, 2)))
+        model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+
+        model.add(Conv3D(256, kernel_size=(3, 2, 2)))
+        model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+
+        model.add(Conv3D(256, kernel_size=(2, 2, 2)))
+        model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+
+        model.add(Conv3D(512, kernel_size=(1, 1, 1)))
+        model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
+        model.add(MaxPooling3D(pool_size=1, strides=1))
+
+        model.add(Flatten()) 
+        model.add(Dense(512, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(512, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(self.output_shape, activation='linear'))
+        
         return model
 
 class CNN_3D(RegressionModel):
