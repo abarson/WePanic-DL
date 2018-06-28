@@ -4,7 +4,7 @@
 **/*.*.swp
 
 ##### potentially conflicting model scripts/archives
-run_it
+run_it_CLOUD
 run_history/
 
 ##### data directories
