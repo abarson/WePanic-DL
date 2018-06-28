@@ -86,13 +86,13 @@ class C3D(RegressionModel):
 
         return model
 
-class CNN_3D_BN_DO(RegressionModel):
+class BN_CNN_3D_DO(RegressionModel):
    
     def __init__(self, input_shape, output_shape, loss=None):
         RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
 
     def instantiate(self):
-        return super(CNN_3D_BN_DO, self).instantiate()
+        return super(BN_CNN_3D_DO, self).instantiate()
 
     def get_model(self):
        
