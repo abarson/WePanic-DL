@@ -190,6 +190,11 @@ def parse_input():
                         help='tolerance for # of iterations without improvement to start',
                         default=None,
                         type=int)
+
+    parser.add_argument('--sequence_length',
+                        help='sequence size for feeding the DNN',
+                        default=60,
+                        type=int)
     
     return parser
 
@@ -252,7 +257,7 @@ def validate_arguments(args):
     
     bad_augs = []
     for arg_name in ['steps_per_epoch', 'shear_range', 'width_shift_range', 
-                     'height_shift_range', 'rotation_range', 'zoom_range', 'early_stopping']:
+                     'height_shift_range', 'rotation_range', 'zoom_range', 'early_stopping', 'sequence_length']:
         
         if vars(args)[arg_name] < 0:
             bad_augs.append("%s can't be < 0" % arg_name)
@@ -382,10 +387,10 @@ if __name__ == "__main__":
     x, y = args.dimensions
 
     if args.greyscale_on or args.redscale_on:
-        input_shape = (60, x, y, 1)
+        input_shape = (args.sequence_length, x, y, 1)
 
     else:
-        input_shape = (60, x, y, 3)
+        input_shape = (args.sequence_length, x, y, 3)
 
     fp = FrameProcessor(features=feat_trans,
                         input_shape=input_shape[1:],
@@ -399,7 +404,8 @@ if __name__ == "__main__":
                         batch_size=args.batch_size,
                         greyscale_on=args.greyscale_on,
                         redscale_on=args.redscale_on,
-                        num_val_clips=args.num_val_clips)
+                        num_val_clips=args.num_val_clips,
+                        sequence_length=args.sequence_length)
 
 
     engine = Engine(data=args.data,
