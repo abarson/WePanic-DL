@@ -2,10 +2,10 @@
 
 pip install --upgrade src/we_panic_utils/
 
-screen python src/run_model.py CNN_3D picky_32_32 \
---features rr \
+python src/run_model.py CNN_3D_BN_DO picky_32_32 \
+--features hr \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/p_32x32_grey_rr \
+--output_dir run_history/p_32x32_grey_hr_bn_model \
 --epochs 100 \
 --dimensions 32 32 \
 --steps_per_epoch 500 \
