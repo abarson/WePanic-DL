@@ -100,28 +100,28 @@ class BN_CNN_3D_DO(RegressionModel):
         
         model.add(Conv3D(64, kernel_size=(3, 3, 3), 
                   input_shape=self.input_shape))
-        model.add(BatchNormalization()) 
         model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
         model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
 
         model.add(Conv3D(128, kernel_size=(3, 2, 2)))
-        model.add(BatchNormalization()) 
         model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
         model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
 
         model.add(Conv3D(256, kernel_size=(3, 2, 2)))
-        model.add(BatchNormalization()) 
         model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
         model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
 
-        #model.add(Conv3D(256, kernel_size=(2, 2, 2)))
-        #model.add(BatchNormalization()) 
-        #model.add(Activation('relu'))
-        #model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+        model.add(Conv3D(256, kernel_size=(2, 2, 2)))
+        model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
 
         model.add(Conv3D(512, kernel_size=(1, 1, 1)))
-        model.add(BatchNormalization()) 
         model.add(Activation('relu'))
+        model.add(BatchNormalization()) 
         model.add(MaxPooling3D(pool_size=1, strides=1))
 
         model.add(Flatten()) 

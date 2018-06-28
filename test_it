@@ -4,21 +4,16 @@
 
 pip install --upgrade src/we_panic_utils/
 
-python src/run_model.py CNN_3D picky_32_32 \
+python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/p_32x32_grey_hr_aug_seqlen90 \
---epochs 1 \
+--output_dir run_history/p_32x32_grey_hr_BN_CNN_3D_DO \
+--epochs 100 \
 --dimensions 32 32 \
---steps_per_epoch 1 \
+--steps_per_epoch 500 \
 --batch_size 14 \
 --greyscale_on \
 --kfold 4 \
 --early_stopping 15 \
 --loss mean_squared_error \
---rotation_range 10 \
---height_shift_range 0.2 \
---width_shift_range 0.2 \
---vertical_flip \
---horizontal_flip \
---sequence_length 90
+--sequence_length 75 
