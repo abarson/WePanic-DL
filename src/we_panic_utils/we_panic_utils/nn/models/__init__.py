@@ -1,1 +1,1 @@
-from .RegressionModel import C3D, CNN_3D, CNN_3D_small, ShallowC3D, CNN_3D_BN_DO 
+from .RegressionModel import C3D, CNN_3D, CNN_3D_small, ShallowC3D, BN_CNN_3D_DO 
