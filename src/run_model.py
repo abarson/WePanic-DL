@@ -257,13 +257,19 @@ def validate_arguments(args):
     
     bad_augs = []
     for arg_name in ['steps_per_epoch', 'shear_range', 'width_shift_range', 
-                     'height_shift_range', 'rotation_range', 'zoom_range', 'early_stopping', 'sequence_length']:
+                     'height_shift_range', 'rotation_range', 'zoom_range', 
+                     'early_stopping', 'sequence_length']:
         
-        if vars(args)[arg_name] < 0:
-            bad_augs.append("%s can't be < 0" % arg_name)
+        try:
+            if vars(args)[arg_name] < 0:
+                bad_augs.append("%s can't be < 0" % arg_name)
 
-        if arg_name in ['shear_range', 'width_shift_range', 'height_shift_range'] and vars(args)[arg_name] > 1:
-            bad_augs.append("%s is a value in [0, 1]" % arg_name)
+            if arg_name in ['shear_range', 'width_shift_range', 'height_shift_range'] and vars(args)[arg_name] > 1:
+                bad_augs.append("%s is a value in [0, 1]" % arg_name)
+
+        except TypeError:
+            #sys.exit('arg_name : %s ' % arg_name)
+            pass
 
 
     if len(bad_augs) > 0:

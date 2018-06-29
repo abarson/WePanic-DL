@@ -202,6 +202,7 @@ class Engine():
         if not self.model:  #load the model if it wasn't created during the training phase
             
             print('>>> No model found, inferring top model given the input directory')
+            
             self.model = models.load_model(self.__infer_top_model(), compile=False)
             metadf = pd.read_csv(self.metadata)
             self.test_set = metadf[metadf['GOOD'] == 2]

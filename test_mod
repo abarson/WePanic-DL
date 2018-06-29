@@ -1,12 +1,12 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-python src/run_model.py CNN_3D frames \
+python src/run_model.py CNN_3D picky_32_32 \
 --csv wepanic_collated_catalogue.csv \
---input_dir run_history/3DCNN_VHflip_redscale_on \
+--input_dir run_history/cnn32bndo_smoothl1_loss \
+--features hr \
 --steps_per_epoch 500 \
 --epochs 1 \
 --batch_size 14 \
---redscale_on \
---cyclic_lr cos_cyclic_lr \
+--greyscale_on \
 --test
