@@ -78,7 +78,7 @@ class TestResultsCallback(Callback):
             print('Logging tests at epoch', epoch+1)
             with open(self.log_file, 'a') as log:
                 gen = self.test_gen.test_generator(self.test_set)
-                pred = self.model.predict_generator(self.gen, len(self.test_set))
+                pred = self.model.predict_generator(gen, len(self.test_set))
                 
                 feats = [list(self.test_set[feat]) for feat in self.test_gen.features]
                 subjects = list(self.test_set['SUBJECT'])

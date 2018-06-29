@@ -98,26 +98,26 @@ class BN_CNN_3D_DO(RegressionModel):
        
         model = Sequential()
         
-        model.add(Conv3D(64, kernel_size=15, 
+        model.add(Conv3D(64, kernel_size=(15, 5, 5), padding='valid',
                   input_shape=self.input_shape))
         model.add(Activation('relu'))
         model.add(BatchNormalization()) 
-        model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2)))
+        model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
 
-        model.add(Conv3D(128, kernel_size=7))
+        model.add(Conv3D(128, kernel_size=5, padding='valid'))
         model.add(Activation('relu'))
         model.add(BatchNormalization()) 
-        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2), padding='valid'))
 
-        model.add(Conv3D(256, kernel_size=3))
+        model.add(Conv3D(256, kernel_size=3, padding='valid'))
         model.add(Activation('relu'))
         model.add(BatchNormalization()) 
-        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2), padding='valid'))
 
-        model.add(Conv3D(256, kernel_size=3))
-        model.add(Activation('relu'))
-        model.add(BatchNormalization()) 
-        model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+        #model.add(Conv3D(256, kernel_size=3))
+        #model.add(Activation('relu'))
+        #model.add(BatchNormalization()) 
+        #model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
 
         #model.add(Conv3D(512, kernel_size=1))
         #model.add(Activation('relu'))

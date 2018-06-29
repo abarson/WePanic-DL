@@ -334,7 +334,6 @@ class FrameProcessor:
 
         i_s = [i for i in range(len(test_df))]
         while True:
-            print(i_s, '--->', end='')
             X, y = [], []
 
             i = i_s.pop(0)
