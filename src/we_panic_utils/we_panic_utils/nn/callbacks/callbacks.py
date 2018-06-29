@@ -64,7 +64,7 @@ class TestResultsCallback(Callback):
         self.test_set = test_set
         self.log_file = log_file
         self.epochs=epochs
-        
+
         #todo: put this somewhere else
         self.translate_dict = {'HEART_RATE_BPM' : 'hr', 'RESP_RATE_BR_PM' : 'rr'}
         self.__remove_file_if_exists(log_file) 
@@ -78,7 +78,7 @@ class TestResultsCallback(Callback):
             print('Logging tests at epoch', epoch+1)
             with open(self.log_file, 'a') as log:
                 gen = self.test_gen.test_generator(self.test_set)
-                pred = self.model.predict_generator(gen, len(self.test_set))
+                pred = self.model.predict_generator(self.gen, len(self.test_set))
                 
                 feats = [list(self.test_set[feat]) for feat in self.test_gen.features]
                 subjects = list(self.test_set['SUBJECT'])
@@ -99,7 +99,7 @@ class TestResultsCallback(Callback):
                     avg_str = reduce(concat, ['avg_{}={:<10}'.
                         format(self.translate_dict[self.test_gen.features[i]], avgs[i]) for i in range(len(avgs))])
                     act_str = reduce(concat, ['act_{}={:<5}'.
-                            format(self.translate_dict[self.test_gen.features[i]], int(fs[i])) for i in range(len(fs))])
+                        format(self.translate_dict[self.test_gen.features[i]], int(fs[i])) for i in range(len(fs))])
                     std_str = reduce(concat, ['std_{}={:<6}'.
                         format(self.translate_dict[self.test_gen.features[i]], stds[i]) for i in range(len(stds))])
                     log.write('{:<4} {} | {} | {} | {}\n'.format(int(s), t, avg_str, act_str, std_str))

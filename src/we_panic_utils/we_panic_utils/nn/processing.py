@@ -331,24 +331,28 @@ class FrameProcessor:
     def test_generator(self, test_df):
         paths = list(test_df['FRAME_PTH'])
         feats = [list(test_df[feat]) for feat in self.features]
-        i = 0
+
+        i_s = [i for i in range(len(test_df))]
         while True:
+            print(i_s, '--->', end='')
             X, y = [], []
+
+            i = i_s.pop(0)
+
             current_path = paths[i]
             current_feats = [feats[n][i] for n in range(len(feats))]
             frame_dir = sorted(os.listdir(current_path))
             
             for _ in range(self.num_val_clips):
-                start = random.randint(0, len(frame_dir)-self.sequence_length)
-                frames = frame_dir[start:start+self.sequence_length]
+                start = random.randint(0, len(frame_dir)-self.sequence_length*2)
+                frames = frame_dir[start:start+self.sequence_length*2:2]
                 frames = [os.path.join(current_path, frame) for frame in frames]
                 X.append(build_image_sequence(frames, input_shape=self.input_shape, 
                     greyscale_on=self.greyscale_on, redscale_on=self.redscale_on))
                 y.append(current_feats)
 
-            i+=1
-            if i == len(test_df):
-                i = 0
+            if not i_s:
+                i_s = [i for i in range(len(test_df))]
             
             yield np.array(X), np.array(y)
 
@@ -363,8 +367,8 @@ class FrameProcessor:
                 current_feats = [float(list(train_df[feat])[random_index]) for feat in self.features]
 
                 frame_dir = sorted(os.listdir(path))
-                start = random.randint(0, len(frame_dir)-self.sequence_length)
-                frames = frame_dir[start:start+self.sequence_length]
+                start = random.randint(0, len(frame_dir)-self.sequence_length*2)
+                frames = frame_dir[start:start+self.sequence_length*2:2]
                 frames = [os.path.join(path, frame) for frame in frames]
 
                 sequence = build_image_sequence(frames, input_shape=self.input_shape,

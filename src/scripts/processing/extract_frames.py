@@ -101,4 +101,4 @@ if __name__ == "__main__":
 
         i += 1
 
-    print("[*] Extracted %d images from %d different video files" % (sum(imgs_captured), i + 1))
+    print("[*] Extracted %d images from %d different video files" % (sum(imgs_captured), i))
