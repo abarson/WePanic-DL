@@ -33,6 +33,18 @@ def euclidean_distance_loss(y_true, y_pred):
 
     return K.sqrt(K.sum(K.square(y_true - y_pred), axis=-1, keepdims=True))
 
+def smooth_l1_loss(y_true, y_pred):
+    """
+    compute smooth l1 loss; a smoothed MAE
+    """
+    HUBER_DELTA = 0.5
+
+    x = K.abs(y_true - y_pred)
+    if K._BACKEND == 'tensorflow':
+        import tensorflow as tf
+        x = tf.where(x < HUBER_DELTA, 0.5 * x ** 2, HUBER_DELTA * (x -0.5 * HUBER_DELTA))
+        return K.sum(x)
+
 def get_keras_losses():
     import keras.losses
     return get_module_attributes(keras.losses, exclude_set=['absolute_import',
