@@ -21,4 +21,4 @@ python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --kfold 5 \
 --loss smooth_l1_loss\
 --sequence_length 60 \
---cyclic_lr triangular_lr 0.0 0.02 $steps  
+--cyclic_lr triangular_lr 0.0 1.0 $steps  
