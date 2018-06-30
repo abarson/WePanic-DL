@@ -220,33 +220,69 @@ def fold_v2(df, k=4):
         except KeyError:
             yield train_df, val_df
 
-def sorted_stratified_kfold(df, n_splits=5):
 
-    df = df[df['GOOD'] == 1]  # just to make sure
-    df['SUBJECT'] = df['SUBJECT'].apply(lambda row : int(row))
-    subs = list(df['SUBJECT'].values.tolist())
-    tris = list(df['TRIAL'].values.tolist())
-    hrs = list(df['HEART_RATE_BPM'].values.tolist())
-    compiled = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
+def _tiers_by_magnitude(sorted_list, n_tier=5):
+    """
+    private helper function for building a list
+    of lists sorted by magnitudes
+
+    args:
+        n_tier : number of tiers
+        sorted_list : list to split
     
-    n_splits_lists = [[] for _ in range(n_splits)]
-    for i in n_splits:
-        take_out = math.ceil(len(compiled) / (n_splits - i))
-        n_splits_lists.append(compiled[:take_out])
-        compiled=compiled[take_out:]
+    returns:
+        (list) sorted list of lists representing tiers
+    """
+    tiers = []
+
+    for i in range(n_tier):
+        take_out = math.ceil(len(sorted_list) / (n_tier - i))
+        tiers.append(sorted_list[:take_out])
+        sorted_list = sorted_list[take_out:]
+
+    return tiers
+
+def sorted_stratified_kfold(df, k=5):
+
+    df              = df[df['GOOD'] == 1]                         # just to make sure
+    df['SUBJECT']   = df['SUBJECT'].apply(lambda row: int(row))   # make subjects float --> int
+    subs, tris, hrs = zip(*df[['SUBJECT', 'TRIAL', 'HEART_RATE_BPM']].values.tolist())
+    compiled        = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
+    
+    tiers = _tiers_by_magnitude(compiled, n_tier=k) 
+    folds = [ [] for _ in range(k)]
+
+    i = 0
+    for T in tiers:
+        while T:
+            chosen = T.pop(random.randint(0, len(T) - 1)) 
+            
+            folds[i].append(chosen)
+            i = (i + 1) % k
+
+    
+    for f in folds:
+        val_df = pd.DataFrame(columns=df.columns)
+        train_df = df.copy()
+
+        for i, (subject, trial, hr) in enumerate(f):
+            rowdf = df[(df['SUBJECT'] == subject) & (df['TRIAL'] == trial)]
+            train_df.drop(rowdf.index, inplace=True)
+            row  = rowdf.values.tolist()[0]
+            val_df.loc[i] = row 
         
+        try:
+            yield train_df.drop('Unnamed: 0', axis=1), val_df.drop('Unnamed: 0', axis=1)
+        
+        except ValueError:
+            yield train_df, val_df
+
+        except KeyError:
+            yield train_df, val_df
     
-    indexes = [i for i in range(len(subs))]
-
-    for _ in range(n_splits):
-        pass
-
-    
-
-    
-
 def __filter_column(*x, zipped):
     return (x[0], x[1]) in zipped
+
 
 def ttswcsv(data_path, metadata, output_dir,
              test_split=0.2, val_split=0.2, verbose=True):

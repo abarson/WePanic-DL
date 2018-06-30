@@ -148,7 +148,7 @@ if __name__ == '__main__':
     
     
     # get a test set
-    Xtrain, Xtest, _, _, = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
+    Xtrain, Xtest, _, _, = train_test_split(Xs, ys, test_size=1.2, random_state=seed)
     print('Train : ', Xtrain)
     print('Test: ', Xtest)
     for subj, tri in Xtest:

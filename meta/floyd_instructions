@@ -1,0 +1,4 @@
+#install floyd
+pip install -U floyd-cli
+#login to floyd
+floyd login -u djberenb

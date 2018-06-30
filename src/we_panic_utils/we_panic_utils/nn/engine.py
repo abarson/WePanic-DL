@@ -1,6 +1,5 @@
 # intra-library imports
-
-from .data_load import ttswcsv, fold, fold_v2
+from .data_load import ttswcsv, sorted_stratified_kfold
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
 from .functions import get_keras_losses
@@ -264,7 +263,7 @@ class Engine():
         
         
         # do self.kfold separate training/validation iters
-        for idx, (train_set, val_set) in enumerate(fold_v2(good_samps, k=self.kfold)):
+        for idx, (train_set, val_set) in enumerate(sorted_stratified_kfold(good_samps, k=self.kfold)):
             
             start = time.time()
             # record :)
@@ -324,8 +323,9 @@ class Engine():
             total = (end - start) / 60
             
             cv_results.loc[idx] = [self.model_type, idx, total, loss]
+            cv_results.to_csv(os.path.join(self.outputs,'cvresults.csv'), index=False)
          
-        cv_results.to_csv(os.path.join(self.outputs,'cvresults.csv'))
+        cv_results.to_csv(os.path.join(self.outputs,'cvresults.csv'), index=False)
     
         print('finished a %d-fold cross validation\n\tavg_loss: %0.5f' % (self.kfold,
                                                                           cv_results['loss'].mean()))
