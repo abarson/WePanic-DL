@@ -25,9 +25,16 @@ class CyclicLRScheduler(Callback):
         self.verbose = verbose
         self.epoch = 0
 
-        self.output_log = os.path.join(output_dir, 'schedule.log')
         self.output_dir = output_dir
-        
+        self.output_log = self._next_available_schedule_name()
+    
+    def _next_available_schedule_name(filename='schedule{}.log')
+        i = 0
+        while os.path.exists(os.path.join(self.output_dir, filename.format(i))):
+            i += 1
+
+        return os.path.join(self.output_dir, filename.format(i))
+
     def on_epoch_begin(self, epoch, logs=None):
         self.epoch = epoch
 
@@ -53,6 +60,7 @@ class CyclicLRScheduler(Callback):
             with open(self.output_log, 'a') as f:
                 print(f'\nStep {self.epoch * self.steps_per_epoch + batch}:'
                       f' learning rate = {lr}.', file=f)
+  
 
 class TestResultsCallback(Callback):
     """
