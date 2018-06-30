@@ -18,10 +18,9 @@ class CyclicLRScheduler(Callback):
     Cylic learning rate scheduler
     """
 
-    def __init__(self, steps_per_epoch, output_dir, schedule, verbose=True):
+    def __init__(self, schedule, output_dir, verbose=True):
         super().__init__()
         self.schedule = schedule
-        self.steps_per_epoch = steps_per_epoch
 
         self.verbose = verbose
         self.epoch = 0
@@ -39,8 +38,9 @@ class CyclicLRScheduler(Callback):
         lr = float(K.get_value(self.model.optimizer.lr))
 
         try:  # new API
-            lr = self.schedule(self.epoch * self.steps_per_epoch + batch, lr=lr)
-        except TypeError:  # new API for backward compatibility
+            lr = self.schedule(step=self.epoch * self.steps_per_epoch + batch)
+
+        except TypeError:  # old API for backward compatibility
             lr = self.schedule(self.epoch * self.steps_per_epoch + batch)
 
         if not isinstance(lr, (float, np.float32, np.float64)):

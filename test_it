@@ -8,12 +8,12 @@ python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
---epochs 1 \
+--epochs 15 \
 --dimensions 32 32 \
---steps_per_epoch 1 \
+--steps_per_epoch 500 \
 --batch_size 14 \
 --greyscale_on \
---kfold 4 \
---early_stopping 15 \
+--kfold 5 \
 --loss mean_squared_error \
---sequence_length 60
+--sequence_length 60 \
+--cyclic_lr triangular_lr 0.0001 0.006 105000 

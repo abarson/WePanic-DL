@@ -37,6 +37,7 @@ from we_panic_utils.nn.callbacks import CyclicLRScheduler
 # get available models, loss functions
 MODEL_CHOICES = B.get_module_attributes(models, exclude_set=['RegressionModel'])
 LOSS_FUNCTIONS = list(filter(lambda fun: fun.split('_')[-1] == 'loss', B.basics.get_module_attributes(funcs))) + funcs.get_keras_losses()
+LEARNING_RATES = list(filter(lambda fun: fun.endswith('lr'), B.basics.get_module_attributes(funcs)))
 FEATURE_TRANSLATE = {'hr' : 'HEART_RATE_BPM', 'rr' : 'RESP_RATE_BR_PM'}
 
 def parse_input():
@@ -177,9 +178,9 @@ def parse_input():
                         default=10)
 
     parser.add_argument('--cyclic_lr',
-                        help='cyclic learning rate function to apply',
-                        type=str,
-                        default=None)
+                        help='cyclic learning rate function to apply; a tuple (func_name, min_lr,  max_lr, stepsize)',
+                        default=None,
+                        nargs='4')
 
     parser.add_argument('--loss',
                         help='loss function inn [keras.losses, we_panic_utils.functions]',
@@ -278,18 +279,23 @@ def validate_arguments(args):
     
     if args.cyclic_lr is not None:
         try:
-            inner_func = getattr(funcs, args.cyclic_lr)
+            min_lr, max_lr, stepsize, func_name = args.cyclic_lr 
+            assert isinstance(min_lr, float) and isinstance(max_lr, float), 'min_lr, max_lr expected to be floats got %f and %f' % (min_lr, max_lr)
+            assert isinstance(stepsize, int), 'expected stepsize to be an int, got {}'.format(stepsize)
+            assert 0 < stepsize, 'stepsize must be > 0, not {}'.format(stepsize)
+            assert 0. <= min_lr < max_lr <= 1., 'need this relation ship : 0. <= min_lr={} < max_lr={} <= 1.'.format(min_lr, max_lr) 
+
+            inner_func = getattr(funcs, func_name)
             lr_func = partial(inner_func,
-                              lr0=0.002,
-                              total_steps=args.epochs * args.steps_per_epoch,
-                              cycles=300)
+                              base_lr=min_lr,
+                              max_lr=max_lr,
+                              stepsize=stepsize)
             
             args.cylic_LR_schedule = args.cyclic_lr
             args.cyclic_lr = CyclicLRScheduler(output_dir=args.output_dir,
                                                schedule=lr_func,
                                                steps_per_epoch=args.steps_per_epoch) 
         except AttributeError as e:
-            print(e)
             sys.exit(e)
 
     if len(args.features) > 1:
