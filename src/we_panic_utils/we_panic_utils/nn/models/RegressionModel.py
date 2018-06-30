@@ -96,27 +96,27 @@ class BN_CNN_3D_DO(RegressionModel):
 
     def get_model(self):
        
-        kwargs = {'kernel_initializer':'he_normal'}
+        invariants = {'kernel_initializer':'he_normal'}
         model = Sequential()
          
         model.add(Conv3D(64, kernel_size=(15, 5, 5), padding='valid',
-                  input_shape=self.input_shape), **kwargs)
+                  input_shape=self.input_shape, **invariants))
         model.add(Activation('relu'))
         model.add(Dropout(0.15))
+        model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
-        #model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
 
-        model.add(Conv3D(128, kernel_size=5, padding='valid'), **kwargs)
+        model.add(Conv3D(128, kernel_size=5, padding='valid', **invariants))
         model.add(Activation('relu'))
         model.add(Dropout(0.15))
+        model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
-        #model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2), padding='valid'))
 
-        model.add(Conv3D(256, kernel_size=3, padding='valid')m **kwargs)
+        model.add(Conv3D(256, kernel_size=3, padding='valid', **invariants))
         model.add(Activation('relu'))
         model.add(Dropout(0.15))
+        model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
-        #model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2), padding='valid'))
 
         #model.add(Conv3D(256, kernel_size=3))
         #model.add(Activation('relu'))
@@ -129,9 +129,9 @@ class BN_CNN_3D_DO(RegressionModel):
         #model.add(MaxPooling3D(pool_size=1, strides=1))
 
         model.add(Flatten()) 
-        model.add(Dense(512, activation='relu'), **kwargs)
+        model.add(Dense(512, activation='relu', **invariants))
         model.add(Dropout(0.15))
-        model.add(Dense(512, activation='relu'), **kwargs)
+        model.add(Dense(512, activation='relu', **invariants))
         model.add(Dropout(0.15))
         model.add(Dense(self.output_shape, activation='linear'))
         
