@@ -19,6 +19,6 @@ python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --batch_size $batch_size \
 --greyscale_on \
 --kfold 5 \
---loss smooth_l1_loss\
+--loss smooth_l1_loss \
 --sequence_length 60 \
 --cyclic_lr triangular_lr 0.0 1.0 $steps  

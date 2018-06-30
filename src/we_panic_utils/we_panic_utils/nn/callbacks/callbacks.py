@@ -28,7 +28,7 @@ class CyclicLRScheduler(Callback):
         self.output_dir = output_dir
         self.output_log = self._next_available_schedule_name()
     
-    def _next_available_schedule_name(filename='schedule{}.log'):
+    def _next_available_schedule_name(self, filename='schedule{}.log'):
         i = 0
         while os.path.exists(os.path.join(self.output_dir, filename.format(i))):
             i += 1
