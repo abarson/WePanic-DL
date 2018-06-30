@@ -16,6 +16,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import StratifiedKFold
 import numpy as np
 import time
+from glob import glob
 
 class Engine():
     """
@@ -138,6 +139,24 @@ class Engine():
         model_name = 'CV_%d_%s.h5' % (idx, model_type)
         
         return os.path.join(self.inputs, 'models', model_name) 
+    
+    @property
+    def __next_model(self):
+        """
+        return the next model in the output directory for testing
+        """
+
+        cvresults = pd.read_csv(os.path.join(self.inputs, 'cvresults.csv'))
+        
+        for _, row in cvresults.iterrows():
+            #row = row.values.tolist()
+            idx = row['model_idx']
+            model_type = row['model_type']
+
+            print(model_type, idx)
+            model_name = 'CV_%d_%s.h5' % (idx, model_type)
+
+            yield os.path.join(self.inputs,'models',model_name), row['loss']
 
     def callbacks(self,
                   train_results='unnormalized-training_results.log',
@@ -202,48 +221,77 @@ class Engine():
             
             print('>>> No model found, inferring top model given the input directory')
             
-            self.model = models.load_model(self.__infer_top_model(), compile=False)
+            #self.model = models.load_model(self.__infer_top_model(), compile=False)
             metadf = pd.read_csv(self.metadata)
             self.test_set = metadf[metadf['GOOD'] == 2]
             print('>>> Built test set')
             optimizer = Adam(lr=1e-5, decay=1e-6)
-            self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
+            #self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
             print('>>> Compiled and ready to go')
 
         else:  #test the model created during training
             print("Testing model after training.")
         
-        test_generator = self.processor.test_generator(self.test_set)
-        
-        model_name = self.__infer_top_model().split('/')[-1]
-        model_name = model_name.rstrip('.h5')
-        test_slug = 'testSetPerformance_name-%s_loss%0.4f.csv'
-        
         map_me = {'HEART_RATE_BPM' : 'hr', 'RESP_RATE_BR_PM' : 'rr'}
-        header = sum([['actual_{}'.format(map_me[f]), 'predicted_{}'.format(map_me[f])] for f in self.features], [])
-        print(header) 
-        performance_df = pd.DataFrame(columns=header)
+        agg_df = pd.DataFrame(columns=['actual_{}'.format(map_me[f]) for f in self.features])
 
-        for i in range(len(self.test_set)):
-            print('[__test_model]: sample %d' % i)
-            Xs, ys = next(test_generator) 
+        for model_name, loss in self.__next_model:
+            self.model = models.load_model(model_name, compile=False)
+            self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
+            print('>>> {} Compiled and ready to go'.format(model_name))
             
-            feats = zip(*ys)
-            mean_feats = [np.mean(feat) for feat in feats]
-
-            preds = self.model.predict(Xs, batch_size=len(Xs))   
-            feat_preds = zip(*preds)
-            mean_preds = [np.mean(pred) for pred in feat_preds]
+            test_generator = self.processor.test_generator(self.test_set)
             
-            row = sum([list(value) for value in zip(*[mean_feats, mean_preds])], [])
-            #row = sum([mean_feats, mean_preds], [])
-            
-            print(row)
-            performance_df.loc[i] = row
+            model_id = model_name.split('/')[-1]
+            model_id = model_id.rstrip('.h5')
+            test_slug = 'testSetPerformance_name-%s_loss%0.4f' % (model_id, loss) 
         
-        print(performance_df)
-        performance_df.to_csv(os.path.join(self.outputs, test_slug), index=False)
+            header = sum([['actual_{}'.format(map_me[f]), 'predicted_{}'.format(map_me[f])] for f in self.features], [])
+            performance_df = pd.DataFrame(columns=header)
+
+            for i in range(len(self.test_set)):
+                print('\r[__test_model]: sample %2d' % i, flush=True, end=' ')
+                Xs, ys = next(test_generator) 
+            
+                feats = zip(*ys)
+                mean_feats = [np.mean(feat) for feat in feats]
+                
+                preds = self.model.predict(Xs, batch_size=len(Xs))   
+                feat_preds = zip(*preds)
+                mean_preds = [np.mean(pred) for pred in feat_preds]
+            
+                row = sum([list(value) for value in zip(*[mean_feats, mean_preds])], [])
+                performance_df.loc[i] = row
+            
+            print('\n',performance_df)
+
+            for f in self.features:
+                agg_df['preds_{}_{}'.format(model_id, map_me[f])] = performance_df['predicted_{}'.format(map_me[f])]
+                agg_df['actual_{}'.format(map_me[f])] = performance_df['actual_{}'.format(map_me[f])] 
+        
+         
+        for f in self.features:
+            feature_index = list(agg_df.columns).index('actual_{}'.format(map_me[f]))
+            means = []
+            for idx, row in agg_df.iterrows():
+                row = list(row)
+                cols = []
+                for i, col in enumerate(agg_df.columns):
+                    if map_me[f] in col:
+                        cols.append(i)
+
+                actual = row[feature_index]
+                cols.pop(feature_index)
+
+                preds = [row[i] for i in cols]
+                mean_pred = np.mean(preds)
+                means.append(mean_pred)
+            
+            agg_df['mean_pred_{}'.format(map_me[f])] = pd.Series(means, index=agg_df.index)
+
+        agg_df.to_csv(os.path.join(self.outputs, 'testSetPerformance.csv'))
     
+          
     def __cross_val(self):
         """
         split the data a la cross-validation and train up some models
