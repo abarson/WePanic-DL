@@ -220,6 +220,31 @@ def fold_v2(df, k=4):
         except KeyError:
             yield train_df, val_df
 
+def sorted_stratified_kfold(df, n_splits=5):
+
+    df = df[df['GOOD'] == 1]  # just to make sure
+    df['SUBJECT'] = df['SUBJECT'].apply(lambda row : int(row))
+    subs = list(df['SUBJECT'].values.tolist())
+    tris = list(df['TRIAL'].values.tolist())
+    hrs = list(df['HEART_RATE_BPM'].values.tolist())
+    compiled = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
+    
+    n_splits_lists = [[] for _ in range(n_splits)]
+    for i in n_splits:
+        take_out = math.ceil(len(compiled) / (n_splits - i))
+        n_splits_lists.append(compiled[:take_out])
+        compiled=compiled[take_out:]
+        
+    
+    indexes = [i for i in range(len(subs))]
+
+    for _ in range(n_splits):
+        pass
+
+    
+
+    
+
 def __filter_column(*x, zipped):
     return (x[0], x[1]) in zipped
 
