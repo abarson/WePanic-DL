@@ -221,7 +221,7 @@ def fold_v2(df, k=4):
             yield train_df, val_df
 
 
-def _tiers_by_magnitude(sorted_list, n_tier=5):
+def tiers_by_magnitude(sorted_list, n_tier=5):
     """
     private helper function for building a list
     of lists sorted by magnitudes
@@ -249,7 +249,7 @@ def sorted_stratified_kfold(df, k=5):
     subs, tris, hrs = zip(*df[['SUBJECT', 'TRIAL', 'HEART_RATE_BPM']].values.tolist())
     compiled        = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
     
-    tiers = _tiers_by_magnitude(compiled, n_tier=k) 
+    tiers = tiers_by_magnitude(compiled, n_tier=k) 
     folds = [ [] for _ in range(k)]
 
     i = 0

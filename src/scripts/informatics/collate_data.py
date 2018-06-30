@@ -22,22 +22,23 @@ import sys, os
 import argparse
 import random
 from sklearn.model_selection import train_test_split
+from we_panic_utils.nn.data_load import tiers_by_magnitude
 
-seed = 42 # why not
+# seed = 42 # why not
 
 # some invariants
 
 NEW_BATCH = [(2, 1), (6, 1), (13, 1), (13, 2), (25, 1),
-            (31, 1), (38, 1), (38, 2), (39, 1), (48, 1),
-            (48, 2), (101, 1), (102, 1), (105, 1), (105, 2),
-            (106, 1), (106, 2), (107, 1), (107, 2), (108, 1),
-            (108, 2), (109, 1), (109, 2), (110, 1), (110, 2), 
-            (111, 1), (111, 2), (112, 1), (112, 2), (113, 1),
-            (113, 2), (114, 1), (114, 2), (115, 1), (115, 2), 
-            (116, 2), (117, 1), (117, 2), (118, 1), (118, 2), 
-            (119, 1), (119, 2), (120, 1), (120, 2), (121, 1), 
-            (121, 2), (122, 1), (122, 2), (123, 1), (123, 2),
-            (124, 1), (124, 2),]
+             (31, 1), (38, 1), (38, 2), (39, 1), (48, 1),
+             (48, 2), (101, 1), (102, 1), (105, 1), (105, 2),
+             (106, 1), (106, 2), (107, 1), (107, 2), (108, 1),
+             (108, 2), (109, 1), (109, 2), (110, 1), (110, 2), 
+             (111, 1), (111, 2), (112, 1), (112, 2), (113, 1),
+             (113, 2), (114, 1), (114, 2), (115, 1), (115, 2), 
+             (116, 2), (117, 1), (117, 2), (118, 1), (118, 2), 
+             (119, 1), (119, 2), (120, 1), (120, 2), (121, 1), 
+             (121, 2), (122, 1), (122, 2), (123, 1), (123, 2),
+             (124, 1), (124, 2),]
 
 GOOD_PAIRS = list(set(NEW_BATCH))
 
@@ -57,6 +58,7 @@ def parse_args():
                         type=str,
                         help='the frame directory',
                         default='picky_32_32')
+
     return parser
 
 
@@ -93,7 +95,33 @@ def verify(filename):
 
     return verified
 
+def sorted_stratified_train_test_split(collated_df, test_size=0.2):
+    """
+    split the dataset into training and testing set, sorting
+    by magnitude
+    """
+
+    rows = collated_df.values.tolist() 
+    collated_df = collated_df[collated_df['GOOD'] == 1]
+
+    sorted_by_hr = sorted(rows, key=lambda r: r[3])
+    n_test = int(round(len(collated_df)*test_size))
+    tiers_hr = tiers_by_magnitude(sorted_by_hr, n_tier=n_test) 
+    print([len(t) for t in tiers_hr])
+
+    n_test = int(round(len(collated_df)*test_size))
+    X_test = []
+    while n_test != 0:
+        for T in tiers_hr:
+            samp = T.pop(random.randint(0, len(T) - 1))
+            X_test.append(samp[:2])
+            n_test -= 1
+
     
+    #X_train = list(filter(lambda r: r[0] not in 
+    return X_test
+    
+ 
 if __name__ == '__main__':
     args = parse_args().parse_args()
     dlcd_loc = parse_args().parse_args().dlcd_loc
@@ -148,8 +176,8 @@ if __name__ == '__main__':
     
     
     # get a test set
-    Xtrain, Xtest, _, _, = train_test_split(Xs, ys, test_size=1.2, random_state=seed)
-    print('Train : ', Xtrain)
+    #Xtest = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
+    Xtest = sorted_stratified_train_test_split(collated_df, test_size=0.2)
     print('Test: ', Xtest)
     for subj, tri in Xtest:
         row_idx = collated_df.loc[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)].index
