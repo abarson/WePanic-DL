@@ -284,7 +284,7 @@ def validate_arguments(args):
             assert isinstance(min_lr, float) and isinstance(max_lr, float), 'min_lr, max_lr expected to be floats got %f and %f' % (min_lr, max_lr)
             assert isinstance(stepsize, int), 'expected stepsize to be an int, got {}'.format(stepsize)
             assert 0 < stepsize, 'stepsize must be > 0, not {}'.format(stepsize)
-            assert 0. <= min_lr < max_lr <= 1., 'need this relation ship : 0. <= min_lr={} < max_lr={} <= 1.'.format(min_lr, max_lr) 
+            assert 0. <= min_lr < max_lr, 'need this relation ship : 0. <= min_lr={} < max_lr={} <= 1.'.format(min_lr, max_lr) 
 
             inner_func = getattr(funcs, func_name)
             lr_func = partial(inner_func,
