@@ -295,7 +295,9 @@ def validate_arguments(args):
             args.cylic_LR_schedule = args.cyclic_lr
             args.cyclic_lr = CyclicLRScheduler(output_dir=args.output_dir,
                                                schedule=lr_func,
-                                               steps_per_epoch=args.steps_per_epoch)
+                                               steps_per_epoch=args.steps_per_epoch,
+                                               base_lr=min_lr,
+                                               max_lr=max_lr)
         except AttributeError as e:
             sys.exit(e)
 

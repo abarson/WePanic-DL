@@ -18,7 +18,7 @@ class CyclicLRScheduler(Callback):
     Cylic learning rate scheduler
     """
 
-    def __init__(self, schedule, output_dir, steps_per_epoch, verbose=True):
+    def __init__(self, schedule, output_dir, steps_per_epoch, base_lr, max_lr, verbose=True):
         super().__init__()
         self.schedule = schedule
         self.steps_per_epoch = steps_per_epoch
@@ -27,6 +27,8 @@ class CyclicLRScheduler(Callback):
         self.save_ct = 0
         self.fold = None
         self.output_dir = output_dir
+        self.base_lr = base_lr
+        self.max_lr = max_lr
     
     def _next_available_schedule_name(self, filename='schedule{}.log'):
         i = 0
@@ -57,7 +59,7 @@ class CyclicLRScheduler(Callback):
         except TypeError:  # old API for backward compatibility
             self.lr = self.schedule(self.epoch * self.steps_per_epoch + batch)
 
-        if not isinstance(lr, (float, np.float32, np.float64)):
+        if not isinstance(self.lr, (float, np.float32, np.float64)):
             raise ValueError('The output of the "schedule" function should be a float.')
 
         K.set_value(self.model.optimizer.lr, self.lr)
@@ -66,14 +68,12 @@ class CyclicLRScheduler(Callback):
             with open(self.output_log, 'a') as f:
                 print(f'\nStep {self.epoch * self.steps_per_epoch + batch}:'
                       f' learning rate = {self.lr}.', file=f)
-  
-    def on_epoch_end(self, epoch, logs=None):
-        lr = float(K.get_value(self.model.optimizer.lr))
-        if self.lr == self.schedule.base_lr:
-            self.model.save(os.path.join(self.output_dir, 'models', 'CLR_{}_fold{}.h5'.format(self.save_ct, self.fold)) 
-            print('saved a cyclic lr model')
-            self.save_ct += 1
 
+        if self.lr == self.base_lr:
+            self.model.save(os.path.join(self.output_dir, 'models', 'CLR_{}_fold{}.h5'.format(self.save_ct, self.fold))) 
+            print('\nsaved a cyclic lr model')
+            self.save_ct += 1
+  
 class TestResultsCallback(Callback):
     """
     a callback for testing the model at certain timesteps

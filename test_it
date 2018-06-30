@@ -2,13 +2,13 @@
 
 ## script for runs on the cloud
 
-screen pip install --upgrade src/we_panic_utils/
+pip install --upgrade src/we_panic_utils/
 epochs=30
 steps_per_epoch=500
 batch_size=14
 steps=`echo $calc | bc`
 
-python src/run_model.py BN_CNN_3D_DO picky_32_32 \
+screen python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/clr_aug_mse_bndo \
@@ -20,7 +20,7 @@ python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --kfold 5 \
 --loss mean_squared_error \
 --sequence_length 60 \
---cyclic_lr triangular_lr 0.5 5.0 800 
+--cyclic_lr triangular_lr 0.5 5.0 800 \
 --vertical_flip \
 --horizontal_flip \
 --rotation_range 15 \
