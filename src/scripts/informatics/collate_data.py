@@ -107,7 +107,6 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
     sorted_by_hr = sorted(rows, key=lambda r: r[3])
     n_test = int(round(len(collated_df)*test_size))
     tiers_hr = tiers_by_magnitude(sorted_by_hr, n_tier=n_test) 
-    print([len(t) for t in tiers_hr])
 
     n_test = int(round(len(collated_df)*test_size))
     X_test = []
