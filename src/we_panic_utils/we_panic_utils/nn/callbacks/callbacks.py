@@ -24,7 +24,8 @@ class CyclicLRScheduler(Callback):
         self.steps_per_epoch = steps_per_epoch
         self.verbose = verbose
         self.epoch = 0
-
+        self.save_ct = 0
+        self.fold = None
         self.output_dir = output_dir
     
     def _next_available_schedule_name(self, filename='schedule{}.log'):
@@ -37,6 +38,7 @@ class CyclicLRScheduler(Callback):
     def reset(self):
         self.epoch = 0
         self._next_available_schedule_name()  
+        self.model = None
         print('[[[[ schedule log ]]]]] ',self.output_log)
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -46,25 +48,31 @@ class CyclicLRScheduler(Callback):
         if not hasattr(self.model.optimizer, 'lr'):
             raise ValueError('Optimizer must have a "lr" attribute. ')
 
-        lr = float(K.get_value(self.model.optimizer.lr))
+        self.lr = float(K.get_value(self.model.optimizer.lr))
 
         try:  # new API
                             # 
-            lr = self.schedule(step=self.epoch * self.steps_per_epoch + batch)
+            self.lr = self.schedule(step=self.epoch * self.steps_per_epoch + batch)
 
         except TypeError:  # old API for backward compatibility
-            lr = self.schedule(self.epoch * self.steps_per_epoch + batch)
+            self.lr = self.schedule(self.epoch * self.steps_per_epoch + batch)
 
         if not isinstance(lr, (float, np.float32, np.float64)):
             raise ValueError('The output of the "schedule" function should be a float.')
 
-        K.set_value(self.model.optimizer.lr, lr)
+        K.set_value(self.model.optimizer.lr, self.lr)
 
         if self.verbose:
             with open(self.output_log, 'a') as f:
                 print(f'\nStep {self.epoch * self.steps_per_epoch + batch}:'
-                      f' learning rate = {lr}.', file=f)
+                      f' learning rate = {self.lr}.', file=f)
   
+    def on_epoch_end(self, epoch, logs=None):
+        lr = float(K.get_value(self.model.optimizer.lr))
+        if self.lr == self.schedule.base_lr:
+            self.model.save(os.path.join(self.output_dir, 'models', 'CLR_{}_fold{}.h5'.format(self.save_ct, self.fold)) 
+            print('saved a cyclic lr model')
+            self.save_ct += 1
 
 class TestResultsCallback(Callback):
     """

@@ -326,6 +326,9 @@ class Engine():
             #else:
             print('>>> new model ...')
             self.model = self.__choose_model().instantiate()
+            if self.cyclic_lr is not None:
+                self.cyclic_lr.model = self.mode
+                self.cyclic_lr.fold = idx
                 
             if not os.path.exists(os.path.join(self.outputs, 'model_summary.txt')):
                 with open(os.path.join(self.outputs,'model_summary.txt'), 'w') as summary:

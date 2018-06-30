@@ -2,17 +2,16 @@
 
 ## script for runs on the cloud
 
-pip install --upgrade src/we_panic_utils/
-epochs=3
+screen pip install --upgrade src/we_panic_utils/
+epochs=30
 steps_per_epoch=500
 batch_size=14
-calc=$epochs*$steps_per_epoch
 steps=`echo $calc | bc`
 
 python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue.csv \
---output_dir run_history/TEST2 \
+--output_dir run_history/clr_aug_mse_bndo \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
@@ -21,4 +20,10 @@ python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --kfold 5 \
 --loss mean_squared_error \
 --sequence_length 60 \
---cyclic_lr triangular_lr 0.0 10.0 $steps  
+--cyclic_lr triangular_lr 0.5 5.0 800 
+--vertical_flip \
+--horizontal_flip \
+--rotation_range 15 \
+--height_shift_range 0.2 \
+--width_shift_range 0.2 \
+--zoom_range 0.2
