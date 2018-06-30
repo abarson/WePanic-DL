@@ -101,8 +101,8 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
     by magnitude
     """
 
-    rows = collated_df.values.tolist() 
     collated_df = collated_df[collated_df['GOOD'] == 1]
+    rows = collated_df.values.tolist() 
 
     sorted_by_hr = sorted(rows, key=lambda r: r[3])
     n_test = int(round(len(collated_df)*test_size))
