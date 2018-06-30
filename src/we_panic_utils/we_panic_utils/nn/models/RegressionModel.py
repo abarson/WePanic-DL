@@ -102,19 +102,16 @@ class BN_CNN_3D_DO(RegressionModel):
         model.add(Conv3D(64, kernel_size=(15, 5, 5), padding='valid',
                   input_shape=self.input_shape, **invariants))
         model.add(Activation('relu'))
-        model.add(Dropout(0.15))
         model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
 
         model.add(Conv3D(128, kernel_size=5, padding='valid', **invariants))
         model.add(Activation('relu'))
-        model.add(Dropout(0.15))
         model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
 
         model.add(Conv3D(256, kernel_size=3, padding='valid', **invariants))
         model.add(Activation('relu'))
-        model.add(Dropout(0.15))
         model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
 
