@@ -203,6 +203,7 @@ class Engine():
 
         if self.cyclic_lr is not None:
             assert isinstance(self.cyclic_lr, CyclicLRScheduler), 'cyclic_lr should be a CyclicLRScheduler'
+            self.cyclic_lr.reset()
             callbacks.append(self.cyclic_lr)
         
         if self.early_stopping is not None:

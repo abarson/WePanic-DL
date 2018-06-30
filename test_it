@@ -3,10 +3,10 @@
 ## script for runs on the cloud
 
 pip install --upgrade src/we_panic_utils/
-epochs=10
-steps_per_epoch=500
+epochs=3
+steps_per_epoch=250
 batch_size=14
-calc=$epochs*$steps_per_epoch*$batch_size
+calc=$epochs*$steps_per_epoch
 steps=`echo $calc | bc`
 
 python src/run_model.py BN_CNN_3D_DO picky_32_32 \
@@ -19,6 +19,6 @@ python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --batch_size $batch_size \
 --greyscale_on \
 --kfold 5 \
---loss smooth_l1_loss \
+--loss mean_squared_error \
 --sequence_length 60 \
 --cyclic_lr triangular_lr 0.0 1.0 $steps  

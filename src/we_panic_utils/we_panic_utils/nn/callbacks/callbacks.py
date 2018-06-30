@@ -26,14 +26,18 @@ class CyclicLRScheduler(Callback):
         self.epoch = 0
 
         self.output_dir = output_dir
-        self.output_log = self._next_available_schedule_name()
     
     def _next_available_schedule_name(self, filename='schedule{}.log'):
         i = 0
         while os.path.exists(os.path.join(self.output_dir, filename.format(i))):
             i += 1
+        
+        self.output_log = os.path.join(self.output_dir, filename.format(i))
 
-        return os.path.join(self.output_dir, filename.format(i))
+    def reset(self):
+        self.epoch = 0
+        self._next_available_schedule_name()  
+        print('[[[[ schedule log ]]]]] ',self.output_log)
 
     def on_epoch_begin(self, epoch, logs=None):
         self.epoch = epoch
