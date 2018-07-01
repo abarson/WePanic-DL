@@ -1,9 +1,9 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-python src/run_model.py CNN_3D picky_32_32 \
---csv previous/wepanic_collated_catalogue2.csv \
---input_dir run_history/TEST2 \
+screen python src/run_model.py CNN_3D picky_32_32 \
+--csv wepanic_collated_catalogue.csv \
+--input_dir run_history/aug_smoothl1_bndo \
 --features hr \
 --steps_per_epoch 500 \
 --epochs 1 \

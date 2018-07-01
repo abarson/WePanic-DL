@@ -13,7 +13,7 @@ setup(name='we_panic_utils',
       install_requires=[
           'Pillow',
           'opencv-python',
-          'keras==2.1.6',
-          'keras-resnet'
+          #'keras-gpu==2.1.6',
+          #'tensorflow-gpu==1.4.0'
         ],
       zip_safe=False)

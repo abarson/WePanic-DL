@@ -6,8 +6,14 @@ import matplotlib.pyplot as plt
 import datetime
 import sys, os
 import numpy as np
+import argparse
 
 plt.switch_backend('agg')
+
+
+def parse_args():
+    pass
+
 
 def mean_std(df, col):
     return df[col].mean(), df[col].std()
