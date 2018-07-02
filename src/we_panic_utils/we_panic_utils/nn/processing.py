@@ -8,9 +8,9 @@ import os
 import random
 #random.seed(7)
 import numpy as np
-
+import keras
 from keras.preprocessing.image import load_img, img_to_array
-from keras.preprocessing.image import apply_transform, transform_matrix_offset_center
+from keras_preprocessing.image import apply_affine_transform, transform_matrix_offset_center
 import keras.backend as K
 from skimage.color import rgb2grey
 from PIL import ImageEnhance
@@ -53,25 +53,19 @@ def random_sequence_rotation(seq, rotation_range, row_axis=0, col_axis=1, channe
         rotation_range : int - amount to rotate in degrees
         row_axis : int - index of row axis on each tensor
         col_axis : int - index of cols axis on each tensor
-        channel_axis : int - index of channel ax on each tensor
-        fill_mode : string - points outside the boundaries of input are filled
+        channel_axis=channel_axis : int - index of channel ax on each tensor
+        fill_mode=fill_mode : string - points outside the boundaries of input are filled
                              according to the given input mode, one of 
                              {'nearest', 'constant', 'reflect', 'wrap'}
 
-        cval : float - constant value used for fill_mode constant
+        cval=cval : float - constant value used for fill_mode=fill_mode constant
     
     returns:
         rotated : the rotated sequence of tensors
     """
 
     theta = np.deg2rad(np.random.uniform(-rotation_range, rotation_range))
-    rotation_matrix = np.array([[np.cos(theta), -np.sin(theta), 0],
-                               [np.sin(theta), np.cos(theta), 0],
-                               [0, 0, 1]])
-
-    h, w = seq[0].shape[row_axis], seq[0].shape[col_axis]
-    transform_matrix = transform_matrix_offset_center(rotation_matrix, h, w) 
-    return [apply_transform(x, transform_matrix, channel_axis, fill_mode, cval) for x in seq] 
+    return [apply_affine_transform(x, theta=theta, channel_axis=channel_axis, fill_mode=fill_mode, cval=cval) for x in seq] 
         
 
 def random_sequence_shift(seq, height_shift_range, width_shift_range, row_axis=0, col_axis=1, channel_axis=2, 
@@ -85,25 +79,20 @@ def random_sequence_shift(seq, height_shift_range, width_shift_range, row_axis=0
         width_shift_range : float - amount to shift width (fraction of total)
         row_axis : int - the index of row axis on each tensor
         col_axis : int - the index of col axis on each tensor
-        channel_axis : int - the index of channel ax on each tensor
-        fill_mode : string - points outside the boundaries of input are filled
+        channel_axis=channel_axis : int - the index of channel ax on each tensor
+        fill_mode=fill_mode : string - points outside the boundaries of input are filled
                              according to the given input mode, one of 
                              {'nearest', 'constant', 'reflect', 'wrap'}
 
-        cval : float - the constant value used for fill_mode constant 
+        cval=cval : float - the constant value used for fill_mode=fill_mode constant 
     """
 
     h, w = seq[0].shape[row_axis], seq[0].shape[col_axis]
     tx = np.random.uniform(-height_shift_range, height_shift_range) * h
     ty = np.random.uniform(-width_shift_range, width_shift_range) * w
 
-    translation_matrix = np.array([[1, 0, tx],
-                                  [0, 1, ty],
-                                  [0, 0, 1]])
+    return [apply_affine_transform(x, tx=tx, ty=ty, channel_axis=channel_axis, fill_mode=fill_mode, cval=cval) for x in seq]
 
-    transform_matrix = translation_matrix  # no offset necessary
-    
-    return [apply_transform(x, transform_matrix, channel_axis, fill_mode, cval) for x in seq]
 
 
 def random_sequence_shear(seq, shear_range, row_axis=0, col_axis=1, channel_axis=2,
@@ -116,29 +105,24 @@ def random_sequence_shear(seq, shear_range, row_axis=0, col_axis=1, channel_axis
         shear_range : float - the amount of shear to apply
         row_axis : int - the index of row axis on each tensor
         col_axis : int - the index of col axis on each tensor
-        channel_axis : int - the index of channel ax on each tensor
-        fill_mode : string - points outside the boundaries of input are filled
+        channel_axis=channel_axis : int - the index of channel ax on each tensor
+        fill_mode=fill_mode : string - points outside the boundaries of input are filled
                              according to the given input mode, one of 
                              {'nearest', 'constant', 'reflect', 'wrap'}
 
-        cval : float - the constant value used for fill_mode constant 
+        cval=cval : float - the constant value used for fill_mode=fill_mode constant 
     
     returns:
         the sequence of sheared frames
     """
 
     shear = np.deg2rad(np.random.uniform(-shear_range, shear_range))
-    shear_matrix = np.array([[1, -np.sin(shear), 0],
-                             [0, np.cos(shear), 0],
-                             [0, 0, 1]])
-
     h, w = seq[0].shape[row_axis], seq[0].shape[col_axis]
-    transform_matrix = transform_matrix_offset_center(shear_matrix, h, w)
-    
-    return [apply_transform(x, transform_matrix, channel_axis, fill_mode, cval) for x in seq]
+
+    return [apply_affine_transform(x, shear=shear, channel_axis=channel_axis, fill_mode=fill_mode, cval=cval) for x in seq]
 
 
-def random_sequence_zoom(seq, zoom_range, row_axis=0, col_axis=1, channel_axis=1,
+def random_sequence_zoom(seq, zoom_range, row_axis=0, col_axis=1, channel_axis=2,
                          fill_mode='nearest', cval=0): 
     """
     apply a random zoom on an entire sequence of frames
@@ -148,12 +132,12 @@ def random_sequence_zoom(seq, zoom_range, row_axis=0, col_axis=1, channel_axis=1
         zoom_range : center of range to zoom/unzoom
         row_axis : int - the index of row axis on each tensor
         col_axis : int - the index of col axis on each tensor
-        channel_axis : int - the index of channel ax on each tensor
-        fill_mode : string - points outside the boundaries of input are filled
+        channel_axis=channel_axis : int - the index of channel ax on each tensor
+        fill_mode=fill_mode : string - points outside the boundaries of input are filled
                              according to the given input mode, one of 
                              {'nearest', 'constant', 'reflect', 'wrap'}
 
-        cval : float - the constant value used for fill_mode constant 
+        cval=cval : float - the constant value used for fill_mode=fill_mode constant 
     
     returns:
         the sequence of zoomed frames
@@ -167,15 +151,9 @@ def random_sequence_zoom(seq, zoom_range, row_axis=0, col_axis=1, channel_axis=1
     else:
         zx, zy = np.random.uniform(zlower, zupper, 2)
 
-    zoom_matrix = np.array([[zx, 0, 0],
-                            [0, zy, 0],
-                            [0, 0, 1]])
-
     h, w = seq[0].shape[row_axis], seq[0].shape[col_axis]
 
-    transform_matrix = transform_matrix_offset_center(zoom_matrix, h, w)
-
-    return [apply_transform(x, transform_matrix, channel_axis, fill_mode, cval) for x in seq]
+    return [apply_affine_transform(x, zx=zx, zy=zy, channel_axis=channel_axis, fill_mode=fill_mode, cval=cval) for x in seq]
 
 
 def sequence_flip_axis(seq, axis):
