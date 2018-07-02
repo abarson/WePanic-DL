@@ -229,10 +229,9 @@ def validate_arguments(args):
         raise ValueError("The --epochs should be > 0; " +
                          "got %d" % args.epochs)
     
-    # if --test=False and --train=False, exit because there's nothing to do
+    # if --test=False --train=False, --kfold=None, exit because there's nothing to do
     if (not args.train) and (not args.test) and args.kfold is None:
-        raise ValueError("Both --train and --test were provided as False " +
-                         "exiting because there's nothing to do ...")
+        sys.exit("Train, Test, Kfold not activated. Exiting because there's nothing to do")
     
     # if --test was provided only
     if args.test and not args.train:
@@ -250,7 +249,7 @@ def validate_arguments(args):
         # verify input directory structure
         if not verify_directory_structure(args.input_dir):
             raise RuntimeError("Problems with directory structure of %s" % args.input_dir)
-        
+
     # if --test=True and --train=True, then we need only an output directory
     if (args.train and args.test) or args.kfold is not None:
         args.input_dir = generate_output_directory(args.output_dir)
@@ -270,7 +269,6 @@ def validate_arguments(args):
         except TypeError:
             #sys.exit('arg_name : %s ' % arg_name)
             pass
-
 
     if len(bad_augs) > 0:
         raise ValueError(",".join(bad_augs))
