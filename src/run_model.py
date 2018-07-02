@@ -11,7 +11,7 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 from functools import partial
-
+from glob import glob
 
 # haahahaahahah remoe stupid LOGS!!!!
 
@@ -79,17 +79,10 @@ def parse_input():
                         type=str,
                         default="wepanic_collated_catalogue.csv")
 
-    parser.add_argument("--train",
-                        help="states whether the model should be trained",
-                        # type=bool,
-                        default=False,
-                        action="store_true")
-
-    parser.add_argument("--test",
-                        help="states whether the model should be tested",
-                        # type=bool,
-                        default=False,
-                        action="store_true")
+    parser.add_argument("--qbc",
+                        help="perform a query by committee test (specify a directory of .h5 files)",
+                        type=str,
+                        default=None)
 
     parser.add_argument("--batch_size",
                         help="size of batch",
@@ -230,30 +223,20 @@ def validate_arguments(args):
                          "got %d" % args.epochs)
     
     # if --test=False --train=False, --kfold=None, exit because there's nothing to do
-    if (not args.train) and (not args.test) and args.kfold is None:
-        sys.exit("Train, Test, Kfold not activated. Exiting because there's nothing to do")
+    if args.qbc is None and args.kfold is None:
+        sys.exit("QBC, Kfold not activated. Exiting because there's nothing to do")
     
-    # if --test was provided only
-    if args.test and not args.train:
-        # if no input directory specified, exit for bad input
-        args.output_dir = args.input_dir
-        if args.input_dir is None:
-            raise ValueError("--test was specified but found no input " +
-                             "directory, provide an input directory to " +
-                              "test a model only")
-        
-        # an input directory was specified but if doesn't exist
-        if not os.path.isdir(args.input_dir):
-            raise NotADirectoryError("Cannot find input directory %s or it doesn't exist" % args.input_dir)
-
-        # verify input directory structure
-        if not verify_directory_structure(args.input_dir):
-            raise RuntimeError("Problems with directory structure of %s" % args.input_dir)
-
-    # if --test=True and --train=True, then we need only an output directory
-    if (args.train and args.test) or args.kfold is not None:
+    # if kfold we need only an output directory
+    if args.kfold is not None:
         args.input_dir = generate_output_directory(args.output_dir)
-    
+        if args.qbc is not None and args.qbc != os.path.join(args.input_dir, 'models'): 
+            print(">>> QBC ({}) is not input_dir despite kfold={} being specified. That's ok, " + 
+                  "just checking {} contains .h5's ... ".format(args.qbc, args.kfold, args.qbc))
+
+            verify_h5_exists(args.qbc)
+    else:
+        verify_h5_exists(args.qbc)
+
     bad_augs = []
     for arg_name in ['steps_per_epoch', 'shear_range', 'width_shift_range', 
                      'height_shift_range', 'rotation_range', 'zoom_range', 
@@ -387,7 +370,26 @@ def verify_directory_structure(dirname):
 
     else:
         return False
+
+def verify_h5_exists(directory):
+    """
+    --- check directory exists
+    --- check file is a directory
+    --- verify .h5 files are in it
+    --- save the world
+    """
+
+    if not os.path.exists(directory):
+        raise FileNotFoundError('No such directory: {}'.format(directory))
+
+    if not os.path.isdir(directory):
+        raise NotADirectoryError('Not a directory: {}'.format(directory))
     
+    
+    contents = glob(directory, '*.h5')
+    
+    if not contents:
+        raise ValueError('{} contains no .h5 files. QBC requires .h5 files'.format(directory)) 
 
 if __name__ == "__main__":
     args = parse_input().parse_args()
@@ -427,8 +429,7 @@ if __name__ == "__main__":
                     csv=args.csv,
                     batch_size=args.batch_size,
                     epochs=args.epochs,
-                    train=args.train,
-                    test=args.test,
+                    qbc=args.qbc,
                     inputs=args.input_dir,
                     outputs=args.output_dir,
                     frameproc=fp,

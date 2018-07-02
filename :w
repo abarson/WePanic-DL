@@ -224,96 +224,77 @@ class Engine():
 
         # infer .h5 files
         committee_members = glob(os.path.join(self.qbc, '*.h5'))
-        committee_members_noh5 = [m.rstrip('.h5').split('/')[-1] for m in committee_members]
+        committee_members_noh5 = [m.rstrip('.h5') for m in committee_members]
         print('[QBC] Got {} committee members'.format(len(committee_members)))
         
         test_generator = self.processor.test_generator(self.test_set)
-
-        actual_answers = ['actual_{}'.format9map_me[f] for f in self.features]
-        predictions = ['predicted_{}_{}'.format(map_me[f], cmemb) for f in self.features for cmemb in committee_members_noh5]
-
-        columns = actual_answers + predictions
-        QBCdf = pd.DataFrame(columns=columns)
-        
         for i in range(len(self.test_set)):
             Xs, ys = next(test_generator)
-            row = {col:None for col in columns}
             for memb in committee_members:
                 self.model = models.load_model(memb, compile=False)
                 optimizer = Adam(lr=1e-5, decay=1e-6)
-                self.model.compile(loss='mean_squared_error', optimizer=optimizer)
-                
-                # the actual result answers
+                self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
+
                 feats = zip(*ys)
                 mean_feats = [np.mean(feat) for feat in feats]
 
-                # the prediction for this model
+                preds = self.model.predict(Xs, batch_size=len(Xs))   
+
+        for model_name, loss in self.__next_model:
+            self.model = models.load_model(model_name, compile=False)
+            self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
+            print('>>> {} Compiled and ready to go'.format(model_name))
+            
+            test_generator = self.processor.test_generator(self.test_set)
+            
+            model_id = model_name.split('/')[-1]
+            model_id = model_id.rstrip('.h5')
+            #test_slug = 'testSetPerformance_name-%s_loss%0.4f' % (model_id, loss) 
+        
+            header = sum([['actual_{}'.format(map_me[f]), 'predicted_{}'.format(map_me[f])] for f in self.features], [])
+            performance_df = pd.DataFrame(columns=header)
+
+            for i in range(len(self.test_set)):
+                print('\r[__test_model]: sample %2d' % i, flush=True, end=' ')
+                Xs, ys = next(test_generator) 
+            
+                feats = zip(*ys)
+                mean_feats = [np.mean(feat) for feat in feats]
+                
                 preds = self.model.predict(Xs, batch_size=len(Xs))   
                 feat_preds = zip(*preds)
                 mean_preds = [np.mean(pred) for pred in feat_preds]
-                
-                for p, p_true, f in zip(mean_preds, mean_feats, self.features):
-                    row['predicted_{}_{}'.format(map_me[f], memb)] = p
-                    row['actual_{}'.format(map_me[f])] = p_true
             
-            QBCdf.loc[i] = [row[col] for col in columns]
+                row = sum([list(value) for value in zip(*[mean_feats, mean_preds])], [])
+                performance_df.loc[i] = row
+            
+            print('\n',performance_df)
 
-        print(QBCdf)
-        #for model_name, loss in self.__next_model:
-        #     self.model = models.load_model(model_name, compile=False)
-        #     self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
-        #     print('>>> {} Compiled and ready to go'.format(model_name))
-        #     
-        #     test_generator = self.processor.test_generator(self.test_set)
-        #     
-        #     model_id = model_name.split('/')[-1]
-        #     model_id = model_id.rstrip('.h5')
-        #     #test_slug = 'testSetPerformance_name-%s_loss%0.4f' % (model_id, loss) 
-        # 
-        #     header = sum([['actual_{}'.format(map_me[f]), 'predicted_{}'.format(map_me[f])] for f in self.features], [])
-        #     performance_df = pd.DataFrame(columns=header)
+            for f in self.features:
+                agg_df['preds_{}_{}'.format(model_id, map_me[f])] = performance_df['predicted_{}'.format(map_me[f])]
+                agg_df['actual_{}'.format(map_me[f])] = performance_df['actual_{}'.format(map_me[f])] 
+        
+         
+        for f in self.features:
+            feature_index = list(agg_df.columns).index('actual_{}'.format(map_me[f]))
+            means = []
+            for idx, row in agg_df.iterrows():
+                row = list(row)
+                cols = []
+                for i, col in enumerate(agg_df.columns):
+                    if map_me[f] in col:
+                        cols.append(i)
 
-        #     for i in range(len(self.test_set)):
-        #         print('\r[__test_model]: sample %2d' % i, flush=True, end=' ')
-        #         Xs, ys = next(test_generator) 
-        #     
-        #         feats = zip(*ys)
-        #         mean_feats = [np.mean(feat) for feat in feats]
-        #         
-        #         preds = self.model.predict(Xs, batch_size=len(Xs))   
-        #         feat_preds = zip(*preds)
-        #         mean_preds = [np.mean(pred) for pred in feat_preds]
-        #     
-        #         row = sum([list(value) for value in zip(*[mean_feats, mean_preds])], [])
-        #         performance_df.loc[i] = row
-        #     
-        #     print('\n',performance_df)
+                #actual = row[feature_index]
+                cols.pop(feature_index)
 
-        #     for f in self.features:
-        #         agg_df['preds_{}_{}'.format(model_id, map_me[f])] = performance_df['predicted_{}'.format(map_me[f])]
-        #         agg_df['actual_{}'.format(map_me[f])] = performance_df['actual_{}'.format(map_me[f])] 
-        # 
-        #  
-        # for f in self.features:
-        #     feature_index = list(agg_df.columns).index('actual_{}'.format(map_me[f]))
-        #     means = []
-        #     for idx, row in agg_df.iterrows():
-        #         row = list(row)
-        #         cols = []
-        #         for i, col in enumerate(agg_df.columns):
-        #             if map_me[f] in col:
-        #                 cols.append(i)
+                preds = [row[i] for i in cols]
+                mean_pred = np.mean(preds)
+                means.append(mean_pred)
+            
+            agg_df['mean_pred_{}'.format(map_me[f])] = pd.Series(means, index=agg_df.index)
 
-        #         #actual = row[feature_index]
-        #         cols.pop(feature_index)
-
-        #         preds = [row[i] for i in cols]
-        #         mean_pred = np.mean(preds)
-        #         means.append(mean_pred)
-        #     
-        #     agg_df['mean_pred_{}'.format(map_me[f])] = pd.Series(means, index=agg_df.index)
-
-        # agg_df.to_csv(os.path.join(self.outputs, 'testSetPerformance.csv'))
+        agg_df.to_csv(os.path.join(self.outputs, 'testSetPerformance.csv'))
     
           
     def __cross_val(self):
