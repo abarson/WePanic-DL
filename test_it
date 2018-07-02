@@ -2,12 +2,12 @@
 
 ## script for runs on the cloud
 
-#pip install --upgrade src/we_panic_utils/
+pip install --upgrade src/we_panic_utils/
 epochs=30
 steps_per_epoch=500
 batch_size=14
 
-python src/run_model.py BN_CNN_3D_DO picky_32_32 \
+screen python src/run_model.py BN_CNN_3D_DO picky_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue.csv \
 --output_dir run_history/TEST \
