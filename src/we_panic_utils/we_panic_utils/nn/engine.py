@@ -257,9 +257,12 @@ class Engine():
     
         feed = {k:QBCdf[k].values.tolist() for k in keys}
         
+        QBCdf.to_csv(os.path.join(self.outputs, 'QBC.csv')) 
+        print('Wrote performance to {}'.format(os.path.join(self.outputs, 'QBC.csv')))
+        print()
         print(" --- ".join(keys)) 
         print('-'*len(" --- ".join(keys))) 
-        
+
         for i in range(len(feed[keys[0]])):
             row = [feed[k][i] for k in keys]
             actual, pred = [round(r, 3) for r in row]
