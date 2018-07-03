@@ -219,7 +219,7 @@ class Engine():
             Xs, ys = next(test_generator)
             row = {col:None for col in columns}
             for memb, name in zip(committee,committee_members_noh5):
-                print("\r[{:2d}] {:>25s}".format(i, name), flush=True, end='')
+                print("\r[{:2d}] {:>20s}...".format(i, name[:20]), flush=True, end='')
                 self.model = memb
                 
                 # the actual result answers
@@ -250,7 +250,7 @@ class Engine():
             
             preds = list(filter(lambda p: p is not None, preds))
             QBCdf.loc[i] = results + preds
-            print("\r[{:2d}] {} DONE".format(i, " "*21))
+            print("\r[{:2d}] {} DONE".format(i, " "*20))
 
         print()
         keys = reduce(lambda l1, l2: l1 + l2, ['actual_{},QBC_{}'.format(map_me[f], map_me[f]).split(',') for f in self.features]) 
@@ -264,17 +264,24 @@ class Engine():
         print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
 
         SSE = 0.
-        for i in range(len(feed[keys[0]])):
-            row = [feed[k][i] for k in keys]
-            actual, pred = [round(r, 3) for r in row]
-            SE = (actual - pred)**2
-            SSE += SE
 
-            print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE))
+        with open(os.path.join(self.outputs,'QBC_performance.txt'), 'w') as qbcperf:
+            print(" --- ".join(keys + ['SE', '  SSE ']), file=qbcperf) 
+            print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
+            for i in range(len(feed[keys[0]])):
+                row = [feed[k][i] for k in keys]
+                actual, pred = [round(r, 3) for r in row]
+                SE = (actual - pred)**2
+                SSE += SE
 
-        print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
-        MSE = SSE / len(feed[keys[0]])
-        print('MSE ::==:: {:.03f}'.format(MSE))
+                print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE))
+                print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE), file=qbcperf)
+                
+            print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
+            print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
+            MSE = SSE / len(feed[keys[0]])
+            print('MSE ::==:: {:.03f}'.format(MSE))
+            print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf)
 
     def __cross_val(self):
         """

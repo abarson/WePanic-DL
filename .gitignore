@@ -22,3 +22,7 @@ out/
 
 ##### scary files
 *.tar.gz
+**/*.h5
+
+##### committee directories
+committee*
