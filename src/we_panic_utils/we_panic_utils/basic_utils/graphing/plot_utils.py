@@ -8,10 +8,30 @@ import matplotlib.patches as mpatches
 from matplotlib import cm 
 plt.switch_backend('agg')
 
-from we_panic_utils.basic_utils.basics import check_exists_create_if_not
+from ..basic_utils.basics import check_exists_create_if_not
 
 LOSS = 1
 VAL_LOSS = 3
+
+def compute_bland_altman(actuals, predictions):
+    """
+    compute the bland altman relationship between actual labels and predicted
+    
+    Bland-Altman allows us to meansure error as a function of input label, the plot
+    consists of two axes : X = [log2(actual) + log2(pred)]/2 Y=log2(actual)-log2(pred)
+
+    args:
+        actuals (list) -- list of actual labels
+        predictions (list) -- predicted labels
+
+    returns:
+        (list) -- set of (x,y) bland-altman pairs
+    """
+    
+    ap_pairs = zip(actuals, predictions)
+    bland_altmans = list(map(lambda pair: (np.log2(pair[0]) + np.log2(pair[1])/2, np.log2(pair[0]) - np.log2(pair[1])), ap_pairs)) 
+
+    return bland_altmans
 
 def plot_multiple_losses(dir_in, dir_out=None):
     """

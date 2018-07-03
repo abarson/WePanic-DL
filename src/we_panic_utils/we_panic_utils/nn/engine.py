@@ -3,6 +3,7 @@ from .data_load import ttswcsv, sorted_stratified_kfold
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
 from .functions import get_keras_losses
+from ..basic_utils.basics.graphing import compute_bland_altman
 
 # inter-library imports
 from keras import models
@@ -12,7 +13,6 @@ from keras import backend as K
 
 import os
 import pandas as pd
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import StratifiedKFold
 import numpy as np
 import time
@@ -264,6 +264,8 @@ class Engine():
         print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
 
         SSE = 0.
+        
+        answers, predictions = [], [] 
 
         with open(os.path.join(self.outputs,'QBC_performance.txt'), 'w') as qbcperf:
             print(" --- ".join(keys + ['SE', '  SSE ']), file=qbcperf) 
@@ -273,6 +275,9 @@ class Engine():
                 actual, pred = [round(r, 3) for r in row]
                 SE = (actual - pred)**2
                 SSE += SE
+                
+                answers.append(actual)
+                predictions.append(pred)
 
                 print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE))
                 print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE), file=qbcperf)
@@ -281,8 +286,11 @@ class Engine():
             print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
             MSE = SSE / len(feed[keys[0]])
             print('MSE ::==:: {:.03f}'.format(MSE))
-            print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf)
-
+            print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf) 
+        
+        bland, altman = zip(*compute_bland_altman(answers, predictions)) 
+        plt.scatter(bland, altman)
+        
     def __cross_val(self):
         """
         split the data a la cross-validation and train up some models
