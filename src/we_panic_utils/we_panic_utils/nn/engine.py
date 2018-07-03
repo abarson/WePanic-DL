@@ -291,7 +291,11 @@ class Engine():
             print('MSE ::==:: {:.03f}'.format(MSE))
             print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf) 
         
-        plt.savefig(os.path.join(self.outputs, 'bland_altman.png'))
+        bland, altman = zip(*compute_bland_altman(answers, predictions, log=False))
+        plt.scatter(bland, altman)
+        plt.xlabel('Actual - Prediction')
+        plt.ylabel('(Actual + Prediction)/2')
+        plt.savefig(os.path.join('figs', 'bland_altman_{}.png'.format(len(committee_members))))
         
     def __cross_val(self):
         """

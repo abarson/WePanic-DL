@@ -13,7 +13,7 @@ from ..basics import check_exists_create_if_not
 LOSS = 1
 VAL_LOSS = 3
 
-def compute_bland_altman(actuals, predictions):
+def compute_bland_altman(actuals, predictions, log=True):
     """
     compute the bland altman relationship between actual labels and predicted
     
@@ -29,9 +29,13 @@ def compute_bland_altman(actuals, predictions):
     """
     
     ap_pairs = zip(actuals, predictions)
-    bland_altmans = list(map(lambda pair: (np.log2(pair[0]) + np.log2(pair[1])/2, np.log2(pair[0]) - np.log2(pair[1])), ap_pairs)) 
+    if log:
+        bland_altmans = list(map(lambda pair: (np.log2(pair[0]) + np.log2(pair[1])/2, np.log2(pair[0]) - np.log2(pair[1])), ap_pairs)) 
+    
+    else:
+        bland_altman = list(map(lambda pair: (np.mean(pair), pair[0] - pair[1]), ap_pairs))
 
-    return bland_altmans
+    return bland_altman
 
 def plot_multiple_losses(dir_in, dir_out=None):
     """
