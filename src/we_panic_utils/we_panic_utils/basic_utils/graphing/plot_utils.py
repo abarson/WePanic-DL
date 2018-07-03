@@ -8,7 +8,7 @@ import matplotlib.patches as mpatches
 from matplotlib import cm 
 plt.switch_backend('agg')
 
-from ..basic_utils.basics import check_exists_create_if_not
+from ..basics import check_exists_create_if_not
 
 LOSS = 1
 VAL_LOSS = 3

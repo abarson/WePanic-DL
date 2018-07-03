@@ -3,7 +3,7 @@ from .data_load import ttswcsv, sorted_stratified_kfold
 from ..basic_utils.basics import check_exists_create_if_not
 from .callbacks import TestResultsCallback, CyclicLRScheduler
 from .functions import get_keras_losses
-from ..basic_utils.basics.graphing import compute_bland_altman
+from ..basic_utils.graphing import compute_bland_altman
 
 # inter-library imports
 from keras import models
@@ -18,6 +18,9 @@ import numpy as np
 import time
 from glob import glob
 from functools import reduce
+
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 
 class Engine():
     """
@@ -288,8 +291,7 @@ class Engine():
             print('MSE ::==:: {:.03f}'.format(MSE))
             print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf) 
         
-        bland, altman = zip(*compute_bland_altman(answers, predictions)) 
-        plt.scatter(bland, altman)
+        plt.savefig(os.path.join(self.outputs, 'bland_altman.png'))
         
     def __cross_val(self):
         """
