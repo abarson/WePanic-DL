@@ -1,12 +1,12 @@
 #!/bin/sh
 
 pip install --upgrade src/we_panic_utils/
-screen python src/run_model.py CNN_3D picky_32_32 \
+python src/run_model.py CNN_3D picky_32_32 \
 --csv wepanic_collated_catalogue.csv \
---input_dir run_history/aug_smoothl1_bndo \
+--input_dir run_history/bndo_smoothl1_aug_bsize14/ \
+--qbc run_history/bndo_smoothl1_aug_bsize14/models \
 --features hr \
 --steps_per_epoch 500 \
---epochs 1 \
 --batch_size 14 \
---greyscale_on \
---test
+--epochs 1 \
+--greyscale_on

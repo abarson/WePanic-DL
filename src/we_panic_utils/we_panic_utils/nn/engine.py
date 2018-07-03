@@ -17,6 +17,7 @@ from sklearn.model_selection import StratifiedKFold
 import numpy as np
 import time
 from glob import glob
+from functools import reduce
 
 class Engine():
     """
@@ -91,37 +92,6 @@ class Engine():
             self.loss_fun = 'mean_squared_error'
 
         self.loss_fun = self.__choose_loss()
-
-    # def __train_model(self):
-    #     """
-    #      _______
-    #     ( TODO  )
-    #    ( SHROOM  ) ==============================================*
-    #   {___________}                                              |
-    #     { ____ }   ** Update for newer iterations of project *** |
-    #     {_||||_} ================================================*
-
-    #     Internal method to train the model. This method is responsible for instantiating the model
-    #     based on the user's inputs, as well as the train, test, and validation sets. Once instantiated,
-    #     these objects are maintained as instance variables by the engine object for later use.
-    #     """
-
-    #     if not self.model:  #instantiate the model to be trained
-    #         self.model = self.__choose_model().instantiate()
-    #     print("Training the model")
-
-    #     self.train_set, self.test_set, self.val_set = ttswcsv(self.data, self.metadata, self.outputs)
-    #     
-    #     train_generator = self.processor.train_generator(self.train_set)
-    #     val_generator = self.processor.test_generator(self.val_set)
-
-    #     self.model.fit_generator(generator=train_generator,
-    #                              steps_per_epoch=self.steps_per_epoch,
-    #                              epochs=self.epochs,
-    #                              verbose=1,
-    #                              callbacks=self.callbacks,
-    #                              validation_data=val_generator,
-    #                              validation_steps=len(self.val_set), workers=4)
 
     def __infer_top_model(self):
         """
@@ -218,30 +188,39 @@ class Engine():
         """
 
         metadf = pd.read_csv(self.metadata)
-        self.test_set = metadf[metadf['GOOD']] == 2
+        self.test_set = metadf[metadf['GOOD'] == 2]
         print('[QBC] built test set') 
         map_me = {'HEART_RATE_BPM' : 'hr', 'RESP_RATE_BR_PM' : 'rr'}
+        map_back = dict(map(reversed, map_me.items())) 
 
         # infer .h5 files
         committee_members = glob(os.path.join(self.qbc, '*.h5'))
         committee_members_noh5 = [m.rstrip('.h5').split('/')[-1] for m in committee_members]
-        print('[QBC] Got {} committee members'.format(len(committee_members)))
         
         test_generator = self.processor.test_generator(self.test_set)
 
-        actual_answers = ['actual_{}'.format9map_me[f] for f in self.features]
+        actual_answers = ['actual_{}'.format(map_me[f]) for f in self.features]
         predictions = ['predicted_{}_{}'.format(map_me[f], cmemb) for f in self.features for cmemb in committee_members_noh5]
-
-        columns = actual_answers + predictions
-        QBCdf = pd.DataFrame(columns=columns)
         
+        columns = actual_answers + predictions
+        QBCdf = pd.DataFrame(columns=columns + ['QBC_{}'.format(map_me[f]) for f in self.features])
+        hr_idxs = [i for i in range(len(columns)) if 'hr' in columns[i]]
+        rr_idxs = [i for i in range(len(columns)) if 'rr' in columns[i]]
+        
+        committee = []
+        for name in committee_members:
+            opt = Adam(lr=1e-5, decay=1e-6)
+            memb = models.load_model(name, compile=False)
+            memb.compile(loss='mean_squared_error', optimizer=opt)
+            committee.append(memb)
+        print('[QBC] Got {} committee members'.format(len(committee_members)))
+
         for i in range(len(self.test_set)):
             Xs, ys = next(test_generator)
             row = {col:None for col in columns}
-            for memb in committee_members:
-                self.model = models.load_model(memb, compile=False)
-                optimizer = Adam(lr=1e-5, decay=1e-6)
-                self.model.compile(loss='mean_squared_error', optimizer=optimizer)
+            for memb, name in zip(committee,committee_members_noh5):
+                print("\r[{:2d}] {:>25s}".format(i, name), flush=True, end='')
+                self.model = memb
                 
                 # the actual result answers
                 feats = zip(*ys)
@@ -253,69 +232,39 @@ class Engine():
                 mean_preds = [np.mean(pred) for pred in feat_preds]
                 
                 for p, p_true, f in zip(mean_preds, mean_feats, self.features):
-                    row['predicted_{}_{}'.format(map_me[f], memb)] = p
+                    row['predicted_{}_{}'.format(map_me[f], name)] = p
                     row['actual_{}'.format(map_me[f])] = p_true
-            
-            QBCdf.loc[i] = [row[col] for col in columns]
 
-        print(QBCdf)
-        #for model_name, loss in self.__next_model:
-        #     self.model = models.load_model(model_name, compile=False)
-        #     self.model.compile(loss=self.loss_fun, optimizer=optimizer, metrics=['mse'])
-        #     print('>>> {} Compiled and ready to go'.format(model_name))
-        #     
-        #     test_generator = self.processor.test_generator(self.test_set)
-        #     
-        #     model_id = model_name.split('/')[-1]
-        #     model_id = model_id.rstrip('.h5')
-        #     #test_slug = 'testSetPerformance_name-%s_loss%0.4f' % (model_id, loss) 
-        # 
-        #     header = sum([['actual_{}'.format(map_me[f]), 'predicted_{}'.format(map_me[f])] for f in self.features], [])
-        #     performance_df = pd.DataFrame(columns=header)
-
-        #     for i in range(len(self.test_set)):
-        #         print('\r[__test_model]: sample %2d' % i, flush=True, end=' ')
-        #         Xs, ys = next(test_generator) 
-        #     
-        #         feats = zip(*ys)
-        #         mean_feats = [np.mean(feat) for feat in feats]
-        #         
-        #         preds = self.model.predict(Xs, batch_size=len(Xs))   
-        #         feat_preds = zip(*preds)
-        #         mean_preds = [np.mean(pred) for pred in feat_preds]
-        #     
-        #         row = sum([list(value) for value in zip(*[mean_feats, mean_preds])], [])
-        #         performance_df.loc[i] = row
-        #     
-        #     print('\n',performance_df)
-
-        #     for f in self.features:
-        #         agg_df['preds_{}_{}'.format(model_id, map_me[f])] = performance_df['predicted_{}'.format(map_me[f])]
-        #         agg_df['actual_{}'.format(map_me[f])] = performance_df['actual_{}'.format(map_me[f])] 
-        # 
-        #  
-        # for f in self.features:
-        #     feature_index = list(agg_df.columns).index('actual_{}'.format(map_me[f]))
-        #     means = []
-        #     for idx, row in agg_df.iterrows():
-        #         row = list(row)
-        #         cols = []
-        #         for i, col in enumerate(agg_df.columns):
-        #             if map_me[f] in col:
-        #                 cols.append(i)
-
-        #         #actual = row[feature_index]
-        #         cols.pop(feature_index)
-
-        #         preds = [row[i] for i in cols]
-        #         mean_pred = np.mean(preds)
-        #         means.append(mean_pred)
-        #     
-        #     agg_df['mean_pred_{}'.format(map_me[f])] = pd.Series(means, index=agg_df.index)
-
-        # agg_df.to_csv(os.path.join(self.outputs, 'testSetPerformance.csv'))
+            results = [row[col] for col in columns]
     
-          
+            preds = [None, None]
+            if hr_idxs:
+                predictions_hr = [results[i] for i in hr_idxs]
+                predictions_hr = np.mean(predictions_hr[1:]) # skip the first one (the label)
+                preds[self.features.index(map_back['hr'])] = predictions_hr
+
+            if rr_idxs:
+                predictions_rr = [results[i] for i in rr_idxs]
+                predictions_rr = np.mean(predictions_rr[1:])
+                preds[self.features.index(map_back['rr'])] = predictions_rr
+            
+            preds = list(filter(lambda p: p is not None, preds))
+            QBCdf.loc[i] = results + preds
+            print("\r[{:2d}] {} DONE".format(i, " "*21))
+
+        print()
+        keys = reduce(lambda l1, l2: l1 + l2, ['actual_{},QBC_{}'.format(map_me[f], map_me[f]).split(',') for f in self.features]) 
+    
+        feed = {k:QBCdf[k].values.tolist() for k in keys}
+        
+        print(" --- ".join(keys)) 
+        print('-'*len(" --- ".join(keys))) 
+        
+        for i in range(len(feed[keys[0]])):
+            row = [feed[k][i] for k in keys]
+            actual, pred = [round(r, 3) for r in row]
+            print("{:5.01f} {:15.03f}".format(actual, pred))
+
     def __cross_val(self):
         """
         split the data a la cross-validation and train up some models
@@ -425,6 +374,8 @@ class Engine():
         if self.kfold is not None:
             self.__cross_val()
         
+        if self.qbc is not None:
+            self.__QBC()
         # other wise train/test as ushe
         #else:
             #if self.train:

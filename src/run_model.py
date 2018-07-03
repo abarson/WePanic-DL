@@ -236,6 +236,7 @@ def validate_arguments(args):
             verify_h5_exists(args.qbc)
     else:
         verify_h5_exists(args.qbc)
+        args.output_dir = args.input_dir
 
     bad_augs = []
     for arg_name in ['steps_per_epoch', 'shear_range', 'width_shift_range', 
@@ -386,7 +387,7 @@ def verify_h5_exists(directory):
         raise NotADirectoryError('Not a directory: {}'.format(directory))
     
     
-    contents = glob(directory, '*.h5')
+    contents = glob(os.path.join(directory, '*.h5'))
     
     if not contents:
         raise ValueError('{} contains no .h5 files. QBC requires .h5 files'.format(directory)) 
@@ -453,6 +454,6 @@ if __name__ == "__main__":
     end = time.time()
     total = (end - start) / 60
 
-    if args.train:
+    if args.kfold:
         with open(os.path.join(args.output_dir, "time.txt"), 'w') as t:
             t.write(str(total))
