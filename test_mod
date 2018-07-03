@@ -1,10 +1,12 @@
 #!/bin/sh
 
+N=$1
+
 pip install --upgrade src/we_panic_utils/
 python src/run_model.py CNN_3D picky_32_32 \
 --csv wepanic_collated_catalogue.csv \
---input_dir committee_top2 \
---qbc committee_top2 \
+--input_dir committee_top$N \
+--qbc committee_top$N \
 --features hr \
 --steps_per_epoch 500 \
 --batch_size 14 \
