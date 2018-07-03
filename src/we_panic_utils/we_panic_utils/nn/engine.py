@@ -254,19 +254,27 @@ class Engine():
 
         print()
         keys = reduce(lambda l1, l2: l1 + l2, ['actual_{},QBC_{}'.format(map_me[f], map_me[f]).split(',') for f in self.features]) 
-    
+
         feed = {k:QBCdf[k].values.tolist() for k in keys}
         
         QBCdf.to_csv(os.path.join(self.outputs, 'QBC.csv')) 
         print('Wrote performance to {}'.format(os.path.join(self.outputs, 'QBC.csv')))
         print()
-        print(" --- ".join(keys)) 
-        print('-'*len(" --- ".join(keys))) 
+        print(" --- ".join(keys + ['SE', '  SSE '])) 
+        print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
 
+        SSE = 0.
         for i in range(len(feed[keys[0]])):
             row = [feed[k][i] for k in keys]
             actual, pred = [round(r, 3) for r in row]
-            print("{:5.01f} {:15.03f}".format(actual, pred))
+            SE = (actual - pred)**2
+            SSE += SE
+
+            print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE))
+
+        print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
+        MSE = SSE / len(feed[keys[0]])
+        print('MSE ::==:: {:.03f}'.format(MSE))
 
     def __cross_val(self):
         """
