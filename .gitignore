@@ -23,6 +23,8 @@ out/
 ##### scary files
 *.tar.gz
 **/*.h5
+*.aux  # latex
+*.log  # latex
 
 ##### committee directories
 committee*
