@@ -20,7 +20,7 @@ def mean_std(df, col):
 
 if __name__ == '__main__':
     # assumes the most up to date
-    wpc_cc = 'wepanic_collated_catalogue.csv'
+    wpc_cc = sys.argv[1]
     
     figs_dir = 'figs'
     now = datetime.datetime.now().strftime('%d-%m-%Y')

@@ -80,6 +80,15 @@ def parse_args():
                         help='the frame directory',
                         default='picky_32_32')
 
+    parser.add_argument('--output_csv',
+                        type=str,
+                        help='the output csv',
+                        default=OUTPUT_CSV)
+
+    parser.add_argument('--nonkosher',
+                        help='include our collection',
+                        default=False,
+                        action='store_true')
     return parser
 
 
@@ -142,7 +151,12 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
  
 if __name__ == '__main__':
     args = parse_args().parse_args()
+    OUTPUT_CSV = args.output_csv
     dlcd_loc = args.dlcd_loc
+    
+    if args.nonkosher:
+        GOOD_PAIRS = list(set(NEW_BATCH) | set(NONKOSHER))
+
     print('assuming this script was called from the top level of this directory ...')
 
     if not verify(dlcd_loc):
