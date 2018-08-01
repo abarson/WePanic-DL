@@ -7,15 +7,15 @@ epochs=30
 steps_per_epoch=500
 batch_size=14
 
-screen python src/run_model.py BN_CNN_3D_DO picky_32_32 \
---features rr \
---csv wepanic_collated_catalogue.csv \
---output_dir run_history/bndo_rr_aug_bsize14_seq60 \
+screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
+--features hr rr \
+--csv WPdata_glued__catalogue.csv \
+--output_dir run_history/final_sim__glued__redscale_on__hr_rr \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---greyscale_on \
+--redscale_on \
 --kfold 5 \
 --loss smooth_l1_loss \
 --sequence_length 60 \
