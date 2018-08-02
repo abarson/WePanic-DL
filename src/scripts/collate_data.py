@@ -214,7 +214,7 @@ if __name__ == '__main__':
     #Xtest = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
     Xtest = sorted_stratified_train_test_split(collated_df)
     for subj in Xtest:
-        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['GOOD'] == 1].index
+        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['GOOD'] == 1)].index
         collated_df.loc[row_idx, 'GOOD'] = 2
         
         #collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)]['GOOD'] = 2  # add to test set
