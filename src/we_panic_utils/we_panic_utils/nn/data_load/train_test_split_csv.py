@@ -270,7 +270,6 @@ def sorted_stratified_kfold(df, features, k=5):
     if len(features) > 1:
         df = df.sort_values('MUL', ascending=[False])
     else:
-        print(df.columns)
         df = df.sort_values(features, ascending=[False])
 
     rows = df.values.tolist() 
