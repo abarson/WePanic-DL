@@ -242,30 +242,78 @@ def tiers_by_magnitude(sorted_list, n_tier=5):
 
     return tiers
 
-def sorted_stratified_kfold(df, k=5):
+def sorted_stratified_kfold(df, features, k=5):
+    """
+    generate a K-fold cross validation using sorted stratification;
+        - sort cross fold by appropriate feature
+        - no subject spans train and validation sets
+    
+    args:
+        :df (pd.DataFrame) - the structure containing the label and metainfo about each subject, trial pair
+        :features (list) - the list of features to sort by
+        :k (optional, int) - the # of folds
 
+    yields:
+        :train_df (pd.DataFrame) - training dataframe
+        :val_df (pd.DataFrame) - the validation dataframe
+    """
     df              = df[df['GOOD'] == 1]                         # just to make sure
     df['SUBJECT']   = df['SUBJECT'].apply(lambda row: int(row))   # make subjects float --> int
-    subs, tris, hrs = zip(*df[['SUBJECT', 'TRIAL', 'HEART_RATE_BPM']].values.tolist())
-    compiled        = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
-    
-    tiers = tiers_by_magnitude(compiled, n_tier=k) 
-    folds = [ [] for _ in range(k)]
 
+    #subs, tris, hrs = zip(*df[['SUBJECT', 'TRIAL', 'HEART_RATE_BPM']].values.tolist())
+    #compiled        = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
+    
+    # sort subjects by multiplicative magnitude
+    df = df[df['GOOD'] == 1]
+
+    df['MUL'] = df['HEART_RATE_BPM'] * df['RESP_RATE_BR_PM']
+    if len(features) > 1:
+        df = df.sort_values('MUL', ascending=[False])
+    else:
+        print(df.columns)
+        df = df.sort_values(features, ascending=[False])
+
+    rows = df.values.tolist() 
+
+    # keep order; filter duplicates
+    delegates = []                  # list of subjects kept in relevant sorted order 
+    subject_set = set()
+    for row in rows:
+        subject = row[0]
+        if subject not in subject_set:
+            delegates.append(subject)
+            subject_set |= set([subject])
+    
+    # break into tiers
+    tiers = tiers_by_magnitude(delegates, n_tier=k) 
+    
+    # generate folds
+    folds = [[] for _ in range(k)]
     i = 0
     for T in tiers:
+        # distribute T among the folds
         while T:
-            chosen = T.pop(random.randint(0, len(T) - 1)) 
+            # choose a subject by popping a random index from the tier
+            chosen_subject = T.pop(random.randint(0, len(T) - 1)) 
+            # derive the sample by filtering all r in rows s.t r[0] == the chosen subject;
+            #                              r[0] in this case is the subject
+            sample = list(filter(lambda r: r[0] == chosen_subject, rows))
+            # add this to the fold
+            folds[i].extend(sample)
             
-            folds[i].append(chosen)
+            # increment the fold index
             i = (i + 1) % k
-
     
+    # by this point we have a set of folds represented by a list of lists
+    # convert each list of lists to 2 dataframes: training and validation 
+
+    ## TODO -- make folds dataframes from the outset 
     for f in folds:
         val_df = pd.DataFrame(columns=df.columns)
         train_df = df.copy()
 
-        for i, (subject, trial, hr) in enumerate(f):
+        for i, fi in enumerate(f):
+            subject, trial = fi[0], fi[1]  # extract subject
             rowdf = df[(df['SUBJECT'] == subject) & (df['TRIAL'] == trial)]
             train_df.drop(rowdf.index, inplace=True)
             row  = rowdf.values.tolist()[0]

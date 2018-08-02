@@ -125,7 +125,8 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
     """
 
     collated_df = collated_df[collated_df['GOOD'] == 1]
-    collated_df = collated_df.sort_values(['HEART_RATE_BPM','RESP_RATE_BR_PM'], ascending=[False, False])
+    collated_df['MUL'] = collated_df['HEART_RATE_BPM'] * collated_df['RESP_RATE_BR_PM']
+    collated_df = collated_df.sort_values(['MUL'], ascending=[False])
     rows = collated_df.values.tolist() 
 
     delegates = []
@@ -135,7 +136,6 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
         if subject not in subject_set:
             delegates.append(subject)
             subject_set |= set([subject])
-
     
     n_test = int(round(len(subject_set)*test_size))
     tiers = tiers_by_magnitude(delegates, n_tier=n_test) 

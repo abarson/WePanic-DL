@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
     heart_rates = wpc_valid['HEART_RATE_BPM'].values.tolist()
     resp_rates = wpc_valid['RESP_RATE_BR_PM'].values.tolist()
+    #wcp_valid['MUL'] = wpc_valid['HEART_RATE_BPM'] * wpc_valid['RESP_RATE_BR_PM'] 
     
     print('# training samples: {}'.format(len(wpc_train)))
     print('# testing samples:  {}'.format(len(wpc_test)))
