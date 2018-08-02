@@ -3,11 +3,11 @@
 ## script for runs on the cloud
 
 pip install --upgrade src/we_panic_utils/
-epochs=30
-steps_per_epoch=500
+epochs=1
+steps_per_epoch=1
 batch_size=14
 
-screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
+python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features hr \
 --csv WPdata_glued__catalogue_rf.csv \
 --output_dir run_history/final_sim__glued__redscale_on__hr_rf \
