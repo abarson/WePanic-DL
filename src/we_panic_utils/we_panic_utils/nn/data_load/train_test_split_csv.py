@@ -264,41 +264,48 @@ def sorted_stratified_kfold(df, features, k=5):
     #compiled        = sorted(zip(subs, tris, hrs), key=lambda tup: tup[2])
     
     # sort subjects by multiplicative magnitude
-    df = df[df['GOOD'] == 1]
-
     df['MUL'] = df['HEART_RATE_BPM'] * df['RESP_RATE_BR_PM']
+
+
     if len(features) > 1:
         df = df.sort_values('MUL', ascending=[False])
+        features = 'MUL'
     else:
         df = df.sort_values(features, ascending=[False])
 
-    rows = df.values.tolist() 
+    ##rows = df.values.tolist() 
 
-    # keep order; filter duplicates
-    delegates = []                  # list of subjects kept in relevant sorted order 
-    subject_set = set()
-    for row in rows:
-        subject = row[0]
-        if subject not in subject_set:
-            delegates.append(subject)
-            subject_set |= set([subject])
+    ## keep order; filter duplicates
+    #delegates = []                  # list of subjects kept in relevant sorted order 
+    #subject_set = set()
+    #for row in rows:
+    #    subject = row[0]
+    #    if subject not in subject_set:
+    #        delegates.append(subject)
+    #        subject_set |= set([subject] 
     
+    # sorted tuples
+    subjects = df['SUBJECT'].values.tolist()
+    trials   = df['TRIAL'].values.tolist()
+    feature  = df[features].values.tolist()
+    subject_trial_feature = list(zip(subjects,trials,feature)) 
+
     # break into tiers
-    tiers = tiers_by_magnitude(delegates, n_tier=k) 
-    
+    tiers = tiers_by_magnitude(subject_trial_feature, n_tier=k) 
     # generate folds
     folds = [[] for _ in range(k)]
     i = 0
+
     for T in tiers:
         # distribute T among the folds
         while T:
             # choose a subject by popping a random index from the tier
-            chosen_subject = T.pop(random.randint(0, len(T) - 1)) 
+            chosen = T.pop(random.randint(0, len(T) - 1)) 
             # derive the sample by filtering all r in rows s.t r[0] == the chosen subject;
             #                              r[0] in this case is the subject
-            sample = list(filter(lambda r: r[0] == chosen_subject, rows))
+            #sample = list(filter(lambda r: r[0] == chosen_subject, rows))
             # add this to the fold
-            folds[i].extend(sample)
+            folds[i].append(chosen)
             
             # increment the fold index
             i = (i + 1) % k
@@ -311,8 +318,7 @@ def sorted_stratified_kfold(df, features, k=5):
         val_df = pd.DataFrame(columns=df.columns)
         train_df = df.copy()
 
-        for i, fi in enumerate(f):
-            subject, trial = fi[0], fi[1]  # extract subject
+        for i, (subject, trial, feature) in enumerate(f):
             rowdf = df[(df['SUBJECT'] == subject) & (df['TRIAL'] == trial)]
             train_df.drop(rowdf.index, inplace=True)
             row  = rowdf.values.tolist()[0]
