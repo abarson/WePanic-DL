@@ -191,7 +191,7 @@ class Engine():
         """
 
         metadf = pd.read_csv(self.metadata)
-        self.test_set = metadf[metadf['GOOD'] == 2]
+        self.test_set = metadf[metadf['GOOD'] == 3]
         print('[QBC] built test set') 
         map_me = {'HEART_RATE_BPM' : 'hr', 'RESP_RATE_BR_PM' : 'rr'}
         map_back = dict(map(reversed, map_me.items())) 

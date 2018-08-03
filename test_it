@@ -9,8 +9,8 @@ batch_size=14
 
 screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features hr \
---csv wepanic_collated_catalogue.csv \
---output_dir run_history/split_overlap_BNDO_greyscale_on \
+--csv wepanic_collated_catalogue3.csv \
+--output_dir run_history/knk_split \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
