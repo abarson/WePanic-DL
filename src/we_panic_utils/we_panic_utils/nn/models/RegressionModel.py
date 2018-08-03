@@ -134,6 +134,54 @@ class BN_CNN_3D_DO(RegressionModel):
         
         return model
 
+class Deeper(RegressionModel):
+   
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
+
+    def instantiate(self):
+        return super(Deeper, self).instantiate()
+
+    def get_model(self):
+       
+        invariants = {'kernel_initializer':'he_normal'}
+        model = Sequential()
+         
+        model.add(Conv3D(64, kernel_size=(20, 5, 5), padding='valid',
+                  input_shape=self.input_shape, **invariants))
+        model.add(Activation('relu'))
+        model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
+        model.add(BatchNormalization()) 
+
+        model.add(Conv3D(128, kernel_size=(10, 3, 3), padding='valid', **invariants))
+        model.add(Activation('relu'))
+        model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
+        model.add(BatchNormalization()) 
+
+        model.add(Conv3D(256, kernel_size=(5, 3, 3), padding='valid', **invariants))
+        model.add(Activation('relu'))
+        model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
+        model.add(BatchNormalization()) 
+
+        #model.add(Conv3D(256, kernel_size=3))
+        #model.add(Activation('relu'))
+        #model.add(BatchNormalization()) 
+        #model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+
+        #model.add(Conv3D(512, kernel_size=1))
+        #model.add(Activation('relu'))
+        #model.add(BatchNormalization()) 
+        #model.add(MaxPooling3D(pool_size=1, strides=1))
+
+        model.add(Flatten()) 
+        model.add(Dense(512, activation='relu', **invariants))
+        model.add(Dropout(0.15))
+        model.add(Dense(512, activation='relu', **invariants))
+        model.add(Dropout(0.15))
+        model.add(Dense(self.output_shape, activation='linear'))
+        
+        return model
+
 class CNN_3D(RegressionModel):
    
     def __init__(self, input_shape, output_shape, loss=None):
