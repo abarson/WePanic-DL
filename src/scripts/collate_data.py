@@ -138,7 +138,8 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
             subject_set |= set([subject])
     
     n_test = int(round(len(subject_set)*test_size))
-    tiers = tiers_by_magnitude(delegates, n_tier=n_test) 
+    tups = [(row[0], row[1]) for row in rows]
+    tiers = tiers_by_magnitude(tups, n_tier=n_test) 
     print('ntest:', n_test) 
     print('ntotal:',len(subject_set))
     X_test = []
@@ -213,8 +214,8 @@ if __name__ == '__main__':
     # get a test set
     #Xtest = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
     Xtest = sorted_stratified_train_test_split(collated_df)
-    for subj in Xtest:
-        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['GOOD'] == 1)].index
+    for subj, tri in Xtest:
+        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri) & (collated_df['GOOD'] == 1)].index
         collated_df.loc[row_idx, 'GOOD'] = 2
         
         #collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)]['GOOD'] = 2  # add to test set

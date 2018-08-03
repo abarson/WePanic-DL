@@ -7,17 +7,17 @@ epochs=30
 steps_per_epoch=500
 batch_size=14
 
-screen python src/run_model.py Deeper glued_32_32 \
+python src/run_model.py Deeper glued_32_32 \
 --features hr \
 --csv WPdata_glued__catalogue_rf.csv \
---output_dir run_history/final_sim__glued__redscale_on__hr_rf_MSE \
+--output_dir run_history/final_sim__glued__greyscale_on__hr_rf \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---redscale_on \
+--greyscale_on \
 --kfold 5 \
---loss MSE \
+--loss smooth_l1_loss \
 --sequence_length 60 \
 --vertical_flip \
 --horizontal_flip \

@@ -12,12 +12,15 @@ class RegressionModel():
         self.output_shape = output_shape
         self.loss = loss
         self.lr=1e-5
-    
+        self.optimizer = None    
+
     def instantiate(self):
         model = self.get_model() 
-        optimizer = Adam(lr=self.lr, decay=1e-6)
+        if self.optimizer is None:
+            self.optimizer = Adam(lr=self.lr, decay=1e-6)
+
         metrics = ['mse', 'mape']
-        model.compile(loss=self.loss, optimizer=optimizer, metrics=metrics)
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=metrics)
         #model.summary()
 
         return model
@@ -140,6 +143,7 @@ class Deeper(RegressionModel):
     def __init__(self, input_shape, output_shape, loss=None):
         RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
         self.lr = 0.01
+        #self.optimizer = SGD(lr=self.lr, momentum=0.8, decay=self.lr/30)
 
     def instantiate(self):
         return super(Deeper, self).instantiate()
@@ -155,12 +159,12 @@ class Deeper(RegressionModel):
         model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
 
-        model.add(Conv3D(128, kernel_size=(10, 3, 3), padding='valid', **invariants))
+        model.add(Conv3D(128, kernel_size=(15, 3, 3), padding='valid', **invariants))
         model.add(Activation('relu'))
         model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
 
-        model.add(Conv3D(256, kernel_size=(5, 3, 3), padding='valid', **invariants))
+        model.add(Conv3D(256, kernel_size=(10, 3, 3), padding='valid', **invariants))
         model.add(Activation('relu'))
         model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
