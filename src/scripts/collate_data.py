@@ -128,25 +128,26 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
     collated_df['MUL'] = collated_df['HEART_RATE_BPM'] * collated_df['RESP_RATE_BR_PM']
     collated_df = collated_df.sort_values(['MUL'], ascending=[False])
     rows = collated_df.values.tolist() 
+    n_test = int(round(len(collated_df)*test_size))
 
-    delegates = []
-    subject_set = set()
-    for row in rows:
-        subject = row[0]
-        if subject not in subject_set:
-            delegates.append(subject)
-            subject_set |= set([subject])
+    #delegates = []
+    #subject_set = set()
+
+    #for row in rows:
+    #    subject = row[0]
+    #    if subject not in subject_set:
+    #        delegates.append(subject)
+    #        subject_set |= set([subject])
     
-    n_test = int(round(len(subject_set)*test_size))
-    #tups = [(row[0], row[1]) for row in rows]
-    tiers = tiers_by_magnitude(delegates, n_tier=n_test) 
-    #print('ntest:', n_test) 
-    #print('ntotal:',len(subject_set))
+    #n_test = int(round(len(subject_set)*test_size))
+    #tiers = tiers_by_magnitude(delegates, n_tier=n_test) 
+
+    tiers = tiers_by_magnitude(rows, n_tier=n_test)
     X_test = []
     while n_test != 0:
         for T in tiers:
             samp = T.pop(random.randint(0, len(T) - 1))
-            X_test.append(samp)
+            X_test.append(samp[:2])
             n_test -= 1
 
     return X_test
@@ -198,9 +199,12 @@ if __name__ == '__main__':
             
             good = tf_dict[(subject, trial) in GOOD_PAIRS]
 
-            if good == 1:
-                Xs.append((subject, trial))            
-                ys.append(1)
+            if not args.nonkosher and not good:      # mark nonkosher items with good = 3
+                good = tf_dict[(subject, trial) in NONKOSHER]*3  # if (subject, trial)
+
+            #if good == 1:
+            #    Xs.append((subject, trial))            
+            #    ys.append(1)
 
             hrate = data[hrate_col.format(trial)]
             resp_rate = data[resp_rate_col.format(trial)]
@@ -215,13 +219,11 @@ if __name__ == '__main__':
     # get a test set
     #Xtest = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
     Xtest = sorted_stratified_train_test_split(collated_df)
-    for subj in Xtest:
-        #row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri) & (collated_df['GOOD'] == 1)].index
-        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['GOOD'] == 1)].index
+    for subj,tri in Xtest:
+        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)].index #& (collated_df['GOOD'] == 1)].index
+        #row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['GOOD'] == 1)].index
         collated_df.loc[row_idx, 'GOOD'] = 2
         
-        #collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)]['GOOD'] = 2  # add to test set
-
     Xtest = [(row[0], row[1]) for row in collated_df[collated_df['GOOD'] == 2].values.tolist()]
     print('Xtest:',Xtest)
 
