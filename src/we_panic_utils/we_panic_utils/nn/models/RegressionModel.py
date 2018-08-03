@@ -11,10 +11,11 @@ class RegressionModel():
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.loss = loss
+        self.lr=1e-5
     
     def instantiate(self):
         model = self.get_model() 
-        optimizer = Adam(lr=1e-5, decay=1e-6)
+        optimizer = Adam(lr=self.lr, decay=1e-6)
         metrics = ['mse', 'mape']
         model.compile(loss=self.loss, optimizer=optimizer, metrics=metrics)
         #model.summary()
@@ -138,6 +139,7 @@ class Deeper(RegressionModel):
    
     def __init__(self, input_shape, output_shape, loss=None):
         RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
+        self.lr = 0.01
 
     def instantiate(self):
         return super(Deeper, self).instantiate()
