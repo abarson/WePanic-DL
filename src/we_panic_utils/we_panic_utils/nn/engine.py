@@ -88,8 +88,8 @@ class Engine():
         self.test_set = None
         self.val_set = None
         
-        if self.early_stopping is not None:
-            self.early_stopping = EarlyStopping(patience=self.early_stopping)
+        #if self.early_stopping is not None:
+        #    self.early_stopping = EarlyStopping(patience=self.early_stopping)
 
         if self.loss_fun is None:
             self.loss_fun = 'mean_squared_error'
