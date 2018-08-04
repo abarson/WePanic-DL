@@ -28,9 +28,30 @@ from we_panic_utils.nn.data_load import tiers_by_magnitude
 
 # some invariants
 
+#NEW_BATCH = [(2, 1), (6, 1), (13, 1), (13, 2), (25, 1),
+#             (31, 1), (38, 1), (38, 2), (39, 1), (48, 1),
+#             (48, 2), (101, 1), (102, 1), (105, 1), (105, 2),
+#             (106, 1), (106, 2), (107, 1), (107, 2), (108, 1),
+#             (108, 2), (109, 1), (109, 2), (110, 1), (110, 2), 
+#             (111, 1), (111, 2), (112, 1), (112, 2), (113, 1),
+#             (113, 2), (114, 1), (114, 2), (115, 1), (115, 2), 
+#             (116, 2), (117, 1), (117, 2), (118, 1), (118, 2), 
+#             (119, 1), (119, 2), (120, 1), (120, 2), (121, 1), 
+#             (121, 2), (122, 1), (122, 2), (123, 1), (123, 2),
+#             (124, 1), (124, 2),]
+
 NEW_BATCH = [(2, 1), (6, 1), (13, 1), (13, 2), (25, 1),
              (31, 1), (38, 1), (38, 2), (39, 1), (48, 1),
-             (48, 2), (101, 1), (102, 1), (105, 1), (105, 2),
+             (48, 2), (50, 1), (52, 1), (53, 1), (53, 2),
+             (56, 1), (58, 1), (59, 1), (60, 1), (61, 1),
+             (61, 2), (56, 1), (58, 1), (59, 1), (60, 1), 
+             (61, 1), (61, 2), (63, 1), (64, 1), (66, 1),
+             (68, 1), (68, 2), (69, 1), (69, 2), (73, 2),
+             (77, 1), (77, 2), (78, 2), (81, 1), (81, 2),
+             (84, 1), (85, 1), (85, 2), (86, 1), (86, 2),
+             (87, 1), (87, 2), (88, 2)]
+
+NONKOSHER = [(101, 1), (102, 1), (105, 1), (105, 2),
              (106, 1), (106, 2), (107, 1), (107, 2), (108, 1),
              (108, 2), (109, 1), (109, 2), (110, 1), (110, 2), 
              (111, 1), (111, 2), (112, 1), (112, 2), (113, 1),
@@ -38,7 +59,7 @@ NEW_BATCH = [(2, 1), (6, 1), (13, 1), (13, 2), (25, 1),
              (116, 2), (117, 1), (117, 2), (118, 1), (118, 2), 
              (119, 1), (119, 2), (120, 1), (120, 2), (121, 1), 
              (121, 2), (122, 1), (122, 2), (123, 1), (123, 2),
-             (124, 1), (124, 2),]
+             (124, 1), (124, 2)]
 
 GOOD_PAIRS = list(set(NEW_BATCH))
 
@@ -59,6 +80,15 @@ def parse_args():
                         help='the frame directory',
                         default='picky_32_32')
 
+    parser.add_argument('--output_csv',
+                        type=str,
+                        help='the output csv',
+                        default=OUTPUT_CSV)
+
+    parser.add_argument('--nonkosher',
+                        help='include our collection',
+                        default=False,
+                        action='store_true')
     return parser
 
 
@@ -76,13 +106,6 @@ def verify(filename):
     """
     verified = True
     errs = []
-
-    file_title = filename.split('/')[-1]  # should be DeepLearningClassData.csv 
-
-    if not file_title == 'DeepLearningClassData.csv':
-        verified = False
-        errs.append('No seriously, pass in the DeepLearningClassData.csv on your computer, not %s' % file_title)
-        
 
     if not os.path.exists(filename):
         verified = False
@@ -102,28 +125,43 @@ def sorted_stratified_train_test_split(collated_df, test_size=0.2):
     """
 
     collated_df = collated_df[collated_df['GOOD'] == 1]
+    collated_df['MUL'] = collated_df['HEART_RATE_BPM'] * collated_df['RESP_RATE_BR_PM']
+    collated_df = collated_df.sort_values(['MUL'], ascending=[False])
     rows = collated_df.values.tolist() 
-
-    sorted_by_hr = sorted(rows, key=lambda r: r[3])
     n_test = int(round(len(collated_df)*test_size))
-    tiers_hr = tiers_by_magnitude(sorted_by_hr, n_tier=n_test) 
 
-    n_test = int(round(len(collated_df)*test_size))
+    #delegates = []
+    #subject_set = set()
+
+    #for row in rows:
+    #    subject = row[0]
+    #    if subject not in subject_set:
+    #        delegates.append(subject)
+    #        subject_set |= set([subject])
+    
+    #n_test = int(round(len(subject_set)*test_size))
+    #tiers = tiers_by_magnitude(delegates, n_tier=n_test) 
+
+    tiers = tiers_by_magnitude(rows, n_tier=n_test)
     X_test = []
     while n_test != 0:
-        for T in tiers_hr:
+        for T in tiers:
             samp = T.pop(random.randint(0, len(T) - 1))
             X_test.append(samp[:2])
             n_test -= 1
 
-    
-    #X_train = list(filter(lambda r: r[0] not in 
     return X_test
     
  
 if __name__ == '__main__':
     args = parse_args().parse_args()
-    dlcd_loc = parse_args().parse_args().dlcd_loc
+    OUTPUT_CSV = args.output_csv
+    dlcd_loc = args.dlcd_loc 
+    
+    if args.nonkosher:
+        GOOD_PAIRS = list(set(NEW_BATCH) | set(NONKOSHER))
+        print(len(GOOD_PAIRS))
+        
     print('assuming this script was called from the top level of this directory ...')
 
     if not verify(dlcd_loc):
@@ -131,15 +169,15 @@ if __name__ == '__main__':
     
     dlcd_df = pd.read_csv(dlcd_loc)
 
-    new_cols = ['SUBJECT',
-                'Trial 1 Heart Rate (beats per minute)',
-                'Trial 1 Respiratory Rate (breaths per minute)',
-                'Trial 2 Heart Rate (beats per minute)',
-                'Trial 2 Respiratory Rate (breaths per minute)']
+    #new_cols = ['SUBJECT',
+    #            'Trial 1 Heart Rate (beats per minute)',
+    #            'Trial 1 Respiratory Rate (breaths per minute)',
+    #            'Trial 2 Heart Rate (beats per minute)',
+    #            'Trial 2 Respiratory Rate (breaths per minute)']
 
-    old_cols = list(dlcd_df.columns)
-    col_rename = dict(zip(old_cols, new_cols))
-    dlcd_df.rename(columns=col_rename, inplace=True)
+    #old_cols = list(dlcd_df.columns)
+    #col_rename = dict(zip(old_cols, new_cols))
+    #dlcd_df.rename(columns=col_rename, inplace=True)
 
     collated_df = pd.DataFrame(columns=COLUMNS)
     tf_dict = {True:1, False:0} 
@@ -150,19 +188,23 @@ if __name__ == '__main__':
 
     Xs, ys = [], []
 
+    hrate_col = 'adjustHR_Trial{}'
+    resp_rate_col = 'adjustRR_Trial{}'
+
     for row in dlcd_df.iterrows():
         idx, data = row
         
         subject = data['SUBJECT']
-        hrate_col = 'Trial {} Heart Rate (beats per minute)'
-        resp_rate_col = 'Trial {} Respiratory Rate (breaths per minute)'
         for trial in [1, 2]:
             
             good = tf_dict[(subject, trial) in GOOD_PAIRS]
 
-            if good == 1:
-                Xs.append((subject, trial))            
-                ys.append(1)
+            if not args.nonkosher and not good:      # mark nonkosher items with good = 3
+                good = tf_dict[(subject, trial) in NONKOSHER]*3  # if (subject, trial)
+
+            #if good == 1:
+            #    Xs.append((subject, trial))            
+            #    ys.append(1)
 
             hrate = data[hrate_col.format(trial)]
             resp_rate = data[resp_rate_col.format(trial)]
@@ -176,14 +218,14 @@ if __name__ == '__main__':
     
     # get a test set
     #Xtest = train_test_split(Xs, ys, test_size=0.2, random_state=seed)
-    Xtest = sorted_stratified_train_test_split(collated_df, test_size=0.2)
-    print('Test: ', Xtest)
-    for subj, tri in Xtest:
-        row_idx = collated_df.loc[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)].index
+    Xtest = sorted_stratified_train_test_split(collated_df)
+    for subj,tri in Xtest:
+        row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)].index #& (collated_df['GOOD'] == 1)].index
+        #row_idx = collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['GOOD'] == 1)].index
         collated_df.loc[row_idx, 'GOOD'] = 2
         
-        #collated_df[(collated_df['SUBJECT'] == subj) & (collated_df['TRIAL'] == tri)]['GOOD'] = 2  # add to test set
-
+    Xtest = [(row[0], row[1]) for row in collated_df[collated_df['GOOD'] == 2].values.tolist()]
+    print('Xtest:',Xtest)
 
     collated_df.to_csv(OUTPUT_CSV, index=False)
     print('wrote collated data to %s' % OUTPUT_CSV)

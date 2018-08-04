@@ -314,9 +314,8 @@ class Engine():
         # records for later
         cv_results = pd.DataFrame(columns=['model_type','model_idx','elapsed_time', 'loss']) #'predictive_acc')
         
-        
         # do self.kfold separate training/validation iters
-        for idx, (train_set, val_set) in enumerate(sorted_stratified_kfold(good_samps, k=self.kfold)):
+        for idx, (train_set, val_set) in enumerate(sorted_stratified_kfold(good_samps, self.features, k=self.kfold)):
             
             start = time.time()
             # record :)

@@ -10,4 +10,4 @@ python src/run_model.py CNN_3D picky_32_32 \
 --batch_size 14 \
 --epochs 1 \
 --sequence_length 60 \
---greyscale_on
+--redscale_on
