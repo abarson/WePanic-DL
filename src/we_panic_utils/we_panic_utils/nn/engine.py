@@ -178,7 +178,7 @@ class Engine():
             callbacks.append(self.cyclic_lr)
         
         if self.early_stopping is not None:
-            callbacks.append(self.early_stopping)
+            callbacks.append(EarlyStopping(monitor='val_loss',patience=self.early_stopping))
 
         return callbacks
 

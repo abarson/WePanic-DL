@@ -438,7 +438,8 @@ if __name__ == "__main__":
                     steps_per_epoch=args.steps_per_epoch,
                     kfold=args.kfold,
                     cyclic_lr=args.cyclic_lr,
-                    loss_fun=args.loss)
+                    loss_fun=args.loss,
+                    early_stopping=args.early_stopping)
 
     start_banner =  """\t\t\t_________________________________
                        |   ______________________  __   | 
