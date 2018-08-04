@@ -309,7 +309,7 @@ class Engine():
         
         # only samples deemed good
         good_samps = metadf[metadf['GOOD'] == 1]
-        self.the_most_testiest_samps = metadf[metadf['GOOD'] == 2]
+        self.the_most_testiest_samps = metadf[metadf['GOOD'] == 3]
 
         # records for later
         cv_results = pd.DataFrame(columns=['model_type','model_idx','elapsed_time', 'loss']) #'predictive_acc')

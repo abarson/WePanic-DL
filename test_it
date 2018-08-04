@@ -10,12 +10,12 @@ batch_size=14
 screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue3.csv \
---output_dir run_history/knk_split \
+--output_dir run_history/knk_split_redscaleon \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---greyscale_on \
+--redscale_on \
 --kfold 5 \
 --loss smooth_l1_loss \
 --sequence_length 60 \

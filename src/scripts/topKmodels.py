@@ -54,7 +54,6 @@ def next_available_output(args):
             while os.path.isdir('committee{}_top{}'.format(i,k)):
                 i += 1
 
-            os.makedirs('committee{}_top{}'.format(i, k))
             com =  'committee{}_top{}'.format(i, k)
 
         else:
