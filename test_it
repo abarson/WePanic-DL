@@ -3,20 +3,20 @@
 ## script for runs on the cloud
 
 pip install --upgrade src/we_panic_utils/
-epochs=30
+epochs=100
 steps_per_epoch=500
 batch_size=14
 
-screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
+screen python src/run_model.py BN_CNN_3D_DO2 glued_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue3.csv \
---output_dir run_history/knk_split_hr_MSE_aug_bsize30_seq90 \
+--output_dir run_history/knk_split_hr_MSE_aug_bsize30_seq90_bndo2 \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
 --greyscale_on \
---kfold 5 \
+--kfold 3 \
 --early_stopping 10 \
 --loss mean_squared_error \
 --sequence_length 90 \
