@@ -4,20 +4,21 @@ from keras.optimizers import Adam,  RMSprop, SGD
 from keras.layers.convolutional import Conv3D, MaxPooling3D
 from keras.layers import Activation, BatchNormalization
 from keras.models import Model
+import numpy as np
 
 class RegressionModel():
     
     def __init__(self, input_shape, output_shape, loss='mean_squared_error'):
         self.input_shape = input_shape
         self.output_shape = output_shape
-        self.loss = loss
+        self.loss = ls
         self.lr=1e-5
         self.optimizer = None    
 
     def instantiate(self):
         model = self.get_model() 
         if self.optimizer is None:
-            self.optimizer = Adam(lr=self.lr, decay=1e-6)
+            self.optimizer = Adam(lr=self.lr,decay=1e-6)#beta_2=1.0)
 
         metrics = ['mse', 'mape']
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=metrics)
@@ -115,6 +116,54 @@ class BN_CNN_3D_DO(RegressionModel):
         model.add(BatchNormalization()) 
 
         model.add(Conv3D(256, kernel_size=3, padding='valid', **invariants))
+        model.add(Activation('relu'))
+        model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
+        model.add(BatchNormalization()) 
+
+        #model.add(Conv3D(256, kernel_size=3))
+        #model.add(Activation('relu'))
+        #model.add(BatchNormalization()) 
+        #model.add(MaxPooling3D(pool_size=2, strides=(2, 2, 2)))
+
+        #model.add(Conv3D(512, kernel_size=1))
+        #model.add(Activation('relu'))
+        #model.add(BatchNormalization()) 
+        #model.add(MaxPooling3D(pool_size=1, strides=1))
+
+        model.add(Flatten()) 
+        model.add(Dense(512, activation='relu', **invariants))
+        model.add(Dropout(0.15))
+        model.add(Dense(512, activation='relu', **invariants))
+        model.add(Dropout(0.15))
+        model.add(Dense(self.output_shape, activation='linear'))
+        
+        return model
+
+class BN_CNN_3D_DO2(RegressionModel):
+   
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
+
+    def instantiate(self):
+        return super(BN_CNN_3D_DO2, self).instantiate()
+
+    def get_model(self):
+       
+        invariants = {'kernel_initializer':'he_normal'}
+        model = Sequential()
+         
+        model.add(Conv3D(84, kernel_size=(15, 5, 5), padding='valid',
+                  input_shape=self.input_shape, **invariants))
+        model.add(Activation('relu'))
+        model.add(MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), padding='valid'))
+        model.add(BatchNormalization()) 
+
+        model.add(Conv3D(150, kernel_size=5, padding='valid', **invariants))
+        model.add(Activation('relu'))
+        model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
+        model.add(BatchNormalization()) 
+
+        model.add(Conv3D(300, kernel_size=3, padding='valid', **invariants))
         model.add(Activation('relu'))
         model.add(MaxPooling3D(pool_size=2, strides=(1, 2, 2), padding='valid'))
         model.add(BatchNormalization()) 
