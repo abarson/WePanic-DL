@@ -3,14 +3,14 @@
 ## script for runs on the cloud
 
 pip install --upgrade src/we_panic_utils/
-epochs=100
+epochs=1
 steps_per_epoch=500
-batch_size=14
+batch_size=30
 
 screen python src/run_model.py BN_CNN_3D_DO2 glued_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue3.csv \
---output_dir run_history/knk_split_hr_MSE_aug_bsize30_seq90_bndo2 \
+--output_dir run_history/bndo2_bsize30_brightlocal \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
@@ -25,4 +25,5 @@ screen python src/run_model.py BN_CNN_3D_DO2 glued_32_32 \
 --rotation_range 30 \
 --height_shift_range 0.2 \
 --width_shift_range 0.2 \
---zoom_range 0.2
+--zoom_range 0.2 \
+--brightness_range_local 0.2 0.8 \
