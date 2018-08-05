@@ -230,7 +230,7 @@ class Engine():
                 mean_feats = [np.mean(feat) for feat in feats]
 
                 # the prediction for this model
-                preds = self.model.predict(Xs, batch_size=len(Xs))   
+                preds = self.model.predict(Xs)   
                 feat_preds = zip(*preds)
                 mean_preds = [np.mean(pred) for pred in feat_preds]
                 
