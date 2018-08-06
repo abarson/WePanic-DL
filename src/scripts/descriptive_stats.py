@@ -61,7 +61,7 @@ if __name__ == '__main__':
     wpc_df = pd.read_csv(wpc_cc)
     wpc_valid = wpc_df[wpc_df['GOOD'] > 0]
     wpc_train = wpc_valid[wpc_valid['GOOD'] == 1]
-    wpc_test = wpc_valid[wpc_valid['GOOD'] == 2]
+    wpc_test = wpc_valid[wpc_valid['GOOD'] == 3]
 
     heart_rates = wpc_valid['HEART_RATE_BPM'].values.tolist()
     resp_rates = wpc_valid['RESP_RATE_BR_PM'].values.tolist()
