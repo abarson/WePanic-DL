@@ -10,7 +10,7 @@ import random
 import numpy as np
 import keras
 from keras.preprocessing.image import load_img, img_to_array
-from keras_preprocessing.image import apply_affine_transform, transform_matrix_offset_center
+from keras_preprocessing.image import apply_affine_transform, apply_brightness_shift, transform_matrix_offset_center, random_brightness
 import keras.backend as K
 from skimage.color import rgb2grey
 from PIL import ImageEnhance
@@ -175,6 +175,22 @@ def sequence_flip_axis(seq, axis):
 
     return seq
 
+def random_local_brightness_shift(seq, brightness_range):
+    """
+    perturb local brightness -- the brightness of each image -- differently
+    """
+    return [random_brightness(frame,brightness_range) for frame in seq]
+
+
+def random_global_brightness_shift(seq, brightness_range):
+    """
+    perturb sequence wide brightness -- the brightness of the entire sequence
+    """
+    brightness_lo, brightness_hi = brightness_range
+    u = np.random.uniform(brightness_lo, brightness_hi)
+
+    return [apply_brightness_shift(x, u) for x in seq]
+         
 
 def get_sample_frames(sample):
     """
@@ -267,6 +283,8 @@ class FrameProcessor:
                  zoom_range=0.,
                  horizontal_flip=False,
                  vertical_flip=False,
+                 brightness_range_local=None,
+                 brightness_range_global=None,
                  batch_size=4,
                  sequence_length=60,
                  greyscale_on=False,
@@ -288,6 +306,8 @@ class FrameProcessor:
         self.sequence_length = sequence_length
         self.batch_size = batch_size
         self.test_iter = 0
+        self.brightness_range_local = brightness_range_local
+        self.brightness_range_global = brightness_range_global
         
         assert type(self.rotation_range) == int, "rotation_range should be integer valued"
 
@@ -376,6 +396,12 @@ class FrameProcessor:
 
                     if coin_flip:
                         sequence = sequence_flip_axis(sequence, 2)   # flip on the column axis
+                
+                if self.brightness_range_local is not None:
+                   sequence = random_local_brightness_shift(sequence, self.brightness_range_local)
+
+                if self.brightness_range_global is not None:
+                   sequence = random_global_brightness_shift(sequence, self.brightness_range_global) 
 
                 X.append(sequence)
                 y.append(current_feats)

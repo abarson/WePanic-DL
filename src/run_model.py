@@ -123,6 +123,18 @@ def parse_input():
                         help="the range to zoom",
                         type=float,
                         default=0.0)
+
+    parser.add_argument("--brightness_range_local",
+                        help="the spatial brightness perturbation parameter",
+                        type=float,
+                        default=None,
+                        nargs=2)
+
+    parser.add_argument("--brightness_range_global",
+                        help="the sequence wide brightness perturbation parameter",
+                        type=float,
+                        default=None,
+                        nargs=2)
     
     parser.add_argument("--shear_range",
                         help="the range to shear",
@@ -421,7 +433,9 @@ if __name__ == "__main__":
                         greyscale_on=args.greyscale_on,
                         redscale_on=args.redscale_on,
                         num_val_clips=args.num_val_clips,
-                        sequence_length=args.sequence_length)
+                        sequence_length=args.sequence_length,
+                        brightness_range_local=args.brightness_range_local,
+                        brightness_range_global=args.brightness_range_local)
 
 
     engine = Engine(data=args.data,

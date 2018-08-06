@@ -11,7 +11,7 @@ class RegressionModel():
     def __init__(self, input_shape, output_shape, loss='mean_squared_error'):
         self.input_shape = input_shape
         self.output_shape = output_shape
-        self.loss = ls
+        self.loss = loss
         self.lr=1e-5
         self.optimizer = None    
 
