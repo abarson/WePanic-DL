@@ -9,7 +9,7 @@ SUBJECT,TRIAL,FRAME_PTH,HEART_RATE_BPM,RESP_RATE_BR_PM,GOOD
 38.0,2,glued_32_32/S0038/Trial2_frames,66.0,40.0,1
 39.0,1,glued_32_32/S0039/Trial1_frames,72.0,18.0,1
 48.0,1,glued_32_32/S0048/Trial1_frames,54.0,42.0,3
-48.0,2,glued_32_32/S0048/Trial2_frames,85.0,42.0,3
+48.0,2,glued_32_32/S0048/Trial2_frames,84.0,42.0,3
 50.0,1,glued_32_32/S0050/Trial1_frames,108.0,23.0,1
 53.0,1,glued_32_32/S0053/Trial1_frames,78.0,22.0,1
 56.0,1,glued_32_32/S0056/Trial1_frames,71.0,14.0,1

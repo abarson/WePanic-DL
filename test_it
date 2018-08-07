@@ -3,19 +3,28 @@
 ## script for runs on the cloud
 
 pip install --upgrade src/we_panic_utils/
-epochs=1
+epochs=40
 steps_per_epoch=500
 batch_size=30
 
-python src/run_model.py DualNet glued_32_32 \
---features hr \
---csv wepanic_collated_catalogue3.csv \
---output_dir run_history/TEST_DUALNET \
+screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
+--features rr \
+--csv WPCC_new-dist.csv \
+--output_dir run_history/bndo_new-dist_test_seq90_rr_greyscale \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---kfold 3 \
+--greyscale_on \
+--kfold 4 \
+--num_val_clips 15 \
 --early_stopping 10 \
 --loss mean_squared_error \
---sequence_length 90 
+--sequence_length 90 \
+--vertical_flip \
+--horizontal_flip \
+--rotation_range 90 \
+--height_shift_range 0.5 \
+--width_shift_range 0.5 \
+--zoom_range 0.5 \
+--brightness_range_global 0.1 1.0
