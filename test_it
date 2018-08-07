@@ -7,7 +7,7 @@ epochs=40
 steps_per_epoch=500
 batch_size=20
 
-screen python src/run_model.py DualNet glued_32_32 \
+python src/run_model.py DualNet glued_32_32 \
 --features hr \
 --csv WPCC_new-dist.csv \
 --output_dir run_history/dualnet \
@@ -26,4 +26,4 @@ screen python src/run_model.py DualNet glued_32_32 \
 --height_shift_range 0.2 \
 --width_shift_range 0.2 \
 --zoom_range 0.2 \
---brightness_range_global 0.1 1.0 \
+--brightness_range_global 0.1 1.0 
