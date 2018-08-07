@@ -2,13 +2,13 @@
 
 pip install --upgrade src/we_panic_utils/
 python src/run_model.py BN_CNN_3D_DO glued_32_32 \
---csv wepanic_collated_catalogue3.csv \
---input_dir committee_top5 \
---qbc committee_top5 \
+--csv WPCC_new-dist.csv \
+--input_dir ../top1_copy \
+--qbc ../top1_copy \
 --features hr \
 --steps_per_epoch 500 \
 --batch_size 1 \
---num_val_clips 10 \
+--num_val_clips 25 \
 --epochs 1 \
---sequence_length 60 \
+--sequence_length 90 \
 --greyscale_on

@@ -1,10 +1,11 @@
-from keras.layers import Dense, Flatten, Dropout, ZeroPadding3D, Input
+from keras.layers import Dense, Flatten, Dropout, ZeroPadding3D, Input, concatenate, TimeDistributed, Lambda
 from keras.models import Sequential  # load_model
 from keras.optimizers import Adam,  RMSprop, SGD
 from keras.layers.convolutional import Conv3D, MaxPooling3D
 from keras.layers import Activation, BatchNormalization
 from keras.models import Model
 import numpy as np
+import tensorflow as tf
 
 class RegressionModel():
     
@@ -137,6 +138,58 @@ class BN_CNN_3D_DO(RegressionModel):
         model.add(Dropout(0.15))
         model.add(Dense(self.output_shape, activation='linear'))
         
+        return model
+
+class DualNet(RegressionModel):
+   
+    def __init__(self, input_shape, output_shape, loss=None):
+        RegressionModel.__init__(self, input_shape, output_shape, loss=loss)
+
+    def instantiate(self):
+        return super(DualNet, self).instantiate()
+
+    def get_model(self):
+       
+        invariants = {'kernel_initializer':'he_normal'}
+        #model = Sequential()
+        seq = Input(shape=self.input_shape)
+        grey = TimeDistributed(Lambda(lambda x: tf.image.rgb_to_grayscale(x)))(seq)
+        red = Lambda(lambda x: x[:,:,:,:,0])(seq) 
+        red = Lambda(lambda x: x[:,:,:,:,None])(red)
+        
+        x1 = Conv3D(64, kernel_size=(15,5,5),padding='valid', **invariants)(grey)
+        x1 = Activation('relu')(x1)
+        x1 = MaxPooling3D(pool_size=(1,2,2),strides=(1,2,2),padding='valid')(x1)
+        x1 = BatchNormalization()(x1)
+        x1 = Conv3D(128, kernel_size=5,padding='valid', **invariants)(x1)
+        x1 = Activation('relu')(x1)
+        x1 = MaxPooling3D(pool_size=(1,2,2),strides=(1,2,2),padding='valid')(x1)
+        x1 = BatchNormalization()(x1)
+
+        x2 = Conv3D(64, kernel_size=(15,5,5),padding='valid', **invariants)(red)
+        x2 = Activation('relu')(x2)
+        x2 = MaxPooling3D(pool_size=(1,2,2),strides=(1,2,2),padding='valid')(x2)
+        x2 = BatchNormalization()(x2)
+        x2 = Conv3D(128, kernel_size=5,padding='valid', **invariants)(x2)
+        x2 = Activation('relu')(x2)
+        x2 = MaxPooling3D(pool_size=(1,2,2),strides=(1,2,2),padding='valid')(x2)
+        x2 = BatchNormalization()(x2)
+
+        x = concatenate([x1, x2])
+        x = Conv3D(256, kernel_size=3, padding='valid', **invariants)(x)
+        x = Activation('relu')(x)
+        x = MaxPooling3D(pool_size=2, strides=(1,2,2),padding='valid')(x)
+        x = BatchNormalization()(x)
+        x = Flatten()(x)
+
+        x = Dense(512, activation='relu', **invariants)(x)
+        x = Dropout(0.15)(x)
+        x = Dense(512, activation='relu', **invariants)(x)
+        x = Dropout(0.15)(x)
+
+        pred = Dense(self.output_shape, activation='linear')(x)
+        model = Model(inputs=seq, outputs=pred) 
+
         return model
 
 class BN_CNN_3D_DO2(RegressionModel):

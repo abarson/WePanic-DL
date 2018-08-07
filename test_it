@@ -7,23 +7,15 @@ epochs=1
 steps_per_epoch=500
 batch_size=30
 
-screen python src/run_model.py BN_CNN_3D_DO2 glued_32_32 \
+python src/run_model.py DualNet glued_32_32 \
 --features hr \
 --csv wepanic_collated_catalogue3.csv \
---output_dir run_history/bndo2_bsize30_brightlocal \
+--output_dir run_history/TEST_DUALNET \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---greyscale_on \
 --kfold 3 \
 --early_stopping 10 \
 --loss mean_squared_error \
---sequence_length 90 \
---vertical_flip \
---horizontal_flip \
---rotation_range 30 \
---height_shift_range 0.2 \
---width_shift_range 0.2 \
---zoom_range 0.2 \
---brightness_range_local 0.2 0.8 \
+--sequence_length 90 

@@ -29,4 +29,5 @@ out/
 
 ##### committee directories
 committee*
-
+top*
+.ipynb_checkpoints
