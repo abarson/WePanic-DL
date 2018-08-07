@@ -5,17 +5,17 @@
 pip install --upgrade src/we_panic_utils/
 epochs=40
 steps_per_epoch=500
-batch_size=30
+batch_size=20
 
 screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features rr \
 --csv WPCC_new-dist.csv \
---output_dir run_history/bndo_new-dist_test_seq90_rr_greyscale \
+--output_dir run_history/bndo_new-dist_seq90_rr_redscale \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---greyscale_on \
+--redscale_on \
 --kfold 4 \
 --num_val_clips 15 \
 --early_stopping 10 \

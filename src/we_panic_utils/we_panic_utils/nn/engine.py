@@ -9,8 +9,7 @@ from ..basic_utils.graphing import compute_bland_altman
 from keras import models
 from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
 from keras.optimizers import Adam
-from keras import backend as K
-
+import tensorflow as tf
 import os
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
@@ -368,7 +367,7 @@ class Engine():
             #pred = self.model.predict_generator(vgen, vsteps)
             loss = None
             self.model = models.load_model(os.path.join(self.outputs, 'models', 'CV_%d_%s.h5' % (idx, self.model_type)),
-                                           compile=False)
+                                           compile=False, custom_objects={"tf":tf})
 
             optimizer = Adam(lr=1e-5, decay=1e-6)
             self.model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mse'])

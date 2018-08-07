@@ -5,6 +5,7 @@ from keras.layers.convolutional import Conv3D, MaxPooling3D
 from keras.layers import Activation, BatchNormalization
 from keras.models import Model
 import numpy as np
+#from keras.backend import tf as ktf
 import tensorflow as tf
 
 class RegressionModel():
@@ -148,8 +149,9 @@ class DualNet(RegressionModel):
     def instantiate(self):
         return super(DualNet, self).instantiate()
 
+
     def get_model(self):
-       
+ 
         invariants = {'kernel_initializer':'he_normal'}
         #model = Sequential()
         seq = Input(shape=self.input_shape)
@@ -406,3 +408,5 @@ class ShallowC3D(RegressionModel):
         model.add(Dense(self.output_shape, activation='linear'))
 
         return model
+ 
+
