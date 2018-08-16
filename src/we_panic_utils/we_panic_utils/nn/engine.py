@@ -294,11 +294,11 @@ class Engine():
         except ValueError:
             print(QBCdf)
         
-        bland, altman = zip(*compute_bland_altman(answers, predictions, log=False))
-        plt.scatter(bland, altman)
-        plt.xlabel('Actual - Prediction')
-        plt.ylabel('(Actual + Prediction)/2')
-        plt.savefig(os.path.join('figs', 'bland_altman_{}.png'.format(len(committee_members))))
+        #bland, altman = zip(*compute_bland_altman(answers, predictions, log=False))
+        #plt.scatter(bland, altman)
+        #plt.xlabel('Actual - Prediction')
+        #plt.ylabel('(Actual + Prediction)/2')
+        #plt.savefig(os.path.join('figs', 'bland_altman_{}.png'.format(len(committee_members))))
         
     def __cross_val(self):
         """
