@@ -268,27 +268,31 @@ class Engine():
         SSE = 0.
         
         answers, predictions = [], [] 
+        
+        try:
+             with open(os.path.join(self.outputs,'QBC_performance.txt'), 'w') as qbcperf:
+                 print(" --- ".join(keys + ['SE', '  SSE ']), file=qbcperf) 
+                 print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
+                 for i in range(len(feed[keys[0]])):
+                     row = [feed[k][i] for k in keys]
+                     actual, pred = [round(r, 3) for r in row]
+                     SE = (actual - pred)**2
+                     SSE += SE
+                     
+                     answers.append(actual)
+                     predictions.append(pred)
 
-        with open(os.path.join(self.outputs,'QBC_performance.txt'), 'w') as qbcperf:
-            print(" --- ".join(keys + ['SE', '  SSE ']), file=qbcperf) 
-            print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
-            for i in range(len(feed[keys[0]])):
-                row = [feed[k][i] for k in keys]
-                actual, pred = [round(r, 3) for r in row]
-                SE = (actual - pred)**2
-                SSE += SE
-                
-                answers.append(actual)
-                predictions.append(pred)
+                     print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE))
+                     print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE), file=qbcperf)
+                     
+                 print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
+                 print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
+                 MSE = SSE / len(feed[keys[0]])
+                 print('MSE ::==:: {:.03f}'.format(MSE))
+                 print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf) 
 
-                print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE))
-                print("{:5.01f} {:13.03f} {:9.03f} {:9.03f}".format(actual, pred, SE, SSE), file=qbcperf)
-                
-            print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])))
-            print('-'*len(" --- ".join(keys + [' SE ', '  SSE '])), file=qbcperf)
-            MSE = SSE / len(feed[keys[0]])
-            print('MSE ::==:: {:.03f}'.format(MSE))
-            print('MSE ::==:: {:.03f}'.format(MSE), file=qbcperf) 
+        except ValueError:
+            print(QBCdf)
         
         bland, altman = zip(*compute_bland_altman(answers, predictions, log=False))
         plt.scatter(bland, altman)

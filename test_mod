@@ -8,7 +8,7 @@ python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features rr \
 --steps_per_epoch 500 \
 --batch_size 1 \
---num_val_clips 25 \
+--num_val_clips 13 \
 --epochs 1 \
 --sequence_length 90 \
---redscale_on
+--greyscale_on

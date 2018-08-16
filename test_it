@@ -10,7 +10,7 @@ batch_size=20
 screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features hr rr \
 --csv WPCC_new-dist.csv \
---output_dir run_history/bndo_new-dist_seq90_hr_rr_redscale \
+--output_dir run_history/bndo_new-dist_seq90_hr_rr_redscale2 \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
