@@ -20,7 +20,7 @@ def parse_args():
                         type=int,
                         help='number of models to collect')
 
-    parser.add_argument('--output',
+    parser.add_argument('--output', '-o',
                         type=str,
                         help='directory to copy the models',
                         default=None)
@@ -65,8 +65,12 @@ def next_available_output(args):
 
     else:
         com = output
-        os.makedirs(com, exist_ok=True)
-        print('Generated an output directory called {}'.format(com))
+        if not os.path.exists(com):
+            os.makedirs(com, exist_ok=True)
+            print('Generated an output directory called {}'.format(com))
+        else:
+            print(f'Copying files into {com}')
+
         return com
 
 if __name__ == '__main__':
@@ -102,7 +106,7 @@ if __name__ == '__main__':
     # translate model paths ----> committee member names
     slug = "{rundir}__Fold_{fold}__Loss_{loss:4.03f}.h5"
     
-    print('Copying {} files into {}'.format(args.k, args.output))
+    #print('Copying {} files into {}'.format(args.k, args.output))
     for idx, row in topKdf.iterrows():
         rundir = row['run_directory'].split('/')[-1]
         loss = row['loss']
@@ -110,7 +114,7 @@ if __name__ == '__main__':
         # copy that list of files in to the output directory
         source = row['model_path']
         target = os.path.join(args.output, slug.format(rundir=rundir,loss=loss, fold=row['fold']))
-        
+        print(source, target, sep=' --> ')        
         copyfile(source, target)
     
     print(':)')
