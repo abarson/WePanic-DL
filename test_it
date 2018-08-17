@@ -3,22 +3,22 @@
 ## script for runs on the cloud
 
 pip install --upgrade src/we_panic_utils/
-epochs=40
+epochs=80
 steps_per_epoch=500
 batch_size=20
 
 screen python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --features hr rr \
 --csv WPCC_new-dist.csv \
---output_dir run_history/bndo_new-dist_seq90_hr_rr_redscale2 \
+--output_dir run_history/HR_RR_longtrain \
 --epochs $epochs \
 --dimensions 32 32 \
 --steps_per_epoch $steps_per_epoch \
 --batch_size $batch_size \
---redscale_on \
+--greyscale_on \
 --kfold 4 \
 --num_val_clips 15 \
---early_stopping 10 \
+--early_stopping 18 \
 --loss mean_squared_error \
 --sequence_length 90 \
 --vertical_flip \

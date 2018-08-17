@@ -11,4 +11,4 @@ python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --num_val_clips 15 \
 --epochs 1 \
 --sequence_length 90 \
---redscale_on
+--greyscale_on

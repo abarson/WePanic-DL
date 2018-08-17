@@ -236,18 +236,17 @@ class Engine():
                 for p, p_true, f in zip(mean_preds, mean_feats, self.features):
                     row['predicted_{}_{}'.format(map_me[f], name)] = p
                     row['actual_{}'.format(map_me[f])] = p_true
-
+            
             results = [row[col] for col in columns]
     
             preds = [None, None]
             if hr_idxs:
-                predictions_hr = [results[i] for i in hr_idxs]
-                predictions_hr = np.mean(predictions_hr[1:]) # skip the first one (the label)
+                predictions_hr = [results[i] for i in hr_idxs][1]
                 preds[self.features.index(map_back['hr'])] = predictions_hr
 
             if rr_idxs:
                 predictions_rr = [results[i] for i in rr_idxs]
-                predictions_rr = np.mean(predictions_rr[1:])
+                predictions_rr = predictions_rr[2]
                 preds[self.features.index(map_back['rr'])] = predictions_rr
             
             preds = list(filter(lambda p: p is not None, preds))
