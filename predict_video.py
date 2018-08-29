@@ -6,6 +6,7 @@ import sys, os
 import argparse
 from glob import glob
 import pandas as pd
+import numpy as np
 
 from we_panic_utils.nn.processing import build_image_sequence
 from keras.models import load_model
@@ -60,11 +61,12 @@ if __name__ == "__main__":
     prediction_df = pd.DataFrame(columns=["frame", "hr_pred","hr","rr_pred","rr"])
     
     for i, f in enumerate(pred_frames[:-SEQLEN*2]):
-        frames = pred_frames[i:i+SEQLEN*2:2]  
-        frames = build_image_sequence(frames, greyscale_on=True)
 
+        frames = pred_frames[i:i+SEQLEN*2:2]  
+        frames = np.reshape(np.array(build_image_sequence(frames, greyscale_on=True)), (1,90,32,32,1))
+            
         phr = HR_PREDICTOR.predict(frames)
         prr = RR_PREDICTOR.predict(frames)
 
-        print(phr, prr)
-        break
+        row = [f, phr, hr, prr, rr]
+        prediction_df.loc[i] = row
