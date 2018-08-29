@@ -18,8 +18,8 @@ def check_exists_create_if_not(directory, suppress=False):
         Nothing
     """
     
-    if "." in directory:
-        raise ValueError("looks like %s isn't a valid directory name" % directory)
+    #if "." in directory:
+    #    raise ValueError("looks like %s isn't a valid directory name" % directory)
 
     if not os.path.isdir(directory):
         if not suppress:
