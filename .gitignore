@@ -36,4 +36,5 @@ scratchwork
 TOPRUNS
 TOPMODS
 TestSet*
-demo_vid/
+*.png
+*.MOV

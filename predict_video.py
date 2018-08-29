@@ -55,18 +55,21 @@ def dirvalidate(d):
 
 if __name__ == "__main__":
     args = parse_args().parse_args()
+    hr, rr = args.hr, args.rr
     pred_frames  = sorted(glob(os.path.join(args.pred_frames, "*.png")))
     HR_PREDICTOR, RR_PREDICTOR = map(load_model, (HR_PREDICTOR, RR_PREDICTOR)) 
     
     prediction_df = pd.DataFrame(columns=["frame", "hr_pred","hr","rr_pred","rr"])
     
     for i, f in enumerate(pred_frames[:-SEQLEN*2]):
-
+        print("\r[[{:^3d}]]".format(i), end="")
         frames = pred_frames[i:i+SEQLEN*2:2]  
         frames = np.reshape(np.array(build_image_sequence(frames, greyscale_on=True)), (1,90,32,32,1))
             
         phr = HR_PREDICTOR.predict(frames)
         prr = RR_PREDICTOR.predict(frames)
 
-        row = [f, phr, hr, prr, rr]
+        row = [f, phr.item(), hr, prr.item(), rr]
         prediction_df.loc[i] = row
+
+    prediction_df.to_csv("demo_vid/predictions.csv", index=False)
