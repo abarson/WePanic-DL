@@ -245,8 +245,8 @@ class Engine():
                 preds[self.features.index(map_back['hr'])] = predictions_hr
 
             if rr_idxs:
-                predictions_rr = [results[i] for i in rr_idxs]
-                predictions_rr = predictions_rr[2]
+                predictions_rr = [results[i] for i in rr_idxs][1]
+                #predictions_rr = predictions_rr[2]
                 preds[self.features.index(map_back['rr'])] = predictions_rr
             
             preds = list(filter(lambda p: p is not None, preds))

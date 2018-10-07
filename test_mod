@@ -3,12 +3,12 @@
 pip install --upgrade src/we_panic_utils/
 python src/run_model.py BN_CNN_3D_DO glued_32_32 \
 --csv WPCC_new-dist.csv \
---input_dir committee_top1 \
---qbc committee_top1 \
---features hr rr \
+--input_dir committee_pool \
+--qbc committee_pool \
+--features rr \
 --steps_per_epoch 500 \
 --batch_size 1 \
 --num_val_clips 15 \
 --epochs 1 \
 --sequence_length 90 \
---greyscale_on
+--redscale_on
