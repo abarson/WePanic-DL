@@ -364,7 +364,8 @@ class Engine():
                                      callbacks=callbacks,
                                      validation_data=vgen,
                                      validation_steps=vsteps,
-                                     workers=4)
+                                     workers=1,
+                                     use_multiprocessing=False)
             
             # record predictive acc and loss
             #pred = self.model.predict_generator(vgen, vsteps)

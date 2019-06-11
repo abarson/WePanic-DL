@@ -1,0 +1,62 @@
+#!/bin/sh
+
+#########################################
+##  INTEGRATION TEST -- MODEL TESTING  ##
+#########################################
+# This is an integration script, it checks the general software functionality
+# Meaning it verifies it is functioning properly at the macro level.
+# ------------------------
+
+
+## script for runs on the cloud
+INTEGRATION_DIR="integration-scripts"
+
+test_outputs() {
+    command=$1
+    pass=$2
+
+    echo $1 | sh
+    result=$?
+
+    if [ $result -eq $2 ]; then
+        echo "[PASS] $1"
+    else
+        echo "[FAIL] $1"
+    fi
+
+    return $result
+}
+
+epochs=1
+steps_per_epoch=3
+batch_size=5
+
+
+test_outputs "python src/run_model.py BN_CNN_3D_DO glued_32_32 \
+--features hr rr \
+--csv WPCC_new-dist.csv \
+--output_dir integration-scripts/INTEGRATION \
+--epochs $epochs \
+--dimensions 32 32 \
+--steps_per_epoch $steps_per_epoch \
+--batch_size $batch_size \
+--greyscale_on \
+--kfold 4 \
+--num_val_clips 15 \
+--early_stopping 18 \
+--loss mean_squared_error \
+--sequence_length 90 \
+--vertical_flip \
+--horizontal_flip \
+--rotation_range 90 \
+--height_shift_range 0.5 \
+--width_shift_range 0.5 \
+--zoom_range 0.5 \
+--brightness_range_global 0.1 1.0 \
+--integration-test" 0 >> $INTEGRATION_DIR/integration.log
+
+if [ $? -eq 0 ]; then
+    exit 0
+else
+    exit 1
+fi

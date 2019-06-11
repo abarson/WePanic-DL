@@ -1,0 +1,5 @@
+#!/bin/sh
+INTEGRATION_DIR=integration-scripts
+
+pip install --upgrade ./src/we_panic_utils >> $INTEGRATION_DIR/integration.log
+exit $?
