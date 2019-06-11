@@ -1,0 +1,29 @@
+#!/bin/sh
+INTEGRATION_DIR=integration-scripts
+rm -r $INTEGRATION_DIR/INTEGRATION $INTEGRATION_DIR/integration.log
+
+test_outputs() {
+    command=$1
+    pass=$2
+
+    echo $1 | sh
+    result=$?
+
+    if [ $result -eq $2 ]; then
+        echo "[PASS] $1"
+    else
+        echo "[FAIL] $1"
+    fi
+
+    return $result
+}
+
+run() {
+    echo "[RUN] $1"
+    echo $1 | sh
+}
+
+test_outputs "python $INTEGRATION_DIR/test.py pass" 0 
+test_outputs "python $INTEGRATION_DIR/test.py fail" 1 
+test_outputs "./$INTEGRATION_DIR/install_it" 0
+test_outputs "./$INTEGRATION_DIR/test_it" 0  

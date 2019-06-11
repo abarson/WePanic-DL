@@ -1,0 +1,28 @@
+[             model_type]                             BN_CNN_3D_DO
+[                   data]                              glued_32_32
+[               features]                             ['hr', 'rr']
+[                    csv]                        WPCC_new-dist.csv
+[                    qbc]                                     None
+[             batch_size]                                        5
+[                 epochs]                                        1
+[             output_dir]          integration-scripts/INTEGRATION
+[              input_dir]          integration-scripts/INTEGRATION
+[         rotation_range]                                       90
+[      width_shift_range]                                      0.5
+[     height_shift_range]                                      0.5
+[             zoom_range]                                      0.5
+[ brightness_range_local]                                     None
+[brightness_range_global]                               [0.1, 1.0]
+[            shear_range]                                      0.0
+[          vertical_flip]                                     True
+[        horizontal_flip]                                     True
+[           greyscale_on]                                     True
+[            redscale_on]                                    False
+[        steps_per_epoch]                                        3
+[             dimensions]                                 [32, 32]
+[                  kfold]                                        4
+[          num_val_clips]                                       15
+[                   loss]                       mean_squared_error
+[         early_stopping]                                       18
+[        sequence_length]                                       90
+[       integration_test]                                     True

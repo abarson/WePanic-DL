@@ -4,8 +4,7 @@ command line app for train/testing models.
 
 # inter library imports
 import argparse
-import sys
-import os
+import sys, os
 import time
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
@@ -200,6 +199,11 @@ def parse_input():
                         help='sequence size for feeding the DNN',
                         default=60,
                         type=int)
+
+    parser.add_argument('--integration-test', dest='integration_test',
+                        help='run the integration test',
+                        default=False,
+                        action='store_true')
     
     return parser
 
@@ -473,10 +477,17 @@ if __name__ == "__main__":
                       |__________________________________"""	
     print(start_banner,sep='')
     start = time.time()
-    engine.run()
+    
+    if not args.integration_test:
+        engine.run()
+    else:
+        sys.exit(0)
+
     end = time.time()
     total = (end - start) / 60
 
     if args.kfold:
         with open(os.path.join(args.output_dir, "time.txt"), 'w') as t:
             t.write(str(total))
+
+    sys.exit(0)

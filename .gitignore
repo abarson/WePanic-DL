@@ -38,3 +38,4 @@ TOPMODS
 TestSet*
 *.png
 *.MOV
+__pycache__
